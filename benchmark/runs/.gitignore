@@ -1,0 +1,6 @@
+# Gerçek evaluation artifact'larını varsayılan olarak dışarıda tut.
+*
+!.gitignore
+!README.md
+!mock-dry-run/
+!mock-dry-run/**

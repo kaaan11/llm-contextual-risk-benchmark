@@ -1,0 +1,371 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/llm-security-usability-benchmark/annotation-schema/0.1.0",
+  "title": "LLM Security–Usability Benchmark Annotation Schema",
+  "description": "Kayıt bazlı, çoklu puanlayıcı anotasyonları ve açıkça işaretlenmiş sentetik örnekleri tanımlar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_schema_version",
+    "guideline_version",
+    "bundle_type",
+    "annotations"
+  ],
+  "properties": {
+    "annotation_schema_version": {
+      "const": "0.1.0"
+    },
+    "guideline_version": {
+      "$ref": "#/$defs/version"
+    },
+    "bundle_type": {
+      "type": "string",
+      "enum": [
+        "annotation_set",
+        "synthetic_examples"
+      ]
+    },
+    "dataset_id": {
+      "$ref": "#/$defs/identifier"
+    },
+    "dataset_version": {
+      "$ref": "#/$defs/version"
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/annotation_record"
+      }
+    }
+  },
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "annotator_id": {
+      "type": "string",
+      "description": "Kişisel kimlik değil, takma ad veya güvenli kod.",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "rationale_code": {
+      "type": "string",
+      "enum": [
+        "explicit_request",
+        "explicit_safe_purpose",
+        "explicit_authorization",
+        "policy_evasion_signal",
+        "harm_capability",
+        "harm_impact",
+        "context_changes_meaning",
+        "context_is_essential",
+        "missing_context",
+        "ambiguous_intent",
+        "category_overlap",
+        "redacted_content",
+        "not_enough_evidence",
+        "synthetic_example"
+      ]
+    },
+    "ordinal_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "confidence",
+        "rationale_codes"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "scored",
+            "not_applicable",
+            "insufficient_information"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/rationale_code"
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 600
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "scored"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "score"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "not_applicable",
+                  "insufficient_information"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "score"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "refusal_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "confidence",
+        "rationale_codes"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": [
+            "allow_safe_completion",
+            "allow_with_boundaries",
+            "partial_or_redirect",
+            "refusal_appropriate",
+            "uncertain",
+            "not_applicable"
+          ]
+        },
+        "confidence": {
+          "$ref": "#/$defs/confidence"
+        },
+        "rationale_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/rationale_code"
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 600
+        }
+      }
+    },
+    "annotation_labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adversariality",
+        "maliciousness",
+        "legitimate_plausibility",
+        "context_dependence",
+        "expected_risk",
+        "refusal_appropriateness"
+      ],
+      "properties": {
+        "adversariality": {
+          "$ref": "#/$defs/ordinal_label"
+        },
+        "maliciousness": {
+          "$ref": "#/$defs/ordinal_label"
+        },
+        "legitimate_plausibility": {
+          "$ref": "#/$defs/ordinal_label"
+        },
+        "context_dependence": {
+          "$ref": "#/$defs/ordinal_label"
+        },
+        "expected_risk": {
+          "$ref": "#/$defs/ordinal_label"
+        },
+        "refusal_appropriateness": {
+          "$ref": "#/$defs/refusal_label"
+        }
+      }
+    },
+    "annotation_record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "annotation_id",
+        "sample_id",
+        "record_type",
+        "annotator_id",
+        "annotator_role",
+        "review_state",
+        "guideline_version",
+        "annotated_at",
+        "is_synthetic_example",
+        "labels",
+        "confidence"
+      ],
+      "properties": {
+        "annotation_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "record_type": {
+          "type": "string",
+          "enum": [
+            "single_turn",
+            "multi_turn"
+          ]
+        },
+        "source_record_digest": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "annotator_id": {
+          "$ref": "#/$defs/annotator_id"
+        },
+        "annotator_role": {
+          "type": "string",
+          "enum": [
+            "researcher",
+            "expert",
+            "adjudicator",
+            "model_assisted",
+            "synthetic_example"
+          ]
+        },
+        "review_state": {
+          "type": "string",
+          "enum": [
+            "independent",
+            "adjudicated",
+            "synthetic_example"
+          ]
+        },
+        "guideline_version": {
+          "$ref": "#/$defs/version"
+        },
+        "annotated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "is_synthetic_example": {
+          "type": "boolean"
+        },
+        "labels": {
+          "$ref": "#/$defs/annotation_labels"
+        },
+        "confidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "level",
+            "rationale_codes"
+          ],
+          "properties": {
+            "level": {
+              "$ref": "#/$defs/confidence"
+            },
+            "rationale_codes": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/rationale_code"
+              }
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 600
+            }
+          }
+        },
+        "rationale_summary": {
+          "type": "string",
+          "maxLength": 1200
+        },
+        "evidence_ref": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "adjudication": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reason_code",
+            "changed_dimensions"
+          ],
+          "properties": {
+            "reason_code": {
+              "type": "string",
+              "enum": [
+                "rater_disagreement",
+                "missing_information",
+                "guideline_clarification",
+                "data_error"
+              ]
+            },
+            "changed_dimensions": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "adversariality",
+                  "maliciousness",
+                  "legitimate_plausibility",
+                  "context_dependence",
+                  "expected_risk",
+                  "refusal_appropriateness",
+                  "confidence"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

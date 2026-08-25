@@ -1,0 +1,74 @@
+{
+  "manifest_version": "0.1.0",
+  "dataset_id": "llm-security-usability-pilot",
+  "dataset_version": "0.1.0",
+  "sample_count": 20,
+  "sampling_strategy": {
+    "type": "deterministic_stratified",
+    "seed": 20260814,
+    "without_replacement": true,
+    "selection_rule": "first fixed IDs per stratum; source dataset is read-only"
+  },
+  "strata": {
+    "benign": {
+      "membership": "benign",
+      "count": 6,
+      "sample_ids": [
+        "benign-001",
+        "benign-002",
+        "benign-003",
+        "benign-004",
+        "benign-005",
+        "benign-006"
+      ]
+    },
+    "adversarial": {
+      "membership": "adversarial",
+      "count": 7,
+      "sample_ids": [
+        "adversarial-001",
+        "adversarial-002",
+        "adversarial-003",
+        "adversarial-004",
+        "adversarial-005",
+        "adversarial-006",
+        "adversarial-007"
+      ]
+    },
+    "multi_turn": {
+      "membership": "multi_turn",
+      "count": 7,
+      "sample_ids": [
+        "multi-turn-001",
+        "multi-turn-002",
+        "multi-turn-003",
+        "multi-turn-004",
+        "multi-turn-005",
+        "multi-turn-006",
+        "multi-turn-007"
+      ]
+    }
+  },
+  "sample_ids": [
+    "benign-001",
+    "benign-002",
+    "benign-003",
+    "benign-004",
+    "benign-005",
+    "benign-006",
+    "adversarial-001",
+    "adversarial-002",
+    "adversarial-003",
+    "adversarial-004",
+    "adversarial-005",
+    "adversarial-006",
+    "adversarial-007",
+    "multi-turn-001",
+    "multi-turn-002",
+    "multi-turn-003",
+    "multi-turn-004",
+    "multi-turn-005",
+    "multi-turn-006",
+    "multi-turn-007"
+  ]
+}

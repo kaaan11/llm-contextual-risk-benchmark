@@ -1,0 +1,1389 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/llm-security-usability-benchmark/schema/0.2.0",
+  "title": "LLM Security–Usability Benchmark Dataset",
+  "description": "Şema, veri kümesi manifestini ve kayıt bazlı benchmark verilerini tanımlar. Hassas içerik doğrudan veya güvenli bir referansla saklanabilir.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dataset_id",
+    "dataset_version",
+    "release_profile",
+    "records"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "0.1.0",
+        "0.2.0"
+      ]
+    },
+    "dataset_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "dataset_version": {
+      "$ref": "#/$defs/version"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "release_profile": {
+      "type": "string",
+      "enum": [
+        "private",
+        "controlled",
+        "public_sanitized"
+      ]
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/record"
+      }
+    },
+    "evaluation_runs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evaluation_run"
+      }
+    },
+    "analysis_runs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/analysis_run"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "0.2.0"
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "properties": {
+          "records": {
+            "items": {
+              "if": {
+                "properties": {
+                  "record_type": {
+                    "const": "multi_turn"
+                  }
+                },
+                "required": [
+                  "record_type"
+                ]
+              },
+              "then": {
+                "required": [
+                  "conversation_id",
+                  "canonical_final_prompt",
+                  "canonical_final_prompt_sha256",
+                  "evaluation_conditions",
+                  "expected_context_effect",
+                  "model_observed_effect",
+                  "expected_risk_profile",
+                  "design_confidence",
+                  "source",
+                  "dataset_version",
+                  "composition_cell",
+                  "context_signal_types",
+                  "expected_interpretation",
+                  "expected_context_effect_rationale",
+                  "authoring_method",
+                  "generation_assistance",
+                  "source_seed",
+                  "researcher_qc",
+                  "external_validation_status",
+                  "created_at"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+    },
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1
+    },
+    "level": {
+      "type": "string",
+      "enum": [
+        "none",
+        "low",
+        "medium",
+        "high",
+        "critical",
+        "unknown"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "research_generated",
+            "general_user_generated",
+            "expert_generated",
+            "public_benchmark",
+            "controlled_evaluation",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "source_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "source_distribution": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_type",
+              "count"
+            ],
+            "properties": {
+              "source_type": {
+                "$ref": "#/$defs/non_empty_string"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "proportion": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "collection_notes": {
+          "type": "string"
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "redaction_status"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "content_ref": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "redaction_status": {
+          "type": "string",
+          "enum": [
+            "not_redacted",
+            "partially_redacted",
+            "fully_redacted",
+            "reference_only"
+          ]
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "text"
+          ]
+        },
+        {
+          "required": [
+            "content_ref"
+          ]
+        }
+      ]
+    },
+    "turn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "turn_id",
+        "sequence",
+        "role",
+        "content"
+      ],
+      "properties": {
+        "turn_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "system",
+            "developer",
+            "user",
+            "assistant",
+            "tool"
+          ]
+        },
+        "content": {
+          "$ref": "#/$defs/content"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "context_signal_codes": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "C1",
+                  "C2",
+                  "C3",
+                  "C4",
+                  "C5",
+                  "not_applicable"
+                ]
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "adversariality": {
+          "$ref": "#/$defs/level"
+        },
+        "maliciousness": {
+          "$ref": "#/$defs/level"
+        },
+        "legitimate_plausibility": {
+          "$ref": "#/$defs/level"
+        },
+        "context_dependence": {
+          "$ref": "#/$defs/level"
+        },
+        "expected_risk": {
+          "$ref": "#/$defs/level"
+        },
+        "refusal_appropriateness": {
+          "type": "string",
+          "enum": [
+            "appropriate",
+            "inappropriate",
+            "partial_or_conditional",
+            "uncertain",
+            "not_applicable"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "threat_categories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^T[0-9]{1,2}$"
+          }
+        },
+        "benign_categories": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^B[0-9]{1,2}$"
+          }
+        }
+      }
+    },
+    "annotation_ordinal_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "confidence",
+        "rationale_codes"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "scored",
+            "not_applicable",
+            "insufficient_information"
+          ]
+        },
+        "score": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "rationale_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 600
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "scored"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "score"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "not_applicable",
+                  "insufficient_information"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "score"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "annotation_refusal_label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "confidence",
+        "rationale_codes"
+      ],
+      "properties": {
+        "value": {
+          "type": "string",
+          "enum": [
+            "allow_safe_completion",
+            "allow_with_boundaries",
+            "partial_or_redirect",
+            "refusal_appropriate",
+            "uncertain",
+            "not_applicable"
+          ]
+        },
+        "confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "rationale_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 600
+        }
+      }
+    },
+    "annotation_labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "adversariality",
+        "maliciousness",
+        "legitimate_plausibility",
+        "context_dependence",
+        "expected_risk",
+        "refusal_appropriateness"
+      ],
+      "properties": {
+        "adversariality": {
+          "$ref": "#/$defs/annotation_ordinal_label"
+        },
+        "maliciousness": {
+          "$ref": "#/$defs/annotation_ordinal_label"
+        },
+        "legitimate_plausibility": {
+          "$ref": "#/$defs/annotation_ordinal_label"
+        },
+        "context_dependence": {
+          "$ref": "#/$defs/annotation_ordinal_label"
+        },
+        "expected_risk": {
+          "$ref": "#/$defs/annotation_ordinal_label"
+        },
+        "refusal_appropriateness": {
+          "$ref": "#/$defs/annotation_refusal_label"
+        }
+      }
+    },
+    "annotation_confidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "rationale_codes"
+      ],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "rationale_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 600
+        }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "annotation_id",
+        "sample_id",
+        "record_type",
+        "annotator_id",
+        "annotator_type",
+        "guideline_version",
+        "annotated_at",
+        "is_synthetic_example",
+        "labels",
+        "confidence"
+      ],
+      "properties": {
+        "annotation_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "record_type": {
+          "type": "string",
+          "enum": [
+            "single_turn",
+            "multi_turn"
+          ]
+        },
+        "annotator_id": {
+          "type": "string",
+          "description": "Kişisel kimlik değil, takma ad veya güvenli kod.",
+          "pattern": "^[A-Za-z0-9._-]{1,64}$"
+        },
+        "annotator_type": {
+          "type": "string",
+          "enum": [
+            "researcher",
+            "expert",
+            "adjudicator",
+            "model_assisted",
+            "synthetic_example"
+          ]
+        },
+        "review_state": {
+          "type": "string",
+          "enum": [
+            "independent",
+            "adjudicated",
+            "synthetic_example"
+          ]
+        },
+        "guideline_version": {
+          "$ref": "#/$defs/version"
+        },
+        "annotated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "is_synthetic_example": {
+          "type": "boolean"
+        },
+        "labels": {
+          "$ref": "#/$defs/annotation_labels"
+        },
+        "confidence": {
+          "$ref": "#/$defs/annotation_confidence"
+        },
+        "rationale_summary": {
+          "type": "string",
+          "maxLength": 1200
+        },
+        "evidence_ref": {
+          "type": "string",
+          "maxLength": 256
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "name",
+        "version"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "anthropic",
+            "open_weight",
+            "other"
+          ]
+        },
+        "name": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "version": {
+          "$ref": "#/$defs/non_empty_string"
+        }
+      }
+    },
+    "configuration": {
+      "type": "string",
+      "enum": [
+        "baseline",
+        "single_prompt_defense",
+        "multi_turn_context_defense"
+      ]
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attack_success": {
+          "type": "string",
+          "enum": [
+            "success",
+            "failure",
+            "not_applicable",
+            "unknown"
+          ]
+        },
+        "refusal": {
+          "type": "string",
+          "enum": [
+            "refused",
+            "answered",
+            "partial",
+            "unclear",
+            "not_applicable",
+            "unknown"
+          ]
+        },
+        "legitimate_task_completion": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "not_completed",
+            "not_applicable",
+            "unknown"
+          ]
+        },
+        "task_fidelity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "scale_id"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "scale_id": {
+              "$ref": "#/$defs/non_empty_string"
+            }
+          }
+        },
+        "evaluator_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "rule_based",
+            "model_assisted",
+            "unknown"
+          ]
+        },
+        "decision_rule_id": {
+          "$ref": "#/$defs/non_empty_string"
+        }
+      }
+    },
+    "latency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_ms",
+        "measurement_method"
+      ],
+      "properties": {
+        "total_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "defense_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "model_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "queue_ms": {
+          "type": "number",
+          "minimum": 0
+        },
+        "measurement_method": {
+          "$ref": "#/$defs/non_empty_string"
+        }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evaluation_id",
+        "run_id",
+        "evaluated_at",
+        "model",
+        "configuration",
+        "context_mode",
+        "response",
+        "latency"
+      ],
+      "properties": {
+        "evaluation_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "run_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "model": {
+          "$ref": "#/$defs/model"
+        },
+        "configuration": {
+          "$ref": "#/$defs/configuration"
+        },
+        "context_mode": {
+          "type": "string",
+          "enum": [
+            "current_prompt_only",
+            "conversation_context"
+          ]
+        },
+        "system_configuration_ref": {
+          "type": "string"
+        },
+        "response": {
+          "$ref": "#/$defs/content"
+        },
+        "latency": {
+          "$ref": "#/$defs/latency"
+        },
+        "resource_usage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "cpu_time_ms": {
+              "type": "number",
+              "minimum": 0
+            },
+            "memory_peak_mb": {
+              "type": "number",
+              "minimum": 0
+            },
+            "additional_model_calls": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "outcome": {
+          "$ref": "#/$defs/outcome"
+        },
+        "evaluator_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "context_effect": {
+      "type": "string",
+      "enum": [
+        "context_increases_legitimacy",
+        "context_increases_risk",
+        "context_reduces_ambiguity",
+        "context_increases_ambiguity",
+        "context_has_no_material_effect",
+        "context_is_irrelevant"
+      ]
+    },
+    "context_signal_type": {
+      "type": "string",
+      "enum": [
+        "intent_clarification",
+        "role_clarification",
+        "task_clarification",
+        "environmental_context",
+        "defensive_context",
+        "academic_context",
+        "developer_context",
+        "prior_technical_discussion",
+        "ambiguity_reduction",
+        "ambiguity_introduction",
+        "risk_escalation",
+        "risk_de_escalation",
+        "irrelevant_context",
+        "conflicting_context"
+      ]
+    },
+    "composition_cell": {
+      "type": "string",
+      "enum": [
+        "context_changes_interpretation",
+        "context_does_not_change_interpretation",
+        "legitimate_technical_context",
+        "ambiguous_borderline_context"
+      ]
+    },
+    "expected_interpretation": {
+      "type": "string",
+      "enum": [
+        "benign",
+        "legitimate_technical",
+        "adversarial_or_high_risk",
+        "ambiguous_or_insufficient_information"
+      ]
+    },
+    "final_prompt_only": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "prompt",
+        "prompt_sha256"
+      ],
+      "properties": {
+        "condition": {
+          "const": "final_prompt_only"
+        },
+        "prompt": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "prompt_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "full_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "turn_ids",
+        "final_prompt_turn_id"
+      ],
+      "properties": {
+        "condition": {
+          "const": "full_context"
+        },
+        "turn_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "final_prompt_turn_id": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "evaluation_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_prompt_only",
+        "full_context"
+      ],
+      "properties": {
+        "final_prompt_only": {
+          "$ref": "#/$defs/final_prompt_only"
+        },
+        "full_context": {
+          "$ref": "#/$defs/full_context"
+        }
+      }
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "source_seed": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "source_dataset",
+        "source_sample_id",
+        "source_url",
+        "transformation_summary"
+      ],
+      "properties": {
+        "source_dataset": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "source_sample_id": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "source_url": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "transformation_summary": {
+          "$ref": "#/$defs/non_empty_string"
+        }
+      }
+    },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample_id",
+                  "record_version",
+                  "dataset_membership",
+                  "record_type",
+                  "split",
+                  "sensitivity",
+                  "turns",
+        "annotations",
+        "evaluations"
+      ],
+      "properties": {
+        "sample_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "record_version": {
+          "$ref": "#/$defs/version"
+        },
+        "dataset_membership": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "benign",
+              "adversarial",
+              "multi_turn"
+            ]
+          }
+        },
+        "record_type": {
+          "type": "string",
+          "enum": [
+            "single_turn",
+            "multi_turn"
+          ]
+        },
+        "split": {
+          "type": "string",
+          "enum": [
+            "train",
+            "validation",
+            "test",
+            "holdout",
+            "none"
+          ]
+        },
+        "sensitivity": {
+          "type": "string",
+          "enum": [
+            "public_sanitized",
+            "controlled",
+            "private",
+            "restricted"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "original",
+            "adapted_public_concept",
+            "public_benchmark_derived"
+          ]
+        },
+        "dataset_version": {
+          "$ref": "#/$defs/version"
+        },
+        "conversation_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "canonical_final_prompt": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "canonical_final_prompt_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "evaluation_conditions": {
+          "$ref": "#/$defs/evaluation_conditions"
+        },
+        "expected_context_effect": {
+          "$ref": "#/$defs/context_effect"
+        },
+        "model_observed_effect": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "context_increases_legitimacy",
+            "context_increases_risk",
+            "context_reduces_ambiguity",
+            "context_increases_ambiguity",
+            "context_has_no_material_effect",
+            "context_is_irrelevant",
+            null
+          ]
+        },
+        "expected_risk_profile": {
+          "$ref": "#/$defs/level"
+        },
+        "design_confidence": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "composition_cell": {
+          "$ref": "#/$defs/composition_cell"
+        },
+        "context_signal_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/context_signal_type"
+          }
+        },
+        "expected_interpretation": {
+          "$ref": "#/$defs/expected_interpretation"
+        },
+        "expected_context_effect_rationale": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "authoring_method": {
+          "type": "string",
+          "enum": [
+            "researcher_authored",
+            "llm_assisted_draft",
+            "adapted_public_concept",
+            "researcher_specified_llm_assisted_draft"
+          ]
+        },
+        "generation_assistance": {
+          "type": "string",
+          "enum": [
+            "none",
+            "drafting_only",
+            "paraphrase_assistance",
+            "mixed"
+          ]
+        },
+        "source_seed": {
+          "$ref": "#/$defs/source_seed"
+        },
+        "researcher_qc": {
+          "type": "boolean"
+        },
+        "external_validation_status": {
+          "type": "string",
+          "enum": [
+            "not_reviewed",
+            "researcher_reviewed",
+            "expert_reviewed",
+            "externally_validated"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenance"
+        },
+        "task_metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "domain_code": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "language": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "source_type": {
+              "$ref": "#/$defs/provenance/properties/source_type"
+            },
+            "sampling_cell": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "template_id": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "threat_categories": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^T[0-9]{1,2}$"
+              }
+            },
+            "benign_categories": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^B[0-9]{1,2}$"
+              }
+            },
+            "context_effect": {
+              "type": "string",
+              "enum": [
+                "C1",
+                "C2",
+                "C3",
+                "C4",
+                "C5",
+                "not_applicable",
+                "unknown"
+              ]
+            },
+            "context_effect_description": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "turns": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/turn"
+          }
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/annotation"
+          }
+        },
+        "evaluations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evaluation"
+          }
+        },
+        "notes_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "evaluation_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "run_version",
+        "dataset_version",
+        "started_at",
+        "model",
+        "configuration",
+        "context_mode"
+      ],
+      "properties": {
+        "run_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "run_version": {
+          "$ref": "#/$defs/version"
+        },
+        "dataset_version": {
+          "$ref": "#/$defs/version"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "model": {
+          "$ref": "#/$defs/model"
+        },
+        "configuration": {
+          "$ref": "#/$defs/configuration"
+        },
+        "context_mode": {
+          "type": "string",
+          "enum": [
+            "current_prompt_only",
+            "conversation_context"
+          ]
+        },
+        "system_configuration_ref": {
+          "type": "string"
+        },
+        "environment_ref": {
+          "type": "string"
+        },
+        "repetitions": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "analysis_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric_id",
+        "metric_name",
+        "estimate",
+        "sample_size",
+        "method"
+      ],
+      "properties": {
+        "metric_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "metric_name": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "estimate": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "sample_size": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "group_by": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "confidence_interval": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "lower",
+            "upper",
+            "level"
+          ],
+          "properties": {
+            "lower": {
+              "type": "number"
+            },
+            "upper": {
+              "type": "number"
+            },
+            "level": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "exclusiveMaximum": 1
+            }
+          }
+        },
+        "effect_size": {
+          "type": "number"
+        },
+        "p_value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "method": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "artifact_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "analysis_run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "analysis_id",
+        "analysis_version",
+        "analysis_type",
+        "created_at",
+        "input_dataset_version",
+        "code_version",
+        "results"
+      ],
+      "properties": {
+        "analysis_id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "analysis_version": {
+          "$ref": "#/$defs/version"
+        },
+        "analysis_type": {
+          "type": "string",
+          "enum": [
+            "descriptive",
+            "inferential",
+            "agreement",
+            "pareto",
+            "data_quality"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "input_dataset_version": {
+          "$ref": "#/$defs/version"
+        },
+        "code_version": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "filters": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/analysis_result"
+          }
+        }
+      }
+    }
+  }
+}

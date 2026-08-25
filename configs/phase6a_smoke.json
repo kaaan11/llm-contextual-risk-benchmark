@@ -1,0 +1,56 @@
+{
+  "config_version": "0.1.0",
+  "experiment_id": "phase6a-real-model-smoke",
+  "dataset_path": "dataset/pilot/pilot_dataset.json",
+  "manifest_path": "tests/fixtures/phase6a_smoke_manifest.json",
+  "expected_dataset_id": "llm-security-usability-pilot",
+  "expected_dataset_version": "0.1.0",
+  "output_root": "results/smoke_test",
+  "max_samples": 20,
+  "context_mode": "conversation_context",
+  "configuration": "phase6a_baseline",
+  "system_instruction_ref": "phase6a-smoke-v1",
+  "seed": 20260814,
+  "temperature": 0.0,
+  "max_output_tokens": 256,
+  "timeout_s": 30.0,
+  "retry": {
+    "max_attempts": 2,
+    "initial_backoff_s": 0.5,
+    "max_backoff_s": 4.0
+  },
+  "response_logging": {
+    "include_response_text": true,
+    "retention": "local_only; do not commit raw responses"
+  },
+  "providers": {
+    "openai": {
+      "enabled": true,
+      "credential_env": "OPENAI_API_KEY",
+      "model_env": "PHASE6A_OPENAI_MODEL",
+      "model_version_env": "PHASE6A_OPENAI_MODEL_VERSION",
+      "base_url_env": "OPENAI_BASE_URL"
+    },
+    "anthropic": {
+      "enabled": true,
+      "credential_env": "ANTHROPIC_API_KEY",
+      "model_env": "PHASE6A_ANTHROPIC_MODEL",
+      "model_version_env": "PHASE6A_ANTHROPIC_MODEL_VERSION",
+      "base_url_env": "ANTHROPIC_BASE_URL"
+    },
+    "open_weight": {
+      "enabled": true,
+      "credential_env": "OPENWEIGHT_API_KEY",
+      "model_env": "PHASE6A_OPENWEIGHT_MODEL",
+      "model_version_env": "PHASE6A_OPENWEIGHT_MODEL_VERSION",
+      "endpoint_env": "OPENWEIGHT_BASE_URL",
+      "credential_optional": true
+    }
+  },
+  "cost_estimate": {
+    "input_token_divisor": 4,
+    "estimated_output_tokens_per_sample": 256,
+    "input_price_usd_per_million_tokens": null,
+    "output_price_usd_per_million_tokens": null
+  }
+}

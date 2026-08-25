@@ -1,0 +1,19 @@
+{
+  "run_id": "mock-dry-run-001",
+  "experiment_id": "phase5-mock-dry-run",
+  "dataset_id": "llm-security-usability-pilot",
+  "dataset_version": "0.1.0",
+  "model": {
+    "provider": "mock",
+    "name": "mock-safety-model",
+    "version": "0.1.0"
+  },
+  "configuration": "baseline",
+  "context_mode": "conversation_context",
+  "created_at": "2026-08-14T14:42:46Z",
+  "runner_version": "0.1.0",
+  "generation_parameters": {},
+  "system_instruction_ref": null,
+  "max_samples": 3,
+  "seed": 20260814
+}

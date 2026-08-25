@@ -1,0 +1,20 @@
+{
+  "dataset_id": "llm-security-usability-pilot",
+  "dataset_version": "0.1.0",
+  "build_metadata": {
+    "seed": 20260814,
+    "generator_version": "0.1.0"
+  },
+  "public_benchmark_imports": [],
+  "note": "Bu pilot çalıştırmada public benchmark örneği içe aktarılmadı; adversarial kayıtlar güvenli ve redakte edilmiş araştırma senaryolarıdır.",
+  "future_import_requirements": [
+    "publisher_or_project",
+    "source_url_or_doi",
+    "license",
+    "source_version_or_release",
+    "original_sample_id",
+    "retrieval_date",
+    "sha256",
+    "transformation_summary"
+  ]
+}

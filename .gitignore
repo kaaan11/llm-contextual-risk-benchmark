@@ -1,0 +1,20 @@
+.env
+.env.*
+!.env.example
+results/*
+!results/README.md
+!results/dataset_audit/
+!results/dataset_audit/*.json
+# F-04 remediation: append-only review histories and pre-write snapshots are
+# provenance-essential; they must enter version control with the first anchor.
+!results/dataset_audit/*.jsonl
+!results/dataset_audit/snapshots/
+# Sanitized smoke summaries document provider preflight provenance; raw responses
+# (none exist today) stay excluded.
+!results/smoke_test/
+benchmark/runs/*
+!benchmark/runs/README.md
+!benchmark/runs/.gitignore
+__pycache__/
+*.py[cod]
+.pytest_cache/

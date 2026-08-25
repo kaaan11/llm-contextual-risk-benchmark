@@ -1,0 +1,87 @@
+{
+  "audit_version": "0.1.0",
+  "audited_at": "2026-08-14",
+  "audit_status": "preliminary_blocked",
+  "sources": [
+    {
+      "source_dataset": "XSTest",
+      "official_name": "XSTest: A Test Suite for Identifying Exaggerated Safety Behaviours in Large Language Models",
+      "repository_url": "https://github.com/paul-rottger/xstest",
+      "data_url": "https://raw.githubusercontent.com/paul-rottger/xstest/main/xstest_prompts.csv",
+      "citation_url": "https://aclanthology.org/2024.naacl-long.301/",
+      "observed_revision": "main; immutable commit pin not captured in this audit",
+      "version_status": "requires_immutable_pin",
+      "license": "CC-BY-4.0",
+      "license_url": "https://github.com/paul-rottger/xstest/blob/main/LICENSE",
+      "observed_counts": {
+        "total": 450,
+        "safe": 250,
+        "unsafe": 200
+      },
+      "splits": ["single CSV release; no train/validation/test split documented"],
+      "schema": ["id", "prompt", "type", "label", "focus", "note"],
+      "native_id_field": "id",
+      "annotation_methodology": "Prompt suite authored for ten safe prompt types and unsafe contrast prompts; model responses are classified as refusal/compliance manually or with repository evaluation scripts.",
+      "redistribution_status": "prompt redistribution appears permitted with CC-BY-4.0 attribution; model completions have separate original licenses and are not acquired",
+      "raw_data_commit_policy": "do not copy model completions; prompt text requires attribution",
+      "known_overlap": "JBB judge_comparison documentation states that 100 benign examples come from XSTest"
+    },
+    {
+      "source_dataset": "JBB-Behaviors",
+      "official_name": "JailbreakBench JBB-Behaviors",
+      "repository_url": "https://github.com/JailbreakBench/jailbreakbench",
+      "dataset_url": "https://huggingface.co/datasets/JailbreakBench/JBB-Behaviors",
+      "citation_url": "https://arxiv.org/abs/2404.01318",
+      "observed_revision": "Hugging Face main data history entry d8d87b8; immutable file revision must be recorded before acquisition",
+      "version_status": "candidate_pin_found_requires_verification",
+      "license": "MIT (dataset card and LICENSE)",
+      "license_url": "https://huggingface.co/datasets/JailbreakBench/JBB-Behaviors/blob/main/LICENSE",
+      "observed_counts": {
+        "behaviors_harmful": 100,
+        "behaviors_benign": 100,
+        "judge_comparison": 300
+      },
+      "splits": ["behaviors/harmful", "behaviors/benign", "judge_comparison/test"],
+      "schema": {
+        "behaviors": ["Index", "Goal", "Target", "Behavior", "Category", "Source"],
+        "judge_comparison": ["goal", "prompt", "target_response", "human1", "human2", "human3", "human_majority", "automated_judge_labels"]
+      },
+      "native_id_field": "Index for behavior CSV; judge_comparison requires pinned row locator",
+      "annotation_methodology": "100 harmful behaviors are distributed across ten policy-referenced categories; judge_comparison contains human judge labels and automated judge comparisons for attack prompts.",
+      "source_composition": "Harmful behaviors are documented as 18% AdvBench, 27% TDC/HarmBench, and 55% Original; this is source provenance, not independent sampling strata.",
+      "redistribution_status": "MIT dataset license permits redistribution subject to notices, but upstream constituent source terms and attribution require separate review",
+      "raw_data_commit_policy": "do not use judge_comparison as an independent source until XSTest overlap and raw adversarial-content handling are approved",
+      "known_overlap": "judge_comparison explicitly includes 100 benign XSTest examples; harmful behaviors also inherit provenance from AdvBench and TDC/HarmBench"
+    },
+    {
+      "source_dataset": "WildGuardMix",
+      "official_name": "WildGuardMix",
+      "repository_url": "https://huggingface.co/datasets/allenai/wildguardmix",
+      "dataset_url": "https://huggingface.co/datasets/allenai/wildguardmix",
+      "citation_url": "https://arxiv.org/abs/2406.18495",
+      "observed_revision": "main; immutable dataset revision not captured in this audit",
+      "version_status": "requires_immutable_pin",
+      "license": "ODC-By (dataset card identifier: odc-by)",
+      "license_url": "https://huggingface.co/datasets/allenai/wildguardmix",
+      "observed_counts": {
+        "wildguardtrain": 86759,
+        "wildguardtest": 1725
+      },
+      "splits": ["wildguardtrain/train", "wildguardtest/test"],
+      "schema": ["prompt", "adversarial", "response", "prompt_harm_label", "response_harm_label", "response_refusal_label", "subcategory", "agreement_fields"],
+      "native_id_field": "no native sample_id documented; pinned row locator or content hash must be explicitly labeled as derived",
+      "annotation_methodology": "Train labels are GPT-4 generated with a 500-item human audit; test labels use three independent annotators, agreement fields, Fleiss kappa reporting, and mismatch inspection.",
+      "redistribution_status": "gated access and AI2 Responsible Use Guidelines apply; raw redistribution into this repository is not approved",
+      "raw_data_commit_policy": "metadata-only until access, ODC-By conditions, responsible-use terms, privacy review, and derived-data policy are approved",
+      "known_overlap": "not resolved from metadata; exact and normalized text comparison is required after pinned retrieval"
+    }
+  ],
+  "required_before_manifest": [
+    "capture immutable revision and file hashes for every source",
+    "retrieve source metadata through approved access path",
+    "resolve WildGuard native-ID/derived-locator policy",
+    "run exact and normalized overlap audit",
+    "decide whether JBB goal behaviors are an acceptable proxy for jailbreak prompts",
+    "approve raw versus metadata-only redistribution policy"
+  ]
+}

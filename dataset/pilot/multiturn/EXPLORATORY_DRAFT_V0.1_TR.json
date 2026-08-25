@@ -1,0 +1,64 @@
+{
+  "profile_id": "EXPLORATORY_DRAFT_V0.1_TR",
+  "status": "preserved_unmodified",
+  "language": "tr",
+  "record_count": 50,
+  "original_dataset_id": "llm-security-usability-original-multiturn-pilot",
+  "original_schema_version": "0.2.0",
+  "original_dataset_version": "0.2.0",
+  "label_is_metadata_only": true,
+  "provenance_rewritten": false,
+  "original_files_preserved": true,
+  "artifacts": [
+    {
+      "path": "dataset/pilot/multiturn/multiturn_dataset.json",
+      "sha256": "7ae3b858de57c08417d136a1af5e82a1b94fb747211e5161fa2c8268639b9a86",
+      "size_bytes": 193904,
+      "mtime_ns": 1786722568525503400,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "dataset/pilot/multiturn/records.jsonl",
+      "sha256": "aafb6623a8b675a8396c7e5b361275204c4bdf531100b3bb0bb26bad048d66b4",
+      "size_bytes": 140520,
+      "mtime_ns": 1786722568529504800,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "dataset/pilot/multiturn/construction_plan_snapshot.json",
+      "sha256": "59e5b1cfc0cd86dee0a2c57f6fd42d752fdb632806032ac90d376d3717174a9e",
+      "size_bytes": 65485,
+      "mtime_ns": 1786722568534504700,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "dataset/pilot/multiturn/README.md",
+      "sha256": "0f2ab09d6db295da2f0b7c0c2f0c231d9159005ba1f05cc9244bc7f1979bcbd5",
+      "size_bytes": 2435,
+      "mtime_ns": 1786722651461848800,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "results/dataset_audit/multiturn_statistics.json",
+      "sha256": "091dbdf9c3492fe35da759692bca9ee1f7565e4293b23441e2f599fa449ca570",
+      "size_bytes": 1697,
+      "mtime_ns": 1786722568537510100,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "results/dataset_audit/multiturn_validation.json",
+      "sha256": "0b21720098b16b53e5e80994515d8c99010a911f3022459bd5a0ffc8596490d0",
+      "size_bytes": 537,
+      "mtime_ns": 1786722568536506100,
+      "preserved_unmodified": true
+    },
+    {
+      "path": "results/dataset_audit/multiturn_construction_report.json",
+      "sha256": "9d2e20a265d75e4d967c9804fbff384645da190f97359d132146d9286eb75804",
+      "size_bytes": 614,
+      "mtime_ns": 1786722568540023300,
+      "preserved_unmodified": true
+    }
+  ],
+  "note": "Bu label metadata'sı Türkçe Phase 7B taslağını yeniden yazmaz; yalnızca exploratory profile olarak sınıflandırır."
+}
