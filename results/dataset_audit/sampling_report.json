@@ -1,0 +1,44 @@
+{
+  "report_version": "0.1.0",
+  "status": "blocked_pending_methodology_and_license_approval",
+  "target_distribution": {
+    "XSTest": 100,
+    "JBB-Behaviors_or_approved_jailbreak_source": 100,
+    "WildGuardMix": 50,
+    "original_multi_turn": 50
+  },
+  "selected_counts": {
+    "XSTest": 0,
+    "JBB-Behaviors": 0,
+    "WildGuardMix": 0,
+    "original_multi_turn": 0
+  },
+  "candidate_sampling_plan": {
+    "XSTest": "After pinned retrieval, stratify across safe/unsafe label, documented type, focus and prompt diversity; a 50/50 safe/unsafe allocation is only a candidate, not final.",
+    "JBB-Behaviors": "Do not call the harmful/benign goal split jailbreak prompts. Either relabel the research question as harmful-behavior/refusal evaluation or obtain an approved, versioned jailbreak-artifact source with method/model metadata.",
+    "WildGuardMix": "Use WildGuardTest only if access and terms permit; stratify by adversarial flag, prompt/response label availability, subcategory and agreement status. Preserve harmfulness/refusal labels separately.",
+    "original_multi_turn": "Explicitly deferred; no original multi-turn samples are created in Phase 6B."
+  },
+  "excluded_or_deferred": [
+    {
+      "source": "JBB-Behaviors judge_comparison/test",
+      "reason": "Known XSTest overlap and mixed attack-judge unit; cannot be treated as an independent JBB sample pool."
+    },
+    {
+      "source": "WildGuardMix train",
+      "reason": "Training split; evaluation pilot must prefer the documented test split and must not mix training/evaluation semantics."
+    },
+    {
+      "source": "original_multi_turn",
+      "reason": "Explicitly deferred by Phase 6B instructions."
+    }
+  ],
+  "blocking_findings": [
+    "The proposed 100 JBB samples are not yet a valid jailbreak sample definition if drawn from JBB-Behaviors goals.",
+    "WildGuardMix raw redistribution and access terms are not approved for repository publication.",
+    "WildGuardMix native sample IDs are not documented; provenance cannot be completed without an approved derived locator policy.",
+    "Immutable source revisions and file hashes are missing for at least XSTest and WildGuardMix.",
+    "Cross-source overlap has only documented relationships so far; exact/normalized audit is pending raw acquisition."
+  ],
+  "final_manifest_created": false
+}

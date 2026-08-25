@@ -1,0 +1,16 @@
+{
+  "phase": "7B",
+  "report_version": "0.1.0",
+  "status": "constructed_pending_researcher_qc",
+  "config_path": "configs\\phase7b_multiturn_construction.json",
+  "output_dataset": "dataset\\pilot\\multiturn\\multiturn_dataset.json",
+  "plan_candidate_count": 50,
+  "records_created": 50,
+  "researcher_qc_true": 0,
+  "researcher_qc_false": 50,
+  "external_model_api_calls": 0,
+  "model_evaluations": 0,
+  "expert_annotations": 0,
+  "validation_status": "valid",
+  "next_gate": "Araştırmacı her kaydı inceleyip QC sonucunu explicit olarak güncellemeden model evaluation başlatılmamalı."
+}

@@ -1,0 +1,119 @@
+{
+  "phase": "6A",
+  "summary_version": "0.1.0",
+  "created_at": "2026-08-14T15:04:37Z",
+  "config_path": "C:\\Users\\Kaan\\Documents\\ChatGPT\\AI_Search\\configs\\phase6a_smoke.json",
+  "experiment_id": "phase6a-real-model-smoke",
+  "live_execution_requested": true,
+  "dataset": {
+    "dataset_id": "llm-security-usability-pilot",
+    "dataset_version": "0.1.0",
+    "sample_count": 20,
+    "sample_ids": [
+      "benign-001",
+      "benign-002",
+      "benign-003",
+      "benign-004",
+      "benign-005",
+      "benign-006",
+      "adversarial-001",
+      "adversarial-002",
+      "adversarial-003",
+      "adversarial-004",
+      "adversarial-005",
+      "adversarial-006",
+      "adversarial-007",
+      "multi-turn-001",
+      "multi-turn-002",
+      "multi-turn-003",
+      "multi-turn-004",
+      "multi-turn-005",
+      "multi-turn-006",
+      "multi-turn-007"
+    ],
+    "strata_counts": {
+      "benign": 6,
+      "adversarial": 7,
+      "multi_turn": 7
+    },
+    "source_sha256_before": "427e89ea4502d96ccbf867c57617a308dbb9b1afb8ff1f3b16684097a58f7b56",
+    "source_sha256_after": "427e89ea4502d96ccbf867c57617a308dbb9b1afb8ff1f3b16684097a58f7b56",
+    "manifest_sha256": "3e8a19b79de75986522cf6cba16e1c60949c30926fef3d3605d0239032b2a5c9",
+    "source_mutated_by_runner": false
+  },
+  "cost_estimate": {
+    "input_characters": 8440,
+    "estimated_input_tokens": 2110,
+    "estimated_output_tokens": 5120,
+    "estimated_total_tokens": 7230,
+    "estimated_cost_usd": null,
+    "status": "pricing_not_configured",
+    "note": "Bu üst sınır/tahmindir; gerçek sağlayıcı token kullanımı değildir."
+  },
+  "providers": [
+    {
+      "provider": "openai",
+      "enabled": true,
+      "credential_env": "OPENAI_API_KEY",
+      "model_env": "PHASE6A_OPENAI_MODEL",
+      "model_version_env": "PHASE6A_OPENAI_MODEL_VERSION",
+      "endpoint_env": "OPENAI_BASE_URL",
+      "missing_environment": [
+        "OPENAI_API_KEY",
+        "PHASE6A_OPENAI_MODEL",
+        "PHASE6A_OPENAI_MODEL_VERSION"
+      ],
+      "configured": false,
+      "model": null,
+      "model_version": null,
+      "status": "not_evaluated",
+      "reason": "required model/version/credential/endpoint environment variable is missing",
+      "sample_count": 0
+    },
+    {
+      "provider": "anthropic",
+      "enabled": true,
+      "credential_env": "ANTHROPIC_API_KEY",
+      "model_env": "PHASE6A_ANTHROPIC_MODEL",
+      "model_version_env": "PHASE6A_ANTHROPIC_MODEL_VERSION",
+      "endpoint_env": "ANTHROPIC_BASE_URL",
+      "missing_environment": [
+        "ANTHROPIC_API_KEY",
+        "PHASE6A_ANTHROPIC_MODEL",
+        "PHASE6A_ANTHROPIC_MODEL_VERSION"
+      ],
+      "configured": false,
+      "model": null,
+      "model_version": null,
+      "status": "not_evaluated",
+      "reason": "required model/version/credential/endpoint environment variable is missing",
+      "sample_count": 0
+    },
+    {
+      "provider": "open_weight",
+      "enabled": true,
+      "credential_env": "OPENWEIGHT_API_KEY",
+      "model_env": "PHASE6A_OPENWEIGHT_MODEL",
+      "model_version_env": "PHASE6A_OPENWEIGHT_MODEL_VERSION",
+      "endpoint_env": "OPENWEIGHT_BASE_URL",
+      "missing_environment": [
+        "OPENWEIGHT_BASE_URL",
+        "PHASE6A_OPENWEIGHT_MODEL",
+        "PHASE6A_OPENWEIGHT_MODEL_VERSION"
+      ],
+      "configured": false,
+      "model": null,
+      "model_version": null,
+      "status": "not_evaluated",
+      "reason": "required model/version/credential/endpoint environment variable is missing",
+      "sample_count": 0
+    }
+  ],
+  "safety": {
+    "full_dataset_evaluation_performed": false,
+    "real_model_evaluation_performed": false,
+    "raw_responses_are_local_only": true,
+    "api_keys_written_to_artifacts": false
+  },
+  "summary_path": "C:\\Users\\Kaan\\Documents\\ChatGPT\\AI_Search\\results\\smoke_test\\phase6a-real-model-smoke\\summary.json"
+}

@@ -1,0 +1,34 @@
+{
+  "phase": "7",
+  "audit_version": "0.1.0",
+  "status": "schema_extension_implemented_no_samples",
+  "audited_at": "2026-08-14",
+  "existing_schema_version": "0.1.0",
+  "implemented_schema_version": "0.2.0",
+  "existing_schema_support": {
+    "multi_turn_turns": true,
+    "context_effect_basic_field": true,
+    "paired_evaluation_conditions": false,
+    "canonical_final_prompt": false,
+    "expected_vs_observed_effect_separation": false,
+    "authoring_provenance": false,
+    "researcher_qc": false,
+    "design_risk_without_annotation_claim": false
+  },
+  "required_extension": "dataset/schema.json v0.2.0",
+  "schema_extension_implemented": true,
+  "phase7b_status": "constructed_pending_researcher_qc",
+  "phase7b_samples_created": 50,
+  "phase7b_model_evaluations_run": 0,
+  "samples_created": 0,
+  "expert_annotations_created": 0,
+  "model_evaluations_run": 0,
+  "public_benchmark_records_modified": 0,
+  "final_manifest_created": false,
+  "blocking_reasons": [
+    "Existing schema cannot guarantee final prompt identity across isolated/contextual conditions.",
+    "Existing task_metadata cannot distinguish expected context effect from future observed model effect.",
+    "Using annotation_schema for designer expectations would misrepresent expert annotation status.",
+    "Authoring method, generation assistance, source seed and researcher QC provenance are not represented at record level."
+  ]
+}

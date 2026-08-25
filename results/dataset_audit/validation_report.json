@@ -1,0 +1,29 @@
+{
+  "report_version": "0.1.0",
+  "status": "blocked_pending_source_acquisition",
+  "validated_at": "2026-08-14",
+  "existing_local_dataset": {
+    "path": "dataset/pilot/pilot_dataset.json",
+    "status": "valid",
+    "scope": "Phase 3 original 300-record pilot; not overwritten"
+  },
+  "phase6b_manifest": {
+    "created": false,
+    "reason": "Final manifest is intentionally withheld until source, overlap and license decisions are approved."
+  },
+  "checks": {
+    "schema_validation": "existing local dataset passed; Phase 6B source rows pending",
+    "duplicate_detection": "documented method only; raw source retrieval pending",
+    "missing_field_detection": "source inventory complete at metadata level; row-level check pending",
+    "invalid_label_detection": "source-level labels documented; row-level check pending",
+    "source_id_validation": "blocked for WildGuard native ID policy",
+    "taxonomy_validation": "mapping rules prepared; final records not created",
+    "count_validation": "documented source aggregate counts; target selection not executed"
+  },
+  "errors": [],
+  "warnings": [
+    "No external raw dataset was copied into the repository.",
+    "No source sample ID was invented.",
+    "No expert or researcher qualitative validation was performed."
+  ]
+}

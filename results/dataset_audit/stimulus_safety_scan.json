@@ -1,0 +1,23 @@
+{
+  "report_version": "0.1.0",
+  "phase": "7F",
+  "generated_at": "2026-08-14T15:00:00Z",
+  "scan_type": "automated_pre_filter",
+  "disclaimer": "This scan is a pre-filter. It does NOT constitute human safety review. Every finding, including suspected false positives, must be reviewed by a human before release.",
+  "patterns": [
+    "aws_key",
+    "code_block",
+    "credential_literal",
+    "cve_identifier",
+    "email_address",
+    "hostname_like",
+    "ip_address",
+    "private_key",
+    "shell_destructive",
+    "url"
+  ],
+  "findings": [],
+  "finding_count": 0,
+  "human_review_required": true,
+  "human_review_performed": false
+}

@@ -1,0 +1,18 @@
+{
+  "report_version": "0.1.0",
+  "phase": "7F",
+  "generated_at": "2026-08-14T15:00:00Z",
+  "checks_run": [
+    "one canonical final prompt per item",
+    "A/B/C/D final user turn byte-equality with canonical prompt",
+    "SHA-256 of canonical prompt matches every applicable condition",
+    "turn ordering contiguous and final turn is a user turn",
+    "role vocabulary restricted to user/assistant",
+    "D present only where control_strategy == N",
+    "review-gate fields null / PENDING / researcher_qc false"
+  ],
+  "structural_errors": [],
+  "structural_valid": true,
+  "generation_flags": [],
+  "design_leakage_findings": []
+}

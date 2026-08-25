@@ -1,0 +1,48 @@
+{
+  "audit_version": "0.1.0",
+  "audit_status": "preliminary_blocked",
+  "audited_at": "2026-08-14",
+  "source_inventory_config": "configs/phase6b_sources.json",
+  "source_count": 3,
+  "source_datasets": [
+    {
+      "source_dataset": "XSTest",
+      "version": "main (unpinned)",
+      "license": "CC-BY-4.0",
+      "counts": {"total": 450, "safe": 250, "unsafe": 200},
+      "schema": ["id", "prompt", "type", "label", "focus", "note"],
+      "selection_relevance": "benign/over-refusal coverage with unsafe contrasts",
+      "raw_repository_copy": false,
+      "status": "inspected_metadata_only"
+    },
+    {
+      "source_dataset": "JBB-Behaviors",
+      "version": "main data history d8d87b8 (pin verification pending)",
+      "license": "MIT with upstream provenance review required",
+      "counts": {"harmful": 100, "benign": 100, "judge_comparison_test": 300},
+      "schema": {
+        "behaviors": ["Index", "Goal", "Target", "Behavior", "Category", "Source"],
+        "judge_comparison": ["goal", "prompt", "target_response", "human labels", "automated judge labels"]
+      },
+      "selection_relevance": "harmful-behavior/refusal baseline; not automatically equivalent to jailbreak prompts",
+      "raw_repository_copy": false,
+      "status": "inspected_metadata_only"
+    },
+    {
+      "source_dataset": "WildGuardMix",
+      "version": "main (un*pinned)",
+      "license": "ODC-By; gated AI2 Responsible Use terms",
+      "counts": {"train": 86759, "test": 1725},
+      "schema": ["prompt", "adversarial", "response", "prompt_harm_label", "response_harm_label", "response_refusal_label", "subcategory", "agreement fields"],
+      "selection_relevance": "prompt/response harm and refusal classification; harmful is not synonymous with jailbreak",
+      "raw_repository_copy": false,
+      "status": "inspected_metadata_only_access_and_privacy_review_pending"
+    }
+  ],
+  "limitations": [
+    "The sandbox could not download the raw source files; no source rows or source IDs were fabricated.",
+    "No immutable revision hash was captured for XSTest or WildGuard.",
+    "Native WildGuard sample identifiers are not documented in the inspected dataset card.",
+    "Exact category counts beyond documented aggregate counts require pinned file retrieval."
+  ]
+}

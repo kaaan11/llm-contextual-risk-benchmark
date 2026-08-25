@@ -1,0 +1,22 @@
+{
+  "phase": "7B",
+  "validation_version": "0.1.0",
+  "status": "valid",
+  "schema_version": "0.2.0",
+  "records_checked": 50,
+  "errors": [],
+  "duplicate_sample_ids": [],
+  "duplicate_conversation_ids": [],
+  "safety_checks": {
+    "external_model_api_calls": 0,
+    "model_evaluations": 0,
+    "expert_annotations": 0,
+    "personal_data_claims": 0,
+    "operational_attack_payloads": 0
+  },
+  "qc_summary": {
+    "researcher_qc_true": 0,
+    "researcher_qc_false": 50,
+    "external_validation_claims": 0
+  }
+}

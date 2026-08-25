@@ -1,0 +1,20 @@
+{
+  "audit_version": "0.1.0",
+  "performed_at": "2026-08-14T15:00:00Z",
+  "method": {
+    "exact": "sha256 over raw UTF-8 prompt text",
+    "normalised": "NFKC + casefold + whitespace collapse",
+    "similarity": "Jaccard over normalised whitespace tokens, flag threshold 0.60"
+  },
+  "corpora_compared": [
+    "dataset/pilot/records.jsonl",
+    "dataset/pilot/multiturn/records.jsonl"
+  ],
+  "corpus_segment_count": 768,
+  "public_benchmark_note": "No public benchmark text is vendored in this repository, so no external jailbreak corpus could be compared here. The pending public-benchmark overlap audit (results/dataset_audit/overlap_report.json, status preliminary_blocked) must be completed before any analytical combination.",
+  "exact_duplicates": [],
+  "normalised_duplicates": [],
+  "high_similarity": [],
+  "flagged_for_researcher_review": [],
+  "public_benchmark_modified": false
+}

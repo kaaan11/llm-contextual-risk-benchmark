@@ -1,0 +1,359 @@
+{
+  "record_version": "0.1.0",
+  "phase": "7G",
+  "generated_at": "2026-08-14T16:00:00Z",
+  "warning": "SEALED KEY. Opening this before blind annotations are submitted invalidates the blind review and therefore the Phase 7G gate.",
+  "opened": false,
+  "mapping": [
+    {
+      "blind_id": "BLIND-001",
+      "research_item_id": "RI-DU-008",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-002",
+      "research_item_id": "RI-DU-022",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-003",
+      "research_item_id": "RI-DU-007",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-004",
+      "research_item_id": "RI-NB-004",
+      "batch": 1,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-005",
+      "research_item_id": "RI-DU-012",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-006",
+      "research_item_id": "RI-DU-023",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-007",
+      "research_item_id": "RI-NH-003",
+      "batch": 1,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-008",
+      "research_item_id": "RI-NH-004",
+      "batch": 1,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-009",
+      "research_item_id": "RI-NH-005",
+      "batch": 1,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-010",
+      "research_item_id": "RI-DU-020",
+      "batch": 1,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-011",
+      "research_item_id": "RI-DU-001",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-012",
+      "research_item_id": "RI-DU-009",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-013",
+      "research_item_id": "RI-NB-006",
+      "batch": 2,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-014",
+      "research_item_id": "RI-AM-001",
+      "batch": 2,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-015",
+      "research_item_id": "RI-DU-017",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-016",
+      "research_item_id": "RI-NB-002",
+      "batch": 2,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-017",
+      "research_item_id": "RI-NH-001",
+      "batch": 2,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-018",
+      "research_item_id": "RI-DU-003",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-019",
+      "research_item_id": "RI-DU-028",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-020",
+      "research_item_id": "RI-DU-002",
+      "batch": 2,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-021",
+      "research_item_id": "RI-DU-025",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-022",
+      "research_item_id": "RI-DU-015",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-023",
+      "research_item_id": "RI-NH-006",
+      "batch": 3,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-024",
+      "research_item_id": "RI-DU-005",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-025",
+      "research_item_id": "RI-NB-005",
+      "batch": 3,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-026",
+      "research_item_id": "RI-NH-002",
+      "batch": 3,
+      "category": "null_highrisk",
+      "expected_valence": "clearly_concerning"
+    },
+    {
+      "blind_id": "BLIND-027",
+      "research_item_id": "RI-DU-016",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-028",
+      "research_item_id": "RI-DU-010",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-029",
+      "research_item_id": "RI-DU-030",
+      "batch": 3,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-030",
+      "research_item_id": "RI-NB-007",
+      "batch": 3,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-031",
+      "research_item_id": "RI-AM-006",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-032",
+      "research_item_id": "RI-DU-006",
+      "batch": 4,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-033",
+      "research_item_id": "RI-AM-004",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-034",
+      "research_item_id": "RI-DU-027",
+      "batch": 4,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-035",
+      "research_item_id": "RI-AM-007",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-036",
+      "research_item_id": "RI-DU-024",
+      "batch": 4,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-037",
+      "research_item_id": "RI-AM-002",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-038",
+      "research_item_id": "RI-DU-021",
+      "batch": 4,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-039",
+      "research_item_id": "RI-AM-003",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-040",
+      "research_item_id": "RI-AM-005",
+      "batch": 4,
+      "category": "persistent_ambiguity",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-041",
+      "research_item_id": "RI-DU-029",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-042",
+      "research_item_id": "RI-DU-011",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-043",
+      "research_item_id": "RI-NB-001",
+      "batch": 5,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    },
+    {
+      "blind_id": "BLIND-044",
+      "research_item_id": "RI-DU-004",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-045",
+      "research_item_id": "RI-DU-013",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-046",
+      "research_item_id": "RI-DU-019",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-047",
+      "research_item_id": "RI-DU-026",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-048",
+      "research_item_id": "RI-DU-018",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-049",
+      "research_item_id": "RI-DU-014",
+      "batch": 5,
+      "category": "dual_use_nonnull",
+      "expected_valence": "ambiguous_dual_use"
+    },
+    {
+      "blind_id": "BLIND-050",
+      "research_item_id": "RI-NB-003",
+      "batch": 5,
+      "category": "null_benign",
+      "expected_valence": "clearly_benign"
+    }
+  ]
+}

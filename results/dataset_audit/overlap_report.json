@@ -1,0 +1,34 @@
+{
+  "audit_version": "0.1.0",
+  "status": "preliminary_blocked",
+  "performed_at": "2026-08-14",
+  "methods": {
+    "source_id_matching": "planned; requires pinned source files",
+    "exact_text_matching": "planned; SHA-256 of exact normalized UTF-8 prompt text",
+    "normalized_text_matching": "planned; Unicode NFKC, casefold, whitespace collapse, trim",
+    "semantic_near_duplicate_matching": "not run; no threshold selected and no raw files acquired",
+    "removal_policy": "no silent removal; every exclusion must retain source reference and reason"
+  },
+  "documented_relationships": [
+    {
+      "left": "JBB-Behaviors judge_comparison/test",
+      "right": "XSTest",
+      "relationship": "documented subset relationship",
+      "evidence": "JailbreakBench README states that the judge-comparison material includes 100 benign examples from XSTest",
+      "action": "exclude judge_comparison from an independent pilot unless overlap is explicitly modeled"
+    },
+    {
+      "left": "JBB-Behaviors harmful",
+      "right": "AdvBench and TDC/HarmBench",
+      "relationship": "documented source composition",
+      "evidence": "JailbreakBench reports 18% AdvBench, 27% TDC/HarmBench, and 55% Original",
+      "action": "retain source field and audit upstream provenance; do not treat JBB as independent from those sources"
+    }
+  ],
+  "pending_pairwise_audits": [
+    {"left": "XSTest", "right": "JBB-Behaviors harmful", "status": "pending_pinned_retrieval"},
+    {"left": "XSTest", "right": "WildGuardMix test", "status": "pending_pinned_retrieval"},
+    {"left": "JBB-Behaviors harmful", "right": "WildGuardMix test", "status": "pending_pinned_retrieval"}
+  ],
+  "result": "No final independent sample pool can be declared before pinned retrieval and pairwise exact/normalized checks."
+}

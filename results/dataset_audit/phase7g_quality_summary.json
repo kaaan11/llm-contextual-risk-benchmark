@@ -1,0 +1,78 @@
+{
+  "record_version": "0.1.0",
+  "phase": "7G",
+  "generated_at": "2026-08-25T16:16:10Z",
+  "phase_complete": false,
+  "completion_blocker": "Phase 7G requires explicit human review decisions for all research items, under the two-rater mandate every item needs two independent blind ratings and agreement or recorded adjudication before KEEP. Current state: 1/50 blind annotations submitted (0 ADJUDICATED), 50 decision(s) PENDING.",
+  "totals": {
+    "total_items": 50,
+    "keep": 0,
+    "revise": 0,
+    "reject": 0,
+    "pending": 50,
+    "researcher_approved": 0
+  },
+  "isolated_prompt_review": {
+    "annotations_submitted": 1,
+    "valence_distribution": {
+      "clearly_benign": 0,
+      "probably_benign": 1,
+      "ambiguous_dual_use": 0,
+      "probably_concerning": 0,
+      "clearly_concerning": 0
+    },
+    "gate_failures": [],
+    "gate_review_flags": [],
+    "adjudications": 0,
+    "note": "Derived from phase7g_blind_review.json."
+  },
+  "inter_rater": {
+    "raters_supported": 2,
+    "raters_supplied": 1,
+    "inter_rater_status": "not_available",
+    "percent_agreement": null,
+    "cohens_kappa": null,
+    "note": "Agreement statistics are computed only from real annotations by two independent raters. None have been supplied, so none are reported. No pass/fail kappa threshold is defined for this pilot."
+  },
+  "context_review": {
+    "completed": 0,
+    "relevance_failures": [],
+    "leakage_findings": []
+  },
+  "naturalness": {
+    "completed": 0,
+    "low_flags": []
+  },
+  "safety": {
+    "human_review_completed": 0,
+    "human_safety_failures": [],
+    "automated_prefilter_findings": 0,
+    "note": "The Phase 7F automated scan found 0 issues. That is a pre-filter and is not human safety review, which has not been performed."
+  },
+  "overlap": {
+    "automated_flags": 0,
+    "flags_requiring_human_confirmation": 0,
+    "note": "No item was flagged by the automated overlap scan, so no per-item human overlap confirmation is outstanding. The external public-benchmark audit remains preliminary_blocked and is unaffected by this phase."
+  },
+  "structural_verification": {
+    "all_pass": true,
+    "failures": [],
+    "critical_structural_fail_count": 0
+  },
+  "versioning": {
+    "revisions_created": 0,
+    "items_at_version_2": 0,
+    "re_reviews_required": 0
+  },
+  "quality_flags_raised": {},
+  "integrity": {
+    "phase7d_design_unchanged": true,
+    "phase7e_preregistration_unchanged": true,
+    "phase7f_stimulus_v1_preserved": true,
+    "public_benchmark_unchanged": true,
+    "turkish_dataset_unchanged": true,
+    "pre_review_snapshot": "results/dataset_audit/snapshots/phase7f_stimulus.v1.pre_qc.json"
+  },
+  "regenerated_by": "scripts/refresh_phase7g_rollups.py (F-03 remediation)",
+  "derivation_note": "Derived artifact: rebuilt from phase7g_blind_review.json and phase7g_human_qc.json. Those two files are the canonical sources; a validator cross-checks this file against them."
+}
