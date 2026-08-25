@@ -1,0 +1,32 @@
+{
+ "added": [
+  "benchmark/preflight.py",
+  "docs/phase7e_pre_evaluation_clarification.md",
+  "scripts/refresh_phase7g_rollups.py",
+  "tests/test_remediation_regressions.py"
+ ],
+ "removed": [],
+ "modified": [
+  ".gitignore",
+  "PROJECT_STATUS.md",
+  "README.md",
+  "benchmark/adapters/providers.py",
+  "benchmark/dry_run.py",
+  "benchmark/errors.py",
+  "benchmark/logging.py",
+  "benchmark/metrics.py",
+  "benchmark/runner.py",
+  "benchmark/smoke_test.py",
+  "docs/phase7e_researcher_review.md",
+  "docs/phase7f_stimulus_generation.md",
+  "docs/phase7g_human_qc.md",
+  "results/dataset_audit/phase7e_preregistration_hash.json",
+  "results/dataset_audit/phase7g_quality_summary.json",
+  "scripts/apply_phase7g_annotations.py",
+  "scripts/freeze_phase7e_preregistration.py",
+  "scripts/validate_phase7g_review.py",
+  "tests/test_phase7e_review.py",
+  "tests/test_phase7f_stimulus.py",
+  "tests/test_phase7g_qc.py"
+ ]
+}
