@@ -11,9 +11,19 @@ Bu tablo, aşağıdaki ayrıntılı bölümler arasında çelişki olması hâli
 | Phase 7C / 7C-REVIEW | SUPERSEDED | Phase 7D yeniden tasarımıyla geçersiz kılındı |
 | Phase 7D | COMPLETE | 50 research item tasarımı donduruldu |
 | Phase 7E | COMPLETE | 50/50 KEEP · 50 researcher-approved · REVISE 0 · REJECT 0 · PENDING 0 |
-| Phase 7F | COMPLETE | 50 research item · 171 koşul kaydı · İngilizce canonical final prompt'lar üretildi · yapısal/hash doğrulaması geçti · model değerlendirmesi yok |
-| **Phase 7G** | **INCOMPLETE** | İnsan inceleme altyapısı COMPLETE · **iki bağımsız kör rater zorunlu (R2 kararı)** · rater_a 1/50 (BLIND-001, kabul edilmiş) · rater_b 0/50 · ADJUDICATED 0/50 · KEEP 0 · REVISE 0 · REJECT 0 · PENDING 50 · researcher QC yok |
-| Phase 8 | NOT STARTED | Model/API erişimi ve Phase 7G'nin tamamlanması bekleniyor |
+| Phase 7F | COMPLETE | 50 research item · 171 koşul kaydı · İngilizce canonical final prompt'lar üretildi · yapısal/hash doğrulaması geçti |
+| **Phase 7G** | **INCOMPLETE** | İnsan inceleme ve Workbench altyapısı COMPLETE · **iki bağımsız kör rater zorunlu (R2 kararı)** · rater_a 1/50 · rater_b 0/50 · ADJUDICATED 0/50 · PENDING 50 |
+| **Phase 8** | **BLOCKED** | Kanonik Model Değerlendirmesi · Phase 7G tamamlanması ve GO/NO-GO gate bekleniyor (Bkz: `docs/ROADMAP.md`) |
+| **Phase 9** | **PENDING** | Yanıt Skorlama & Etiketleme · 3 Kademeli Hibrit Skorlama Mimarisi (Kural + Model Yargıç + %20 İnsan Audit) |
+| **Phase 10** | **PENDING** | Birincil İstatistiksel Analiz · Dondurulmuş SAP, Tabakalı Analiz (AM vs DU/NH) |
+| **Phase 11** | **PENDING** | Sağlamlık ve Falsifikasyon · "Within-D Cohort" ($n=21$) güç izolasyonu, tekil madde duyarlılığı |
+| **Phase 12** | **PENDING** | Çapraz Model Analizi · Bağlamsal kanıt işleme asimetrisi (meşru vs şüpheli) |
+| **Phase 13** | **PENDING** | Uzman İncelemesi · Yalnızca dış geçerlilik ve sınırlılıklar; geriye dönük ground-truth değişimi yasak |
+| **Phase 14** | **PENDING** | Nihai Araştırma Sentezi · Null sonuçlar dahil meşru bulgular; TR + EN yayın raporları |
+| **Phase 15** | **PENDING** | Tekrarlanabilirlik & Çıkış Denetimi · Raw data -> Rapor zincirinin bağımsız doğrulanması |
+| **Phase 16** | **PENDING** | Açık Kaynak Yayın · GitHub public release + Tehlikeli çıktılar için Responsible Redaction |
+
+Ayrıntılı metodolojik şartname ve kısıtlar için bkz: [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 Projede hâlâ **hiçbir** insan annotation'ı, uzman doğrulaması, ASR, refusal rate, latency ölçümü veya model/API değerlendirmesi bulunmamaktadır.
 
