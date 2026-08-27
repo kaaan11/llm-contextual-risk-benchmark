@@ -18,3 +18,4 @@ benchmark/runs/*
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.venv/

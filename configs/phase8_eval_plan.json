@@ -1,0 +1,55 @@
+{
+  "protocol_id": "LLM-CTX-PILOT-2026-01",
+  "protocol_version": "1.0.2",
+  "phase": "Phase 8",
+  "execution_mode": "dry_run_first_then_live",
+  "dataset_path": "dataset/pilot/multiturn/stimulus_dataset_v1.json",
+  "total_research_items": 50,
+  "total_condition_records": 171,
+  "generation_parameters": {
+    "temperature": 0.0,
+    "max_tokens": 1024,
+    "top_p": 1.0,
+    "seed": 42
+  },
+  "retry_policy": {
+    "max_attempts": 3,
+    "initial_backoff_s": 1.0,
+    "max_backoff_s": 8.0
+  },
+  "candidate_models": [
+    {
+      "provider": "openai",
+      "model_name": "gpt-4o",
+      "model_version": "2024-08-06",
+      "endpoint_env": "OPENAI_BASE_URL",
+      "api_key_env": "OPENAI_API_KEY"
+    },
+    {
+      "provider": "anthropic",
+      "model_name": "claude-3-5-sonnet-20241022",
+      "model_version": "20241022",
+      "endpoint_env": "ANTHROPIC_BASE_URL",
+      "api_key_env": "ANTHROPIC_API_KEY"
+    },
+    {
+      "provider": "openweight",
+      "model_name": "meta-llama/Meta-Llama-3-70B-Instruct",
+      "model_version": "v1",
+      "endpoint_env": "OPENWEIGHT_BASE_URL",
+      "api_key_env": "OPENWEIGHT_API_KEY"
+    }
+  ],
+  "analysis_strata": [
+    {
+      "stratum_name": "assistant_turn_shared",
+      "description": "Persistent ambiguity items (RI-AM-001..007) with byte-identical prior assistant turns",
+      "count": 7
+    },
+    {
+      "stratum_name": "assistant_turn_differing",
+      "description": "Dual-use, null-benign and null-highrisk items with differing prior assistant turns",
+      "count": 43
+    }
+  ]
+}

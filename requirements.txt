@@ -1,0 +1,4 @@
+# Core pilot benchmark relies exclusively on the Python standard library.
+# Optional provider libraries (for live Phase 8 execution):
+# openai>=1.0.0
+# anthropic>=0.18.0

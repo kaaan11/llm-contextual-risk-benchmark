@@ -67,6 +67,8 @@ class EvaluationResult:
     latency_ms: float | None
     refusal: RefusalDecision | None
     provider_call_latency_ms: float | None = None
+    pure_inference_latency_ms: float | None = None
+    retry_overhead_ms: float | None = None
     usage: Mapping[str, Any] = field(default_factory=dict)
     error: str | None = None
     input_turn_count: int = 0
@@ -89,6 +91,8 @@ class EvaluationResult:
             "request_id": self.request_id,
             "latency_ms": self.latency_ms,
             "provider_call_latency_ms": self.provider_call_latency_ms,
+            "pure_inference_latency_ms": self.pure_inference_latency_ms,
+            "retry_overhead_ms": self.retry_overhead_ms,
             "usage": dict(self.usage),
             "error": self.error,
             "input_turn_count": self.input_turn_count,

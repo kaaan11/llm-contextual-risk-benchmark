@@ -182,6 +182,73 @@ class BenchmarkFrameworkTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             percentile([1, 2], 1.1)
 
+    def test_pure_latency_and_retry_overhead_isolated(self):
+        from benchmark.errors import AdapterRequestError
+        from benchmark.retry import RetryPolicy
+
+        calls = 0
+
+        def flaking_generator(request):
+            nonlocal calls
+            calls += 1
+            if calls == 1:
+                raise AdapterRequestError("transient rate limit", status_code=429, retryable=True)
+            return AdapterResponse(text="recovered", model=ModelSpec("mock", "model", "0.1.0"), provider="mock")
+
+        adapter = MockAdapter()
+        adapter.generate = flaking_generator
+        logger = InMemoryResponseLogger()
+        runner = EvaluationRunner(
+            adapter,
+            metadata(),
+            logger,
+            retry_policy=RetryPolicy(max_attempts=2, initial_backoff_s=0.05),
+        )
+        case = EvaluationCase(
+            "sample-1",
+            "single_turn",
+            ("benign",),
+            ({"role": "user", "content": {"text": "hello"}},),
+        )
+        results = runner.run([case])
+        self.assertEqual(len(results), 1)
+        res = results[0]
+        self.assertEqual(res.status, "success")
+        self.assertEqual(res.attempts, 2)
+        self.assertIsNotNone(res.retry_overhead_ms)
+        self.assertGreaterEqual(res.retry_overhead_ms, 30.0)
+        self.assertIsNotNone(res.pure_inference_latency_ms)
+        self.assertLess(res.pure_inference_latency_ms, res.provider_call_latency_ms)
+        metrics = calculate_metrics(results)
+        self.assertIn("pure_inference_latency_ms", metrics)
+        self.assertIn("retry_overhead_ms", metrics)
+        self.assertEqual(metrics["retry_overhead_ms"]["n"], 1)
+        self.assertGreaterEqual(metrics["retry_overhead_ms"]["total_ms"], 30.0)
+
+    def test_stratified_by_assistant_stance(self):
+        from benchmark.metrics import classify_assistant_stance_stratum
+
+        self.assertEqual(classify_assistant_stance_stratum("RI-AM-001_A"), "assistant_turn_shared")
+        self.assertEqual(classify_assistant_stance_stratum("RI-DU-005_B"), "assistant_turn_differing")
+        self.assertEqual(classify_assistant_stance_stratum("RI-NH-002_C"), "assistant_turn_differing")
+        self.assertEqual(classify_assistant_stance_stratum("unknown_id"), "unspecified")
+
+        rows = [
+            {"sample_id": "RI-AM-001_B", "status": "success", "refusal": {"is_refusal": False}, "latency_ms": 10.0},
+            {"sample_id": "RI-AM-002_C", "status": "success", "refusal": {"is_refusal": True}, "latency_ms": 10.0},
+            {"sample_id": "RI-DU-001_B", "status": "success", "refusal": {"is_refusal": False}, "latency_ms": 10.0},
+            {"sample_id": "RI-DU-001_C", "status": "success", "refusal": {"is_refusal": True}, "latency_ms": 10.0},
+        ]
+        metrics = calculate_metrics(rows)
+        strata = metrics["stratified_by_assistant_stance"]
+        self.assertIn("assistant_turn_shared", strata)
+        self.assertIn("assistant_turn_differing", strata)
+        self.assertEqual(strata["assistant_turn_shared"]["n"], 2)
+        self.assertEqual(strata["assistant_turn_shared"]["refusals"], 1)
+        self.assertEqual(strata["assistant_turn_shared"]["refusal_rate"], 0.5)
+        self.assertEqual(strata["assistant_turn_differing"]["n"], 2)
+        self.assertEqual(strata["assistant_turn_differing"]["refusals"], 1)
+
     @staticmethod
     def _request(sample_id, provider="mock"):
         from benchmark.types import GenerationRequest
