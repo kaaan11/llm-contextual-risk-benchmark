@@ -1,0 +1,31 @@
+# E0 hashes — başlangıç (2026-09-09 UTC, HEAD 9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e)
+# Yöntem: salt okunur yeniden hesaplama; kanıt logs/04-composite.log, logs/05-stimulus.log, logs/06-qc-audit.log
+# Blind key için içerik/hash/mapping YOK; yalnız varlık (provenance-scope.md §6).
+
+HEAD=9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e
+BRANCH=master
+TRACKED_DIRTY=M .gitignore
+COMPOSITE_PROTOCOL_HASH=47ae3fed4117639ef2575135a6ca63f000f4fcc8c052c629355f6ccf4bbcfc6f
+PROTOCOL_FILE docs/phase7e_preregistration.md=7d46e0fba94a88beaa27a4c41efa209e3c89619b3f3dd5e96877997aa99bf87c
+PROTOCOL_FILE docs/phase7e_annotation_protocol.md=41c628b801a08d85e52d3f6fe79eb711e9e949b76ad29cdc425356fb742fefa4
+PROTOCOL_FILE docs/PHASE_7D_EXPERIMENTAL_DESIGN.md=e120652648bbec68cca3bed95ce924f0ce27f2f1cc2661334edea62f4fd23688
+PROTOCOL_FILE docs/PHASE_7D_DESIGN_TABLE.md=8bced7f9e42d0d2919192498f2e8e380aeeae820ed02f7cc0e9b7717e7bad366
+PROTOCOL_FILE docs/phase7e_pre_evaluation_clarification.md=4318f7564345a00ec92411e75a5ff537f5e7f24e25bc8259aea75b8769eb8c6d
+PROTOCOL_FILE results/dataset_audit/phase7e_design_snapshot.json=ce2afe131e27b1ed9ad1709cc784fdc97fc736b82153c7afd4a987530351ad56
+STIMULUS dataset/pilot/multiturn/stimulus_dataset_v1.json=2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077
+STIMULUS_ITEMS=50
+STIMULUS_CONDITIONS=171
+STIMULUS_FINAL_BYTE_EQUAL=50/50
+QC_BLIND_ITEMS=50
+QC_BLIND_PENDING=49
+QC_BLIND_PARTIAL_ONE_RATER=1
+QC_RATER_A_FILLED=1
+QC_RATER_B_FILLED=0
+QC_ADJUDICATED=0
+QC_DECISIONS total=50 pending=50 keep=0 revise=0 reject=0 researcher_qc_true=0
+AUDIT_HISTORY results/dataset_audit/phase7e_review_history.jsonl lines=51 sha256=e145afed133bb4f7995d0e1fffb6d169f51fbd29ce9e0b6edbd73c19cf3b866c
+AUDIT_HISTORY results/dataset_audit/phase7g_review_history.jsonl lines=5 sha256=23755e0f2a37db370f9a3532a3a7e495e0f71c33e75dbb73c9e7632b8a550a15
+REPORT_ZIP LCRB_Hakem_Incelemesi_Tam_Paket.zip=1c7c12ed51c2a23b2d4d7fd2bcd831338854e15c55303fc5ff5cb9c2ea4af917 bytes=85428
+REPORT_SOHBET Sohbet.md=4d687615f941d8dc2af722cb023ad70e982b57eebc5444ac922d274353676332 bytes=66243
+BLIND_KEY results/dataset_audit/phase7g_blind_key.json exists=true
+E0_SKELETON_AT_START=README.md,commands.jsonl,comparisons.md (NOT_STARTED)

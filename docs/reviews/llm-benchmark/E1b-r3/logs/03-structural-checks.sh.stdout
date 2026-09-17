@@ -1,0 +1,62 @@
+PASS schema version 0.4.0
+PASS status DRAFT/NOT EFFECTIVE
+PASS F5 layer B/pre
+PASS response_rating layer C/post
+PASS F5 slot lacks scoreable_view (R1)
+PASS F5 slot lacks unscorable_reason (R1)
+PASS F5 slot lacks F1 (R1)
+PASS F5 slot lacks F2 (R1)
+PASS F5 slot lacks F3 (R1)
+PASS F5 slot lacks F4 (R1)
+PASS F5 slot lacks response_action (R1)
+PASS F5 slot lacks harmful_capability (R1)
+PASS F5 slot lacks task_utility (R1)
+PASS F5 slot keeps handling
+PASS F5 slot keeps allowed_assistance
+PASS F5 slot keeps restricted_capability
+PASS F5 slot keeps clarification_sufficiency
+PASS F5 slot keeps context_reading_F6
+PASS F5 slot keeps reviewer_id
+PASS F5 slot keeps exposure_declaration
+PASS response_rating envelope C/post
+PASS C slot has reviewer_id
+PASS C slot has reviewer_role
+PASS C slot has timestamp
+PASS C slot has session_id
+PASS C slot has rubric_version
+PASS C slot has response_exposure
+PASS C slot has F1
+PASS C slot has F2
+PASS C slot has F3
+PASS C slot has F4
+PASS C slot has confidence
+PASS C slot has scoreable_view
+PASS C raw immutability
+PASS C slot lacks B-content handling
+PASS C slot lacks B-content allowed_assistance
+PASS C slot lacks B-content restricted_capability
+PASS C slot lacks B-content clarification_sufficiency
+PASS cross-layer ban B-side
+PASS cross-layer ban C-side
+PASS 6.2 applies on Layer-C envelope
+PASS two-explicit needs no adjudication
+PASS contested at F5 root outside resolved
+PASS contested researcher-only, null-independent
+PASS contested enum/disagreement separation
+PASS contested at root key, not a resolved field
+PASS contested in neither enum
+PASS F3 resolved ID+version intact
+PASS applicability rows == 12
+PASS six Layer-C rows
+PASS six Layer-B rows
+PASS applicability matrix complete
+PASS no human-label/corpus content 'probably_benign'
+PASS no human-label/corpus content 'probably_concerning'
+PASS no human-label/corpus content 'clearly_benign'
+PASS no human-label/corpus content 'clearly_concerning'
+PASS no human-label/corpus content 'BLIND-'
+PASS no human-label/corpus content 'RI-DU-'
+PASS no human-label/corpus content 'RI-AM-'
+PASS boundary case B-7T present
+PASS boundary case B-8T present
+STRUCTURAL: ALL PASS

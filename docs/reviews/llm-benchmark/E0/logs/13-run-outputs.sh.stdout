@@ -1,0 +1,23 @@
+11bbc6c29073efa8743d1f4ee73a83a5c0f4312da5e0682cda5ff65cbda64ecf  docs/reviews/llm-benchmark/E0/README.md
+66c0dd9a3749aa481b886ad6ca3eac506568235460d38adef1eae32924c77f2d  docs/reviews/llm-benchmark/E0/baseline.md
+ba8e20c5ce52051cb287a33235acd62ace6d863fd537aeade42787f258a34b5c  docs/reviews/llm-benchmark/E0/findings.md
+61758ec040e55fe49a38aad7694b0d210427378b18df6f4bf8f4d253e7180a5d  docs/reviews/llm-benchmark/E0/test-safety.md
+9c1fcb795d4fb20927463a80fe23ef76b241808eb7fe61083c8840f43fc78817  docs/reviews/llm-benchmark/E0/provenance-scope.md
+aa5e889a247c2fff1c69cbd2f143c6fd8cb0a2d5f17054e5febd039830514f61  docs/reviews/llm-benchmark/E0/comparisons.md
+23ce1c5b39dceb4a99c03509ae9d173379600ddcbac3485db9c309648e1e2ff4  docs/reviews/llm-benchmark/E0/hashes-start.txt
+e31c91e432bddd77cb9ed55935142f5c64e470bd13d376c602ad6cb58b863e33  docs/reviews/llm-benchmark/E0/hashes-end.txt
+ee17b582c9efc76ffc6f8b1db336ef3e846fbd87f78834650e1ef5ee5d9e19bb  docs/reviews/llm-benchmark/E0/delivery.diff
+---LOGS---
+708a5b85836c1a5561d2df7a5270a41bdf8bee67e6358c2ab2b1ac0388cf1efc  docs/reviews/llm-benchmark/E0/logs/01-git-head-status.sh.stdout
+b8ef849cf4ea4730a1e659068aa98e334a43e5de57846c7890c5b6d424c92a8e  docs/reviews/llm-benchmark/E0/logs/02-env.sh.stdout
+88f318d2c5fa15975cb9bc631c8b53fc812e854c10a425a22e10e0a808477410  docs/reviews/llm-benchmark/E0/logs/03-manifest.sh.stdout
+9fcd4ef6a8dfd04bc92f97de0c08b240a52e5e4db4b0cc6e2fb340830a2d94fc  docs/reviews/llm-benchmark/E0/logs/04-composite.sh.stdout
+40116d99a7d58e70aba35d82ed945ca8c09f6c1d251d13ecc607fd6aadc1d470  docs/reviews/llm-benchmark/E0/logs/05-stimulus.sh.stdout
+6cca9909220bdb28d25ca64c6952e43e45087b81acd6fdd469bcbb9489a9c9e5  docs/reviews/llm-benchmark/E0/logs/06-qc-audit.sh.stdout
+3176a1b42e09c2e556ff86b230a6705726698d82e06798863de740a75c2c081f  docs/reviews/llm-benchmark/E0/logs/07-cited-hashes.sh.stdout
+ee9a50ec7819c1e8bafe3783df8faa4dd853e5db58b743600793bf4f95c521d2  docs/reviews/llm-benchmark/E0/logs/08-assistant-strata.sh.stdout
+842a7a3c4c6f50644eceb2d8af9076e3922a4fbbf2f1607eed4c115fb3f14374  docs/reviews/llm-benchmark/E0/logs/09-rg-checks.sh.stdout
+884345140d22a2c460cc98ac4f6303a89ec13f257f96762cb54990ac821a76ee  docs/reviews/llm-benchmark/E0/logs/10-diff-check.sh.stdout
+59e01a6a2e836e4eb6f75c34a2eda64d0950de7f487bf4ee9e0c76428557f6dc  docs/reviews/llm-benchmark/E0/logs/11-link-check.sh.stdout
+3f46140f6219da85a713e722651cf7d5f444f43308799a65e38dd0abe435d699  docs/reviews/llm-benchmark/E0/logs/12-delivery-diff.sh.stdout
+2e1afab51f21809687ccb5dbd322a8a9a182ba939e5b45965be93d99030b093b  docs/reviews/llm-benchmark/E0/logs/13-run-outputs.sh.stdout

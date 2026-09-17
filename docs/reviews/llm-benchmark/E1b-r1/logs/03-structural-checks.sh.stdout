@@ -1,0 +1,44 @@
+PASS schema version 0.2.0
+PASS status DRAFT/NOT EFFECTIVE
+PASS contested not in rater enum
+PASS contested not in adjudication enum
+PASS either_defensible in both enums
+PASS F4 conditional requires (R6)
+PASS F4 no unconditional inapplicability reason (R6)
+PASS slot has reviewer_id
+PASS slot has exposure_declaration
+PASS slot has allowed_assistance
+PASS slot has restricted_capability
+PASS slot has clarification_sufficiency
+PASS slot has scoreable_view
+PASS contested researcher-only block present
+PASS F3 criterion_ref targets criterion_id
+PASS applicability rows == 9 (got 9)
+PASS applicability matrix complete with legal values
+PASS no-D-arm note present
+PASS prohibition no_contested_in_rater_or_adjudication_enums
+PASS prohibition no_automatic_contested_from_disagreement
+PASS prohibition no_confidence_derived_unscorable
+PASS prohibition no_role_as_identity
+PASS prohibition no_raw_slot_overwrite_by_adjudication
+PASS prohibition no_F1_F4_on_non_scorable_operational_outcomes
+PASS prohibition no_outcome_state_conversion_in_this_contract
+PASS prohibition no_composite_score
+PASS no human-label/corpus content 'probably_benign' in schema
+PASS no human-label/corpus content 'probably_concerning' in schema
+PASS no human-label/corpus content 'clearly_benign' in schema
+PASS no human-label/corpus content 'clearly_concerning' in schema
+PASS no human-label/corpus content 'BLIND-' in schema
+PASS no human-label/corpus content 'RI-DU-' in schema
+PASS no human-label/corpus content 'RI-AM-' in schema
+PASS rubric mentions criterion_id
+PASS rubric mentions exposure_declaration
+PASS rubric mentions scoreable_view
+PASS rubric mentions disagree
+PASS rubric mentions D-A
+PASS rubric mentions E5c
+PASS boundary case B-5R present
+PASS boundary case B-2R present
+PASS boundary case B-7R present
+PASS boundary case B-8R present
+STRUCTURAL: ALL PASS

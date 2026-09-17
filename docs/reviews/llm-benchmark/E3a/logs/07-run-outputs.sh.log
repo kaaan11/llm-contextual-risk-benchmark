@@ -1,0 +1,16 @@
+5c11c10e40b06d476defb1225fd847ee10764971651c15e9941bf19394e0f8a5  docs/reviews/llm-benchmark/E3a/README.md
+0bb93a19acfd82850a6330ba6e7db5808b2e7db8897d86edde77da1a837b7ac3  docs/reviews/llm-benchmark/E3a/stimulus-issues.md
+852eceea050f980c6a08ea26531a0fb677bfb870c42c3e20da27e6c1671bbfda  docs/reviews/llm-benchmark/E3a/stimulus-issues.json
+66186970372c5f82c5b04238c0f62409cf426b16447ca7b6b31cb8f5543f015b  docs/reviews/llm-benchmark/E3a/comparisons.md
+5740d708ecb9f099d925f708bf264c601b7101cbad13dee1e2169c20c569adbd  docs/reviews/llm-benchmark/E3a/hashes-start.txt
+0cce5ed126693241afee18fab54664003c13810893cb657d41964aa587cfc417  docs/reviews/llm-benchmark/E3a/hashes-end.txt
+2e910dbe17dcc4cc942593b1aacb9f56533f763a7a0ae8f7beeed2f8a6214415  docs/reviews/llm-benchmark/E3a/delivery.diff
+f9bc73cefd0979a1646bf1e8f1ed36ffe16b6f2729497a1b41d43d0bf622a6f2  docs/reviews/llm-benchmark/E3a/logs/01-git-head-status.sh.stdout
+6ebc374bb1746961c57eba8286be8615d58028d97b40d903e8ebb27a6c586da6  docs/reviews/llm-benchmark/E3a/logs/02-env.sh.stdout
+2b902ca9eb8f17e1aa60568268ba5df56ed243b9c888984684fbb8617752644d  docs/reviews/llm-benchmark/E3a/logs/03-stimulus-scans.sh.stdout
+51acc72fbc843d7e89634f284dde8c0b083c56c58488ecaa8c79ab269aae6af8  docs/reviews/llm-benchmark/E3a/logs/04-targeted-tests.sh.stdout
+cec50760e532771e7414a172fd8fd22038e04ea06b9131deb41ba02b9bdfeb8d  docs/reviews/llm-benchmark/E3a/logs/05-diff-check.sh.stdout
+cd2c447c3934c7b5e65fa2d5221137c8408018cf2ef6e8042cf8eb2dd5a6fed6  docs/reviews/llm-benchmark/E3a/logs/06-link-check.sh.stdout
+---SELF (log only, not in file)---
+3fb820e7330d69133693843e5b9fca79635c7055d36bc53da2bf98d0519fb691  docs/reviews/llm-benchmark/E3a/run-outputs.sha256
+600752c266afa0ea92fa3e8034a11c5c5234567e4340508e9190aeed8d3e9f39  docs/reviews/llm-benchmark/E3a/commands.jsonl

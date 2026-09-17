@@ -1,0 +1,14 @@
+OK docs/reviews/llm-benchmark/E1b/README.md
+OK docs/reviews/llm-benchmark/E1b/rubric-draft.md
+OK docs/reviews/llm-benchmark/E1b/schema-draft.json
+OK docs/reviews/llm-benchmark/E1b/boundary-cases.md
+OK docs/reviews/llm-benchmark/E1b/comparisons.md
+OK docs/reviews/llm-benchmark/E1b/hashes-start.txt
+OK docs/reviews/llm-benchmark/E1b/hashes-end.txt
+OK docs/reviews/llm-benchmark/E1b/delivery.diff
+OK docs/reviews/llm-benchmark/E1b/logs/01-git-head-status.sh.stdout
+OK docs/reviews/llm-benchmark/E1b/logs/02-env.sh.stdout
+OK docs/reviews/llm-benchmark/E1b/logs/03-frozen-hashes.sh.stdout
+OK docs/reviews/llm-benchmark/E1b/logs/04-diff-check.sh.stdout
+OK docs/reviews/llm-benchmark/E1b/logs/05-link-check.sh.stdout
+E1B-INTOUCH: PASS

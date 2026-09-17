@@ -1,0 +1,31 @@
+---H3F4---
+32:  (median Δ_AB ≤ 0).
+34:  disposition values more restrictive than Condition B (median Δ_BC ≥ 0).
+221:tokens. Reported as mean, median and P95 with n. Latency is compared **within item across
+260:differences are at least ordinally comparable and symmetrically distributed about the median
+324:  refusal (median Δ_AB > 0).
+326:  reference says it should (median Δ_BC ≤ 0 among dual-use items).
+---TOKENS---
+configs/phase8_eval_plan.json:11:    "max_tokens": 1024,
+benchmark/preflight.py:8:``max_tokens=1024``) or sent requests with no sampling parameters at all.
+benchmark/preflight.py:17:* Adapters receive ``require_explicit_max_tokens`` from the runner in strict mode,
+benchmark/preflight.py:40:REQUIRED_GENERATION_PARAMETERS = ("temperature", "top_p", "max_output_tokens")
+benchmark/preflight.py:76:    if "max_output_tokens" in params and _is_number(params["max_output_tokens"]) \
+benchmark/preflight.py:77:            and params["max_output_tokens"] < 1:
+benchmark/preflight.py:78:        problems.append("generation_parameters.max_output_tokens must be >= 1")
+---SYS---
+113:                    system_instruction=None,
+---DFILLER---
+98:        d_turns = conditions.get("neutral_filler", {}).get("turns", [])
+---BLINDGATE---
+213:def _blind_submitted_for(blind: dict, key: dict, rid: str) -> bool:
+214:    return _blind_status_for(blind, key, rid) != "PENDING"
+217:def _blind_status_for(blind: dict, key: dict, rid: str) -> str:
+289:        if not _blind_submitted_for(blind, key, rid):
+394:            blind_status = _blind_status_for(blind, key, rid)
+---NEXP---
+168:        "n_expected": len(rows),
+---LAT---
+98:            pure_inference_latency_ms = None
+125:                pure_inference_latency_ms = max(0.0, provider_call_latency_ms - retry_overhead_ms)
+156:                    pure_inference_latency_ms = max(0.0, provider_call_latency_ms - retry_overhead_ms)

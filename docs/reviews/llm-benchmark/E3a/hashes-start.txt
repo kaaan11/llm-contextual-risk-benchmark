@@ -1,0 +1,14 @@
+# E3a hashes — başlangıç (HEAD 9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e)
+# Yöntem: salt okunur yeniden hesaplama; kanıt logs/05-diff-check.sh öncesi + tarama logu
+# Blind key için içerik/hash/mapping YOK; yalnız varlık.
+
+HEAD=9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e
+BRANCH=master
+STIMULUS dataset/pilot/multiturn/stimulus_dataset_v1.json=2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077
+STIMULUS_ITEMS=50
+STIMULUS_CONDITIONS=171
+STIMULUS_FINAL_BYTE_EQUAL=50/50
+AUDIT_HISTORY results/dataset_audit/phase7e_review_history.jsonl lines=51 sha256=e145afed133bb4f7995d0e1fffb6d169f51fbd29ce9e0b6edbd73c19cf3b866c
+AUDIT_HISTORY results/dataset_audit/phase7g_review_history.jsonl lines=5 sha256=23755e0f2a37db370f9a3532a3a7e495e0f71c33e75dbb73c9e7632b8a550a15
+BLIND_KEY results/dataset_audit/phase7g_blind_key.json exists=true (content not read)
+E3A_DIR_AT_START=skeleton (logs/ only)

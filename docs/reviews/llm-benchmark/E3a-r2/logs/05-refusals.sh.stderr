@@ -1,0 +1,3 @@
+refusing to write: output == input (/home/kaan/AI_Search/dataset/pilot/multiturn/stimulus_dataset_v1.json)
+refusing to write into the repository: docs/phase7e_preregistration.md (allowlist: ['docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json'])
+refusing to write into the repository: tests/test_phase7f_stimulus.py (allowlist: ['docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json'])

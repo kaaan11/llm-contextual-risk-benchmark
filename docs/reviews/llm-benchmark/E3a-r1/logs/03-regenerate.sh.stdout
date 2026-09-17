@@ -1,0 +1,11 @@
+TMPD=/tmp/tmp.Peb0MgTXIc
+items=50 conditions=171 findings=19 shared=7
+ finding types: Counter({'T-XCOND': 7, 'T-REF': 6, 'T-DHINT-LEX': 5, 'T-DHINT-HUMAN': 1})
+ wrote /tmp/tmp.Peb0MgTXIc/regen.json
+items=50 conditions=171 findings=19 shared=7
+ finding types: Counter({'T-XCOND': 7, 'T-REF': 6, 'T-DHINT-LEX': 5, 'T-DHINT-HUMAN': 1})
+ wrote docs/reviews/llm-benchmark/E3a-r1/stimulus-issues.json
+BYTE-EQUAL: temp regen == delivered JSON
+R-REF rows: 6
+R-REF hashes independently verified from frozen stimulus: 6/6
+counts: {'items': 50, 'conditions': 171, 'assistant_shared': 7, 'assistant_differing': 43}

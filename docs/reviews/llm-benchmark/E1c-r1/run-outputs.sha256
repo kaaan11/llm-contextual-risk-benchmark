@@ -1,0 +1,14 @@
+257ae43c95591fb56d57c838221cb99087d83eabac13a41ea9eab0aed1970908  docs/reviews/llm-benchmark/E1c-r1/README.md
+2b5e5662f8635653d195070337420ba949112aa06e43d942f2064fb50f591e72  docs/reviews/llm-benchmark/E1c-r1/estimand-contract.md
+21293a3a7e7bd1e8e8494754ba9344da1eaaa43a41058f11050257c2f0de92a1  docs/reviews/llm-benchmark/E1c-r1/amendment-delta.md
+7846aae37b2b5ebcae8100bd56452fc4245ca79282948cb55dbad6aba7e7c8b8  docs/reviews/llm-benchmark/E1c-r1/legacy-delta.md
+870489374bc3ad221af23dcfa10965af6539da7586e937d866228bf5884b40cf  docs/reviews/llm-benchmark/E1c-r1/revision-map.md
+cfd7d47acb973e175f95ebaa56336df4fab7c8be36a6d3adde187fd7b832aebc  docs/reviews/llm-benchmark/E1c-r1/comparisons.md
+fd15ac21c1027d0a5640ea172bb08f80b542d25db1ac5eabde3afae9a6465b8f  docs/reviews/llm-benchmark/E1c-r1/hashes-start.txt
+e7cdef75a9ea77327083717d9ff543bddf85d9360995b8045bcd98305cd71c6d  docs/reviews/llm-benchmark/E1c-r1/hashes-end.txt
+ee17b582c9efc76ffc6f8b1db336ef3e846fbd87f78834650e1ef5ee5d9e19bb  docs/reviews/llm-benchmark/E1c-r1/delivery.diff
+25d82201dddb25550009856069371ebb07c4e3dd152eec35b3bcfab56c1340da  docs/reviews/llm-benchmark/E1c-r1/logs/01-git-head-status.sh.stdout
+beb11c3ec03d4f63e1cf2f528e6030e71202863910b432bcc53beda10fd39840  docs/reviews/llm-benchmark/E1c-r1/logs/02-env.sh.stdout
+b18823d6f63fedaf209fe591fbd1212895f9f1220d4a62b6a5bc013f915f768a  docs/reviews/llm-benchmark/E1c-r1/logs/03-math-frozen.sh.stdout
+b1c7af0300040c77604f6ee3215ce5345cdbbe1ca76bafd2d5ad59e8c0f9ef1d  docs/reviews/llm-benchmark/E1c-r1/logs/04-diff-check.sh.stdout
+9951dd609ab904cb305732372a0c7789505a7bf232e689b9fb35f11f848ebea8  docs/reviews/llm-benchmark/E1c-r1/logs/05-link-check.sh.stdout

@@ -22,9 +22,13 @@ from scripts.apply_phase7g_annotations import (
     BLIND,
     KEY,
     QC,
-    _blind_status_for,
+    QCError,
     _load,
     append_history,
+    blind_gate_for,
+    blind_item_for,
+    category_for,
+    keep_eligibility,
     record_decision,
     snapshot,
 )
@@ -68,7 +72,15 @@ def run_decide_wizard(
             break
 
         rid = item["research_item_id"]
-        blind_status = _blind_status_for(blind, key, rid)
+        try:
+            blind_status, gate_result = blind_gate_for(blind, key, rid)
+            blind_item = blind_item_for(blind, key, rid)
+            category = category_for(key, rid)
+        except QCError as exc:
+            print(f"[{idx}/{total}] ARAŞTIRMA MADDESİ: {rid}")
+            print(f"  ⚠️  Kör kayıt bulunamadı ({exc}); karar için uygun değildir.")
+            continue
+        gate_flag = (blind_item or {}).get("gate_flag")
         ctx_status = item.get("context_review", {}).get("status")
         safe_status = item.get("safety_review", {}).get("safety_status")
         nat_status = item.get("naturalness_review", {}).get("naturalness")
@@ -77,20 +89,19 @@ def run_decide_wizard(
         print("\n" + "─" * 72)
         print(f"[{idx}/{total}] ARAŞTIRMA MADDESİ: {rid}")
         print(f"  • Kör İnceleme Durumu: {blind_status}")
+        print(f"  • Kör Kapı Sonucu:     {gate_result}"
+              + (f" ({gate_flag})" if gate_flag else ""))
         print(f"  • Bağlam İncelemesi:   {ctx_status}")
         print(f"  • Güvenlik Durumu:     {safe_status}")
         print(f"  • Doğallık Derecesi:   {nat_status}")
         print(f"  • Yapısal Doğrulama:   {'GEÇTİ' if struct_pass else 'BAŞARISIZ'}")
 
-        eligible_for_keep = (
-            blind_status == "ADJUDICATED"
-            and ctx_status == "COMPLETE"
-            and safe_status == "PASS"
-            and struct_pass is True
-        )
+        eligible_for_keep, _reasons = keep_eligibility(
+            item, blind_item, category)
 
         if not eligible_for_keep:
             print("  ⚠️  Bu madde henüz KEEP kararı için uygun değildir (ön koşullar eksik).")
+            print(f"      Eksikler: {', '.join(_reasons)}")
             print("      Yalnızca REVISE veya REJECT kararı verilebilir.")
 
         dec_in = None

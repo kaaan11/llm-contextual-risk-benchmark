@@ -1,0 +1,19 @@
+1c7c12ed51c2a23b2d4d7fd2bcd831338854e15c55303fc5ff5cb9c2ea4af917  /home/kaan/GPT-Pro/reports/LLM_Benchmark/LCRB_Hakem_Incelemesi_Tam_Paket.zip
+4d687615f941d8dc2af722cb023ad70e982b57eebc5444ac922d274353676332  /home/kaan/GPT-Pro/reports/LLM_Benchmark/Sohbet.md
+---TMP---
+530f451010607379bb05b2355d1589f4d8137e0268aec0ee27b737255371c7ab  /tmp/llm-benchmark-review-20260909/LCRB_Bilimsel_Hakem_Raporu.md
+343448ce3ed0e47686955301678e9a7f9f11824b869d1446c622533b149caecf  /tmp/llm-benchmark-review-20260909/LCRB_Kanit_Eki.md
+9c117226ac83a21af576dd46a2010ced5daac422d98206737bb72f24d7699e42  /tmp/llm-benchmark-review-20260909/OKU_BENI.md
+3b589fb051c5f39fd409374a0d8f41d049af1d2e82458976ce17b0c3d55325d2  /tmp/llm-benchmark-review-20260909/TESLIM_MANIFEST.json
+5d8d4cc93acb781d29b94b6372e7a8c572a0fd026946693c6d5c153e4ef746e4  /tmp/llm-benchmark-review-20260909/contract_negative_tests.json
+b524097c27268e73578cfafd3556da5c3cb2b6311d09cb2d417152a574a7d08c  /tmp/llm-benchmark-review-20260909/prospective_sensitivity.json
+6aa701f3546f7b1981cf76c2925ea2f673c56414f1f878fd1a2b72e21e538cce  /tmp/llm-benchmark-review-20260909/prospective_sensitivity.py
+203e8eb4fe02a1f5f6e1243a3a36ac10fb24155394cdc438d5522de37267a840  /tmp/llm-benchmark-review-20260909/verify_contract.py
+---VERIFY---
+LCRB_Bilimsel_Hakem_Raporu.md OK
+LCRB_Kanit_Eki.md OK
+OKU_BENI.md OK
+contract_negative_tests.json OK
+prospective_sensitivity.json OK
+prospective_sensitivity.py OK
+verify_contract.py OK

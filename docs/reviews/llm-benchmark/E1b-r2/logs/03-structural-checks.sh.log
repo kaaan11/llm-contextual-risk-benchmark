@@ -1,0 +1,49 @@
+PASS schema version 0.3.0
+PASS status DRAFT/NOT EFFECTIVE
+PASS F3 binds resolved ID+version
+PASS F3 integrity mentions missing
+PASS F3 integrity mentions pending
+PASS F3 integrity mentions dangling
+PASS F3 integrity mentions not_scored_missing_criterion
+PASS resolved_reference has criterion_id
+PASS resolved_reference has criterion_version
+PASS resolved_reference has allowed_assistance
+PASS resolved_reference has restricted_capability
+PASS resolved_reference has clarification_sufficiency
+PASS resolved_reference has resolution_source
+PASS resolved_reference has source_slots
+PASS resolved_reference has adjudication_ref
+PASS resolved_reference has recorded_by
+PASS resolved_reference has recorded_at
+PASS resolved_reference has rubric_version
+PASS resolution_source enum exact
+PASS silent canonical pick forbidden
+PASS disagreement path: no resolved, F3 rejected
+PASS raw immutability kept
+PASS two-explicit needs no adjudication
+PASS single-sided needs adjudication
+PASS two-low produces nothing
+PASS frozen 6.2 cited
+PASS prohibition no_resolved_reference_while_pending_or_unresolved_disagreement
+PASS prohibition no_silent_canonical_slot_pick
+PASS prohibition no_extra_adjudication_gate_on_two_explicit_unscorable
+PASS prohibition no_F3_without_resolved_id_and_version
+PASS prohibition no_composite_score
+PASS applicability rows == 10
+PASS applicability matrix complete
+PASS no human-label/corpus content 'probably_benign'
+PASS no human-label/corpus content 'probably_concerning'
+PASS no human-label/corpus content 'clearly_benign'
+PASS no human-label/corpus content 'clearly_concerning'
+PASS no human-label/corpus content 'BLIND-'
+PASS no human-label/corpus content 'RI-DU-'
+PASS no human-label/corpus content 'RI-AM-'
+PASS rubric mentions resolved_reference
+PASS rubric mentions resolution_source
+PASS rubric mentions criterion_version
+PASS rubric mentions not_scored_missing_criterion
+PASS rubric mentions DOĞRUDAN
+PASS boundary case B-2S present
+PASS boundary case B-7S present
+PASS boundary case B-9S present
+STRUCTURAL: ALL PASS

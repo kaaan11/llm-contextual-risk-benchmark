@@ -1,0 +1,10 @@
+composite: 47ae3fed4117639ef2575135a6ca63f000f4fcc8c052c629355f6ccf4bbcfc6f match: True
+2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077  dataset/pilot/multiturn/stimulus_dataset_v1.json
+items: 50 conditions: 171
+results/dataset_audit/phase7e_review_history.jsonl 51 e145afed133bb4f7995d0e1fffb6d169f51fbd29ce9e0b6edbd73c19cf3b866c
+results/dataset_audit/phase7g_review_history.jsonl 5 23755e0f2a37db370f9a3532a3a7e495e0f71c33e75dbb73c9e7632b8a550a15
+---GATE-CONFORMANCE---
+scripts/apply_phase7g_annotations.py:12
+scripts/validate_phase7g_review.py:3
+scripts/review_context.py:2
+scripts/decide_phase7g.py:2

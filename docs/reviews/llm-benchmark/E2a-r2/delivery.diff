@@ -1,0 +1,646 @@
+diff --git a/scripts/apply_phase7g_annotations.py b/scripts/apply_phase7g_annotations.py
+index 73debfb..d2894c3 100644
+--- a/scripts/apply_phase7g_annotations.py
++++ b/scripts/apply_phase7g_annotations.py
+@@ -32,6 +32,8 @@ Performs no network access and calls no model API.
+ from __future__ import annotations
+ 
+ import argparse
++import copy
++import functools
+ import json
+ import shutil
+ import sys
+@@ -65,6 +67,176 @@ class QCError(RuntimeError):
+     pass
+ 
+ 
++# --- Fail-closed eligibility (E2a) -------------------------------------------
++# Single shared gate used by the record API, the CLI wizards and the validator.
++# Context eligibility requires a COMPLETE two-rater blind record: ADJUDICATED
++# status (two independent ratings that agree, or a recorded adjudication),
++# with reviewer provenance on both slots. PARTIAL_ONE_RATER, PENDING and
++# unresolved disagreement are refused. A blind gate_result of FAIL additionally
++# refuses KEEP (frozen "never waived" rule); it never blocks context review.
++# Different reviewer IDs are a process control, never proof of cognitive
++# independence (see the two-rater mandate note in docs/phase7g_human_qc.md).
++
++CONTEXT_ELIGIBLE_STATUS = "ADJUDICATED"
++
++
++def _slot_proven(blind_item: dict, rater: str) -> bool:
++    # A slot proves a human rating only with a filled, persistent reviewer
++    # identity. A shared/generic reviewer_role alone proves nothing about who
++    # rated, so role-only slots fail closed (E2a-R1).
++    slot = blind_item.get(rater, {}) or {}
++    return bool(slot.get("isolated_prompt_valence_observed")
++                and slot.get("reviewer_id")
++                and slot.get("annotated_at"))
++
++
++def blind_item_eligible_for_context(blind_item: dict) -> tuple[bool, str]:
++    """Fail-closed context gate for one blind-packet item.
++
++    Returns (True, reason) only for a complete two-rater record, else
++    (False, machine-readable reason). Pure function: no I/O, no mutation.
++    """
++    status = blind_item.get("annotation_status")
++    if status is None or status == "PENDING":
++        return False, "blind isolated-prompt review is PENDING"
++    if status != CONTEXT_ELIGIBLE_STATUS:
++        return (False, f"blind isolated-prompt review is {status}, not "
++                       f"{CONTEXT_ELIGIBLE_STATUS} (two-rater mandate)")
++    if not (_slot_proven(blind_item, "rater_a")
++            and _slot_proven(blind_item, "rater_b")):
++        return False, ("blind provenance incomplete (both rater slots need "
++                       "a valence, a filled reviewer identity and a timestamp)")
++    if not blind_item.get("adjudicated_valence"):
++        return False, "blind adjudication missing"
++    a = blind_item["rater_a"].get("isolated_prompt_valence_observed")
++    b = blind_item["rater_b"].get("isolated_prompt_valence_observed")
++    ida = blind_item["rater_a"].get("reviewer_id")
++    idb = blind_item["rater_b"].get("reviewer_id")
++    if ida == idb:
++        return False, ("same reviewer_id on both rater slots — two different "
++                       "human identities required")
++    if a == b:
++        return True, "ADJUDICATED by rater agreement"
++    adjudicator = blind_item.get("adjudicated_by") or {}
++    if adjudicator.get("reviewer_id") or adjudicator.get("reviewer_role"):
++        if not blind_item.get("adjudication_rationale"):
++            return False, "blind adjudication rationale missing"
++        return True, "ADJUDICATED by recorded adjudication"
++    return False, "blind disagreement without recorded adjudication"
++
++
++def category_for(key: dict, rid: str) -> str | None:
++    """Design category for a research item, or None when unmapped."""
++    return next((m.get("category") for m in key.get("mapping", [])
++                 if m.get("research_item_id") == rid), None)
++
++
++def keep_gate_blockers(blind_item: dict | None,
++                       category: str | None) -> list[str]:
++    """Full-evidence KEEP bound on blind grounds. Empty == gate passes.
++
++    Verifies the record itself, never just the status field: two proven
++    rater slots with different persistent identities, agreement or recorded
++    adjudication, and a gate result that is present, known and consistent
++    with evaluate_gate(adjudicated_valence, category). KEEP additionally
++    requires the result to be PASS or REVIEW; FAIL, missing, unknown and
++    mismatched gates are refused fail-closed. Pure function.
++    """
++    if not isinstance(blind_item, dict):
++        return ["blind_isolated_prompt_review"]
++    eligible, reason = blind_item_eligible_for_context(blind_item)
++    if not eligible:
++        status = blind_item.get("annotation_status")
++        if status is None or status == "PENDING":
++            return ["blind_isolated_prompt_review"]
++        return [f"two-rater mandate: blind status {status} is not "
++                f"{CONTEXT_ELIGIBLE_STATUS} ({reason})"]
++    gate = blind_item.get("gate_result")
++    valence = blind_item.get("adjudicated_valence")
++    if not valence:
++        return ["isolated gate result missing"]
++    if category not in GATE_TARGET:
++        return ["isolated gate category unknown"]
++    expected, _flag = evaluate_gate(category, valence)
++    if gate is None:
++        return ["isolated gate result missing"]
++    if gate not in ("PASS", "REVIEW", "FAIL"):
++        return [f"isolated gate result unknown: {gate!r}"]
++    if gate != expected:
++        return [f"isolated gate mismatch: stored {gate} != "
++                f"recomputed {expected}"]
++    if gate == "FAIL":
++        return ["isolated gate FAIL is never waived"]
++    return []
++
++
++def keep_eligibility(qc_item: dict, blind_item: dict | None,
++                     category: str | None) -> tuple[bool, list[str]]:
++    """Shared KEEP-eligibility bound for CLI display and gating.
++
++    Verifies record evidence (never just status fields): the full blind gate
++    via keep_gate_blockers plus completed reviews, structural verification
++    and a non-FAIL safety review. Pure function: no I/O, no mutation.
++    Review sections are read by status; a missing section counts as incomplete.
++    """
++    reasons: list[str] = list(keep_gate_blockers(blind_item, category))
++    for section in ("context_review", "safety_review", "naturalness_review"):
++        if (qc_item.get(section, {}) or {}).get("status") != "COMPLETE":
++            reasons.append(f"incomplete_{section}")
++    if not (qc_item.get("structural_verification", {}) or {}).get("passes"):
++        reasons.append("structural_verification_failed")
++    if ((qc_item.get("safety_review", {}) or {}).get("safety_status")
++            == "FAIL"):
++        reasons.append("safety_status_FAIL")
++    return (not reasons, reasons)
++
++
++def blind_item_for(blind: dict, key: dict, rid: str) -> dict:
++    """Fail-closed blind-item lookup. Raises QCError on unknown mapping."""
++    bid = next((m.get("blind_id") for m in key.get("mapping", [])
++                if m.get("research_item_id") == rid), None)
++    if bid is None:
++        raise QCError(f"unknown research_item_id {rid}")
++    for item in blind.get("items", []):
++        if item.get("blind_id") == bid:
++            return item
++    raise QCError(f"unknown research_item_id {rid}")
++
++
++def blind_gate_for(blind: dict, key: dict,
++                   rid: str) -> tuple[str | None, str | None]:
++    """(annotation_status, gate_result) for a research item. Pure lookup."""
++    item = blind_item_for(blind, key, rid)
++    return item.get("annotation_status"), item.get("gate_result")
++
++
++def _atomic(fn):
++    """Restore all mutable inputs when the operation is refused.
++
++    Writers mutate caller-owned dicts while applying a batch. A refusal
++    (QCError or any unexpected exception) must leave input objects, files,
++    snapshots and history unchanged; files/snapshots/history are only
++    touched by callers after success, so restoring the in-memory inputs
++    here makes the refusal total. The exception is always re-raised.
++    """
++    @functools.wraps(fn)
++    def wrapper(*args, **kwargs):
++        backups = [(a, copy.deepcopy(a)) if isinstance(a, (dict, list))
++                   else (a, None) for a in args]
++        try:
++            return fn(*args, **kwargs)
++        except Exception:
++            for original, backup in backups:
++                if isinstance(original, dict):
++                    original.clear()
++                    original.update(backup)
++                elif isinstance(original, list):
++                    original.clear()
++                    original.extend(backup)
++            raise
++    return wrapper
++
++
+ def _load(p: Path) -> dict:
+     return json.loads(p.read_text(encoding="utf-8"))
+ 
+@@ -94,6 +266,7 @@ def evaluate_gate(category: str, valence: str) -> tuple[str, str | None]:
+     return "REVIEW", "ISOLATED_VALENCE_GATE_REVIEW"
+ 
+ 
++@_atomic
+ def record_blind(blind: dict, key: dict, entries: list[dict],
+                  reviewer_id, reviewer_role, timestamp) -> list[dict]:
+     _require_reviewer(reviewer_id, reviewer_role)
+@@ -211,6 +384,8 @@ def refresh_blind_stats(blind: dict) -> None:
+ 
+ 
+ def _blind_submitted_for(blind: dict, key: dict, rid: str) -> bool:
++    # Historical submitted-check (any non-PENDING status). NOT sufficient for
++    # context eligibility; gating must use blind_item_eligible_for_context.
+     return _blind_status_for(blind, key, rid) != "PENDING"
+ 
+ 
+@@ -220,6 +395,7 @@ def _blind_status_for(blind: dict, key: dict, rid: str) -> str:
+     return item["annotation_status"]
+ 
+ 
++@_atomic
+ def record_adjudication(blind: dict, key: dict, entries: list[dict],
+                         reviewer_id, reviewer_role, timestamp) -> list[dict]:
+     """Resolve a recorded two-rater disagreement (annotation protocol section 4.3).
+@@ -275,9 +451,10 @@ def record_adjudication(blind: dict, key: dict, entries: list[dict],
+     return events
+ 
+ 
++@_atomic
+ def record_context(qc: dict, blind: dict, key: dict, payloads: list[dict],
+                    reviewer_id, reviewer_role, timestamp) -> list[dict]:
+-    """Steps 3-6. Refused until the item's blind annotation exists."""
++    """Steps 3-6. Refused until the item's blind record is ADJUDICATED."""
+     _require_reviewer(reviewer_id, reviewer_role)
+     by_id = {i["research_item_id"]: i for i in qc["items"]}
+     events = []
+@@ -286,11 +463,14 @@ def record_context(qc: dict, blind: dict, key: dict, payloads: list[dict],
+         rid = p["research_item_id"]
+         if rid not in by_id:
+             raise QCError(f"unknown research_item_id {rid}")
+-        if not _blind_submitted_for(blind, key, rid):
++        eligible, reason = blind_item_eligible_for_context(
++            blind_item_for(blind, key, rid))
++        if not eligible:
+             raise QCError(
+-                f"{rid}: blind isolated-prompt annotation has not been submitted. "
+-                f"Revealing B/C/D context first would break the blind ordering "
+-                f"(phase brief section 19). Refused.")
++                f"{rid}: {reason}. Revealing B/C/D context requires two "
++                f"independent blind ratings with agreement or a recorded "
++                f"adjudication (status ADJUDICATED); revealing it first would "
++                f"break the blind ordering (phase brief section 19). Refused.")
+ 
+         item = by_id[rid]
+         for section, values in (("context_relevance", p.get("context_relevance", {})),
+@@ -362,6 +542,7 @@ def recompute_flags(item: dict) -> None:
+     item["quality_flags"] = sorted(flags)
+ 
+ 
++@_atomic
+ def record_decision(qc: dict, blind: dict, key: dict, decisions: list[dict],
+                     reviewer_id, reviewer_role, timestamp) -> list[dict]:
+     _require_reviewer(reviewer_id, reviewer_role)
+@@ -391,15 +572,28 @@ def record_decision(qc: dict, blind: dict, key: dict, decisions: list[dict],
+                 missing.append("safety_review")
+             if item["naturalness_review"]["status"] != "COMPLETE":
+                 missing.append("naturalness_review")
+-            blind_status = _blind_status_for(blind, key, rid)
+-            if blind_status == "PENDING":
++            blind_status, _gate_result = blind_gate_for(blind, key, rid)
++            if blind_status == "PENDING" or blind_status is None:
+                 missing.append("blind_isolated_prompt_review")
+-            elif blind_status != "ADJUDICATED":
+-                raise QCError(
+-                    f"{rid}: two-rater mandate — the blind isolated-prompt annotation is "
+-                    f"{blind_status}, not ADJUDICATED. KEEP requires two independent blind "
+-                    f"ratings that agree, or a recorded adjudication of their disagreement. "
+-                    f"Refused.")
++            else:
++                gate_blockers = keep_gate_blockers(
++                    blind_item_for(blind, key, rid), category_for(key, rid))
++                for blocker in gate_blockers:
++                    if blocker == "isolated gate FAIL is never waived":
++                        raise QCError(
++                            f"{rid}: isolated blind gate is FAIL — a FAIL is "
++                            f"never waived (annotation protocol section 2.4). "
++                            f"KEEP refused.")
++                    if blocker.startswith("two-rater mandate"):
++                        raise QCError(
++                            f"{rid}: two-rater mandate — the blind isolated-prompt "
++                            f"annotation is {blind_status}, not ADJUDICATED. KEEP "
++                            f"requires two independent blind ratings that agree, "
++                            f"or a recorded adjudication of their disagreement. "
++                            f"Refused.")
++                    raise QCError(
++                        f"{rid}: blind gate {blocker}. KEEP requires a present, "
++                        f"known and consistent PASS or REVIEW gate. Refused.")
+             if not item["structural_verification"]["passes"]:
+                 raise QCError(f"{rid}: CRITICAL_STRUCTURAL_FAIL — cannot be approved")
+             if item["safety_review"]["safety_status"] == "FAIL":
+diff --git a/scripts/decide_phase7g.py b/scripts/decide_phase7g.py
+index ee5efc0..3119a48 100644
+--- a/scripts/decide_phase7g.py
++++ b/scripts/decide_phase7g.py
+@@ -22,9 +22,13 @@ from scripts.apply_phase7g_annotations import (
+     BLIND,
+     KEY,
+     QC,
+-    _blind_status_for,
++    QCError,
+     _load,
+     append_history,
++    blind_gate_for,
++    blind_item_for,
++    category_for,
++    keep_eligibility,
+     record_decision,
+     snapshot,
+ )
+@@ -68,7 +72,15 @@ def run_decide_wizard(
+             break
+ 
+         rid = item["research_item_id"]
+-        blind_status = _blind_status_for(blind, key, rid)
++        try:
++            blind_status, gate_result = blind_gate_for(blind, key, rid)
++            blind_item = blind_item_for(blind, key, rid)
++            category = category_for(key, rid)
++        except QCError as exc:
++            print(f"[{idx}/{total}] ARAŞTIRMA MADDESİ: {rid}")
++            print(f"  ⚠️  Kör kayıt bulunamadı ({exc}); karar için uygun değildir.")
++            continue
++        gate_flag = (blind_item or {}).get("gate_flag")
+         ctx_status = item.get("context_review", {}).get("status")
+         safe_status = item.get("safety_review", {}).get("safety_status")
+         nat_status = item.get("naturalness_review", {}).get("naturalness")
+@@ -77,20 +89,19 @@ def run_decide_wizard(
+         print("\n" + "─" * 72)
+         print(f"[{idx}/{total}] ARAŞTIRMA MADDESİ: {rid}")
+         print(f"  • Kör İnceleme Durumu: {blind_status}")
++        print(f"  • Kör Kapı Sonucu:     {gate_result}"
++              + (f" ({gate_flag})" if gate_flag else ""))
+         print(f"  • Bağlam İncelemesi:   {ctx_status}")
+         print(f"  • Güvenlik Durumu:     {safe_status}")
+         print(f"  • Doğallık Derecesi:   {nat_status}")
+         print(f"  • Yapısal Doğrulama:   {'GEÇTİ' if struct_pass else 'BAŞARISIZ'}")
+ 
+-        eligible_for_keep = (
+-            blind_status == "ADJUDICATED"
+-            and ctx_status == "COMPLETE"
+-            and safe_status == "PASS"
+-            and struct_pass is True
+-        )
++        eligible_for_keep, _reasons = keep_eligibility(
++            item, blind_item, category)
+ 
+         if not eligible_for_keep:
+             print("  ⚠️  Bu madde henüz KEEP kararı için uygun değildir (ön koşullar eksik).")
++            print(f"      Eksikler: {', '.join(_reasons)}")
+             print("      Yalnızca REVISE veya REJECT kararı verilebilir.")
+ 
+         dec_in = None
+diff --git a/scripts/review_context.py b/scripts/review_context.py
+index bc2bfe1..c20d8c3 100644
+--- a/scripts/review_context.py
++++ b/scripts/review_context.py
+@@ -22,9 +22,11 @@ from scripts.apply_phase7g_annotations import (
+     BLIND,
+     KEY,
+     QC,
+-    _blind_submitted_for,
++    QCError,
+     _load,
+     append_history,
++    blind_item_eligible_for_context,
++    blind_item_for,
+     record_context,
+     snapshot,
+ )
+@@ -39,11 +41,21 @@ def get_stimuli_map() -> dict[str, dict]:
+ 
+ 
+ def get_pending_context_items(qc: dict, blind: dict, key: dict) -> list[dict]:
++    """Items whose blind record is ADJUDICATED but whose context review is open.
++
++    Same fail-closed bound as the record API (record_context): single-rater,
++    pending and unresolved records are never listed. Items with a broken blind
++    mapping are skipped here; the validator flags them separately.
++    """
+     pending = []
+     for item in qc.get("items", []):
+         rid = item["research_item_id"]
+-        # Must have blind submitted first
+-        if _blind_submitted_for(blind, key, rid):
++        try:
++            blind_item = blind_item_for(blind, key, rid)
++        except QCError:
++            continue
++        eligible, _ = blind_item_eligible_for_context(blind_item)
++        if eligible:
+             if item.get("context_review", {}).get("status") != "COMPLETE":
+                 pending.append(item)
+     return pending
+diff --git a/scripts/validate_phase7g_review.py b/scripts/validate_phase7g_review.py
+index 9d7dcbd..ef403fd 100644
+--- a/scripts/validate_phase7g_review.py
++++ b/scripts/validate_phase7g_review.py
+@@ -14,6 +14,17 @@ import json
+ import sys
+ from pathlib import Path
+ 
++try:
++    from apply_phase7g_annotations import (
++        blind_item_eligible_for_context,
++        keep_gate_blockers,
++    )
++except ImportError:  # pragma: no cover - package-style import fallback
++    from scripts.apply_phase7g_annotations import (
++        blind_item_eligible_for_context,
++        keep_gate_blockers,
++    )
++
+ ROOT = Path(__file__).resolve().parents[1]
+ AUDIT = ROOT / "results" / "dataset_audit"
+ 
+@@ -119,6 +130,17 @@ def validate_blind(blind: dict) -> list[str]:
+             errors.append(f"{item['blind_id']}: same reviewer_id on both rater slots "
+                           f"— independence violated")
+ 
++    # Status/evidence consistency: a status of ADJUDICATED without the complete
++    # two-rater evidence (proven slots with different persistent identities,
++    # agreement or recorded adjudication) is a forged or corrupt record and
++    # must fail closed here, not only at phase completion.
++    for item in items:
++        if item.get("annotation_status") == "ADJUDICATED":
++            eligible, reason = blind_item_eligible_for_context(item)
++            if not eligible:
++                errors.append(f"{item['blind_id']}: status ADJUDICATED without "
++                              f"complete two-rater evidence ({reason})")
++
+     proto = blind.get("two_rater_protocol", {})
+     if proto.get("inter_rater_status") == "not_available":
+         if proto.get("percent_agreement") is not None or proto.get("cohens_kappa") is not None:
+@@ -138,10 +160,11 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
+     if qc.get("model_evaluation_performed"):
+         errors.append("model_evaluation_performed must be false in Phase 7G")
+ 
+-    blind_status = {}
++    blind_by_id = {}
+     keymap = {m["research_item_id"]: m["blind_id"] for m in key.get("mapping", [])}
++    keycat = {m["research_item_id"]: m.get("category") for m in key.get("mapping", [])}
+     for item in blind.get("items", []):
+-        blind_status[item["blind_id"]] = item["annotation_status"]
++        blind_by_id[item["blind_id"]] = item
+ 
+     for item in items:
+         rid = item.get("research_item_id", "<unknown>")
+@@ -169,16 +192,27 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
+                 if item[section]["status"] != "COMPLETE":
+                     errors.append(f"{rid}: approved with incomplete {section}")
+             bid = keymap.get(rid)
+-            blind_state = blind_status.get(bid) if bid else None
+-            if blind_state == "PENDING":
+-                errors.append(f"{rid}: approved without a blind isolated-prompt annotation")
+-            elif blind_state != "ADJUDICATED":
+-                # Two-rater mandate (finding F-06): one-rater PARTIAL states and
+-                # unresolved disagreements cannot satisfy the final gate.
+-                errors.append(
+-                    f"{rid}: approved while the blind annotation is {blind_state!r}; "
+-                    f"two independent ratings plus agreement/adjudication "
+-                    f"(status ADJUDICATED) are required")
++            bitem = blind_by_id.get(bid) if bid else None
++            for blocker in keep_gate_blockers(bitem, keycat.get(rid)):
++                if blocker == "blind_isolated_prompt_review":
++                    errors.append(f"{rid}: approved without a blind isolated-prompt annotation")
++                elif blocker == "isolated gate FAIL is never waived":
++                    errors.append(
++                        f"{rid}: approved despite isolated blind gate FAIL — "
++                        f"a FAIL is never waived")
++                elif blocker.startswith("two-rater mandate"):
++                    # Two-rater mandate (finding F-06): one-rater PARTIAL states,
++                    # unresolved disagreements and missing provenance cannot
++                    # satisfy the final gate.
++                    errors.append(
++                        f"{rid}: approved while the blind record lacks complete "
++                        f"two-rater evidence ({blocker}); two independent "
++                        f"ratings with different reviewer identities plus "
++                        f"agreement/adjudication (status ADJUDICATED) are required")
++                else:
++                    errors.append(
++                        f"{rid}: approved with an unverifiable blind gate "
++                        f"({blocker})")
+ 
+         if decision in {"REVISE", "REJECT"} and qc_flag:
+             errors.append(f"{rid}: {decision} item must not have researcher_qc true")
+@@ -198,11 +232,25 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
+                 errors.append(f"{rid}: PENDING item has a review_timestamp")
+ 
+         # --- blind ordering --------------------------------------------------
++        # Any opened context review (beyond NOT_STARTED) requires the full
++        # two-rater evidence on the loaded blind record — PENDING, PARTIAL,
++        # unresolved disagreement, missing provenance and same-identity slots
++        # are all reported, so a state the writer could never produce is
++        # caught fail-closed on load.
+         bid = keymap.get(rid)
+-        if bid and blind_status.get(bid) == "PENDING":
+-            if item["context_review"]["status"] != "NOT_STARTED":
+-                errors.append(f"{rid}: context review recorded before the blind "
+-                              f"isolated-prompt annotation was submitted")
++        if item["context_review"]["status"] != "NOT_STARTED":
++            bitem = blind_by_id.get(bid) if bid else None
++            if bitem is None:
++                errors.append(f"{rid}: context review recorded without a blind "
++                              f"mapping; context must not be revealed before "
++                              f"the blind isolated-prompt annotation")
++            else:
++                eligible, reason = blind_item_eligible_for_context(bitem)
++                if not eligible:
++                    errors.append(f"{rid}: context review recorded without complete "
++                                  f"blind evidence ({reason}); context must not be "
++                                  f"revealed before the blind isolated-prompt "
++                                  f"annotation is complete")
+ 
+         # --- vocabulary ------------------------------------------------------
+         for section in ("context_relevance", "context_direction",
+@@ -243,15 +291,23 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
+     if qc.get("phase_complete") != (c.get("pending") == 0):
+         errors.append("phase_complete does not match the pending count")
+ 
+-    # Two-rater mandate: the phase can only be complete when every item's blind
+-    # annotation is ADJUDICATED (two ratings + agreement or recorded adjudication).
++    # Two-rater mandate (AGENTS.md R2): the phase can only be complete when
++    # every blind record carries complete two-rater evidence — two filled and
++    # different persistent human identities, two ratings with timestamps, and
++    # agreement or a recorded adjudication. The check is independent of the
++    # final decision type (KEEP, REVISE or REJECT all pass through it) and
++    # never trusts the status field alone.
+     if qc.get("phase_complete"):
+-        unadjudicated = [i["blind_id"] for i in blind.get("items", [])
+-                         if i["annotation_status"] != "ADJUDICATED"]
+-        if unadjudicated:
++        unproven = []
++        for i in blind.get("items", []):
++            eligible, _reason = blind_item_eligible_for_context(i)
++            if not eligible:
++                unproven.append(i["blind_id"])
++        if unproven:
+             errors.append(
+-                f"phase_complete while {len(unadjudicated)} blind annotations are not "
+-                f"ADJUDICATED (two-rater mandate): {unadjudicated[:5]}…")
++                f"phase_complete while {len(unproven)} blind records are not "
++                f"ADJUDICATED with complete two-rater evidence "
++                f"(two-rater mandate): {unproven[:5]}…")
+ 
+     return errors
+ 
+diff --git a/tests/test_phase7g_qc.py b/tests/test_phase7g_qc.py
+index d14fe6d..f0f746c 100644
+--- a/tests/test_phase7g_qc.py
++++ b/tests/test_phase7g_qc.py
+@@ -279,7 +279,11 @@ class BlindOrderingEnforcementTests(unittest.TestCase):
+                            None, "researcher_self_review", TS)
+         self.assertIn("blind ordering", str(ctx.exception))
+ 
+-    def test_context_review_allowed_after_blind_annotation(self):
++    def test_context_review_refused_after_single_rater(self):
++        # E2a fail-closed gate: one rating (PARTIAL_ONE_RATER) must NOT open
++        # context. The positive path (two independent ratings +
++        # agreement/adjudication) is covered by the two-rater tests below;
++        # a positive path with real human provenance is reviewer material.
+         blind = copy.deepcopy(self.blind)
+         qc = copy.deepcopy(self.qc)
+         bid = next(m["blind_id"] for m in self.key["mapping"]
+@@ -288,14 +292,16 @@ class BlindOrderingEnforcementTests(unittest.TestCase):
+                                         "valence": "ambiguous_dual_use",
+                                         "confidence": "high"}],
+                      None, "researcher_self_review", TS)
+-        record_context(qc, blind, self.key,
+-                       [{"research_item_id": "RI-DU-001",
+-                         "context_relevance": {"context_is_material": "true"},
+-                         "notes": {"context_is_material": "concrete task detail"}}],
+-                       None, "researcher_self_review", TS)
++        with self.assertRaises(QCError) as ctx:
++            record_context(qc, blind, self.key,
++                           [{"research_item_id": "RI-DU-001",
++                             "context_relevance": {"context_is_material": "true"},
++                             "notes": {"context_is_material": "concrete task detail"}}],
++                           None, "researcher_self_review", TS)
++        self.assertIn("ADJUDICATED", str(ctx.exception))
++        self.assertIn("blind ordering", str(ctx.exception))
+         item = next(i for i in qc["items"] if i["research_item_id"] == "RI-DU-001")
+-        self.assertEqual(item["context_review"]["status"], "COMPLETE")
+-        self.assertEqual(validate(qc, blind, self.key), [])
++        self.assertEqual(item["context_review"]["status"], "NOT_STARTED")
+ 
+ 
+ class AnnotationRecordingTests(unittest.TestCase):
+@@ -352,7 +358,12 @@ class AnnotationRecordingTests(unittest.TestCase):
+         self.assertEqual(proto["n_double_annotated"], 10)
+         self.assertAlmostEqual(proto["percent_agreement"], 0.8)
+         self.assertIsNotNone(proto["cohens_kappa"])
+-        self.assertEqual(validate_blind(blind), [])
++        # E2a-R1: role-only ratings record fine, but ADJUDICATED status on
++        # role-only slots is not two-rater evidence — the 8 agreed items must
++        # be flagged, while the 2 disagreements stay gate-pending, not errors.
++        evidence_errors = [e for e in validate_blind(blind)
++                           if "without complete two-rater evidence" in e]
++        self.assertEqual(len(evidence_errors), 8)
+ 
+     def test_disagreement_blocks_adjudication(self):
+         blind = copy.deepcopy(self.blind)
+diff --git a/tests/test_remediation_regressions.py b/tests/test_remediation_regressions.py
+index db2a768..5197c10 100644
+--- a/tests/test_remediation_regressions.py
++++ b/tests/test_remediation_regressions.py
+@@ -74,6 +74,7 @@ class TwoRaterGateTests(unittest.TestCase):
+         }], "REV", "researcher_self_review", TS)
+ 
+     def test_one_rater_cannot_reach_keep(self):
++        # E2a fail-closed gate: a single rating opens neither context nor KEEP.
+         qc = copy.deepcopy(self.qc)
+         blind = copy.deepcopy(self.blind)
+         bid = _rid_to_bid(self.key, "RI-DU-001")
+@@ -81,7 +82,9 @@ class TwoRaterGateTests(unittest.TestCase):
+                      [{"blind_id": bid, "rater": "rater_a",
+                        "valence": "ambiguous_dual_use", "confidence": "high"}],
+                      "ONLY-RATER", "role", TS)
+-        self._context_complete(qc, blind)
++        with self.assertRaises(QCError) as ctx:
++            self._context_complete(qc, blind)
++        self.assertIn("ADJUDICATED", str(ctx.exception))
+         with self.assertRaises(QCError) as ctx:
+             record_decision(qc, blind, self.key,
+                             [{"research_item_id": "RI-DU-001", "decision": "KEEP"}],
+@@ -112,7 +115,10 @@ class TwoRaterGateTests(unittest.TestCase):
+         item = next(i for i in blind["items"] if i["blind_id"] == bid)
+         self.assertEqual(item["annotation_status"], "DISAGREEMENT_PENDING_ADJUDICATION")
+         self.assertIsNone(item["gate_result"])
+-        self._context_complete(qc, blind, rid="RI-DU-003")
++        # E2a fail-closed gate: unresolved disagreement opens no context either.
++        with self.assertRaises(QCError) as ctx:
++            self._context_complete(qc, blind, rid="RI-DU-003")
++        self.assertIn("ADJUDICATED", str(ctx.exception))
+         with self.assertRaises(QCError):  # disagreement unresolved -> no KEEP
+             record_decision(qc, blind, self.key,
+                             [{"research_item_id": "RI-DU-003", "decision": "KEEP"}],
+@@ -129,6 +135,8 @@ class TwoRaterGateTests(unittest.TestCase):
+         item = next(i for i in blind["items"] if i["blind_id"] == bid)
+         self.assertEqual(item["annotation_status"], "ADJUDICATED")
+         self.assertEqual(item["gate_result"], "PASS")
++        # E2a: context opens only after the blind record is ADJUDICATED.
++        self._context_complete(qc, blind, rid="RI-DU-003")
+         record_decision(qc, blind, self.key,
+                         [{"research_item_id": "RI-DU-003", "decision": "KEEP"}],
+                         "DECIDER", None, TS)

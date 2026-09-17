@@ -22,9 +22,11 @@ from scripts.apply_phase7g_annotations import (
     BLIND,
     KEY,
     QC,
-    _blind_submitted_for,
+    QCError,
     _load,
     append_history,
+    blind_item_eligible_for_context,
+    blind_item_for,
     record_context,
     snapshot,
 )
@@ -39,11 +41,21 @@ def get_stimuli_map() -> dict[str, dict]:
 
 
 def get_pending_context_items(qc: dict, blind: dict, key: dict) -> list[dict]:
+    """Items whose blind record is ADJUDICATED but whose context review is open.
+
+    Same fail-closed bound as the record API (record_context): single-rater,
+    pending and unresolved records are never listed. Items with a broken blind
+    mapping are skipped here; the validator flags them separately.
+    """
     pending = []
     for item in qc.get("items", []):
         rid = item["research_item_id"]
-        # Must have blind submitted first
-        if _blind_submitted_for(blind, key, rid):
+        try:
+            blind_item = blind_item_for(blind, key, rid)
+        except QCError:
+            continue
+        eligible, _ = blind_item_eligible_for_context(blind_item)
+        if eligible:
             if item.get("context_review", {}).get("status") != "COMPLETE":
                 pending.append(item)
     return pending

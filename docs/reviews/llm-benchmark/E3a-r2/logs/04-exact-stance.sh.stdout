@@ -1,0 +1,3 @@
+exact shared: 7 differing: 43
+EXACT 7/43 VERIFIED (all AM)
+DIVERGENCE UNIT CASE PASS: token-set equal but exact False (order matters)

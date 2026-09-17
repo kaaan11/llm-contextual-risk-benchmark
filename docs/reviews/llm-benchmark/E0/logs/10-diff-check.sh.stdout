@@ -1,0 +1,30 @@
+diff-check exit=0
+---DIFFSTAT---
+ .gitignore | 4 ++++
+ 1 file changed, 4 insertions(+)
+---STATUS---
+ M .gitignore
+?? docs/llm-benchmark-E0-task.md
+?? docs/llm-benchmark-E1a-task.md
+?? docs/llm-benchmark-E1b-task.md
+?? docs/llm-benchmark-E1c-task.md
+?? docs/llm-benchmark-E2a-task.md
+?? docs/llm-benchmark-E2b-task.md
+?? docs/llm-benchmark-E2c-task.md
+?? docs/llm-benchmark-E3a-task.md
+?? docs/llm-benchmark-E3b-task.md
+?? docs/llm-benchmark-E4a-human-task.md
+?? docs/llm-benchmark-E4b-human-task.md
+?? docs/llm-benchmark-E5a-task.md
+?? docs/llm-benchmark-E5b-task.md
+?? docs/llm-benchmark-E5c-task.md
+?? docs/llm-benchmark-E5d-task.md
+?? docs/llm-benchmark-E6a-task.md
+?? docs/llm-benchmark-E6b-task.md
+?? docs/llm-benchmark-E6c-task.md
+?? docs/llm-benchmark-E7-review-task.md
+?? docs/llm-benchmark-assessment-and-plan.md
+?? docs/llm-benchmark-worker-contract.md
+?? docs/llm-benchmark-worker-index.md
+?? docs/reviews/
+?? uv.lock

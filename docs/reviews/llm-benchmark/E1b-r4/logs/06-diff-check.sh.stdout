@@ -1,0 +1,43 @@
+diff-check exit=0
+ M .gitignore
+?? docs/llm-benchmark-E0-task.md
+?? docs/llm-benchmark-E1a-task.md
+?? docs/llm-benchmark-E1b-r2-task.md
+?? docs/llm-benchmark-E1b-r3-task.md
+?? docs/llm-benchmark-E1b-r4-task.md
+?? docs/llm-benchmark-E1b-revision-task.md
+?? docs/llm-benchmark-E1b-task.md
+?? docs/llm-benchmark-E1c-task.md
+?? docs/llm-benchmark-E2a-task.md
+?? docs/llm-benchmark-E2b-task.md
+?? docs/llm-benchmark-E2c-task.md
+?? docs/llm-benchmark-E3a-task.md
+?? docs/llm-benchmark-E3b-task.md
+?? docs/llm-benchmark-E4a-human-task.md
+?? docs/llm-benchmark-E4b-human-task.md
+?? docs/llm-benchmark-E5a-task.md
+?? docs/llm-benchmark-E5b-task.md
+?? docs/llm-benchmark-E5c-task.md
+?? docs/llm-benchmark-E5d-task.md
+?? docs/llm-benchmark-E6a-task.md
+?? docs/llm-benchmark-E6b-task.md
+?? docs/llm-benchmark-E6c-task.md
+?? docs/llm-benchmark-E7-review-task.md
+?? docs/llm-benchmark-assessment-and-plan.md
+?? docs/llm-benchmark-worker-contract.md
+?? docs/llm-benchmark-worker-index.md
+?? docs/reviews/
+?? uv.lock
+---DELIVERY.DIFF---
+diff --git a/.gitignore b/.gitignore
+index 53b9581..86d063c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -19,3 +19,7 @@ __pycache__/
+ *.py[cod]
+ .pytest_cache/
+ .venv/
++
++# Local deep-model handoff artifacts (bundles + prompts/reports)
++gptpro-bundles/
++gptpro/

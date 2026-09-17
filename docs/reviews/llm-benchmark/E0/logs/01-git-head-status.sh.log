@@ -1,0 +1,35 @@
+9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e
+---STATUS---
+ M .gitignore
+?? docs/llm-benchmark-E0-task.md
+?? docs/llm-benchmark-E1a-task.md
+?? docs/llm-benchmark-E1b-task.md
+?? docs/llm-benchmark-E1c-task.md
+?? docs/llm-benchmark-E2a-task.md
+?? docs/llm-benchmark-E2b-task.md
+?? docs/llm-benchmark-E2c-task.md
+?? docs/llm-benchmark-E3a-task.md
+?? docs/llm-benchmark-E3b-task.md
+?? docs/llm-benchmark-E4a-human-task.md
+?? docs/llm-benchmark-E4b-human-task.md
+?? docs/llm-benchmark-E5a-task.md
+?? docs/llm-benchmark-E5b-task.md
+?? docs/llm-benchmark-E5c-task.md
+?? docs/llm-benchmark-E5d-task.md
+?? docs/llm-benchmark-E6a-task.md
+?? docs/llm-benchmark-E6b-task.md
+?? docs/llm-benchmark-E6c-task.md
+?? docs/llm-benchmark-E7-review-task.md
+?? docs/llm-benchmark-assessment-and-plan.md
+?? docs/llm-benchmark-worker-contract.md
+?? docs/llm-benchmark-worker-index.md
+?? docs/reviews/
+?? uv.lock
+---BRANCH---
+master
+---LOG5---
+9dd9d31 docs: save session handoff and actionable next steps
+9f7c8d7 docs: establish canonical research roadmap (Phases 8-16) and status updates
+0488b1b feat(qc-phase8): complete Phase 7G human QC suite, pre-commit integrity hooks, and Phase 8 dry-run harness
+a50139b pre-eval remediation: R1/R2 implementation and regression evidence
+8fd1cb8 Phase 7E and Phase 7G review state, histories and provenance snapshots

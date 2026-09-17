@@ -1,0 +1,48 @@
+PASS schema version 0.5.0
+PASS status DRAFT/NOT EFFECTIVE
+PASS presence discriminator is scoreable_view
+PASS Dal U requires unscorable_reason
+PASS Dal U forbids F1-F4
+PASS Dal S forbids unscorable_reason
+PASS Dal S requires F1+F2
+PASS Dal S F3 conditional + gap
+PASS Dal S F4 conditional + gap
+PASS adjudication requires final_scoreable_view
+PASS final scoreable branch presence
+PASS final unscorable branch forbids F1-F4
+PASS raw immutability kept
+PASS F3 conditional f3_gap
+PASS F4 conditional trio
+PASS prohibition no_F1_F4_in_unscorable_branch
+PASS prohibition no_unscorable_reason_in_scoreable_branch
+PASS prohibition no_F3_value_without_resolved_criterion
+PASS prohibition no_F4_value_where_inapplicable
+PASS prohibition no_missing_F1_F2_in_scoreable_branch
+PASS prohibition no_final_without_explicit_final_scoreable_view
+PASS regression prohibition no_contested_inside_resolved_reference
+PASS regression prohibition no_scoreability_or_F1_F4_in_layer_B_slots
+PASS regression prohibition no_F3_without_resolved_id_and_version
+PASS regression prohibition no_extra_adjudication_gate_on_two_explicit_unscorable
+PASS regression prohibition no_composite_score
+PASS layer/timing intact
+PASS F5 slot still clean (R3 regression)
+PASS contested placement intact (R3 regression)
+PASS F3 binding intact (R2 regression)
+PASS 6.2 intact (R2 regression)
+PASS applicability rows == 12
+PASS layer rows 6+6
+PASS F4 note covers conditional resolution
+PASS no human-label/corpus content 'probably_benign'
+PASS no human-label/corpus content 'probably_concerning'
+PASS no human-label/corpus content 'clearly_benign'
+PASS no human-label/corpus content 'clearly_concerning'
+PASS no human-label/corpus content 'BLIND-'
+PASS no human-label/corpus content 'RI-DU-'
+PASS no human-label/corpus content 'RI-AM-'
+PASS rubric covers 8P
+PASS rubric covers final_scoreable_view
+PASS rubric covers f3_gap
+PASS rubric covers f4_gap
+PASS rubric covers applicability_resolution
+PASS boundary case B-7U present
+STRUCTURAL: ALL PASS

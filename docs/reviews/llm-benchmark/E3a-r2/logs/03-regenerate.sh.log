@@ -1,0 +1,8 @@
+TMPD=/tmp/tmp.hEChgpnphi
+items=50 conditions=171 findings=19 shared=7
+ finding types: Counter({'T-XCOND': 7, 'T-REF': 6, 'T-DHINT-LEX': 5, 'T-DHINT-HUMAN': 1})
+ wrote /tmp/tmp.hEChgpnphi/regen.json
+items=50 conditions=171 findings=19 shared=7
+ finding types: Counter({'T-XCOND': 7, 'T-REF': 6, 'T-DHINT-LEX': 5, 'T-DHINT-HUMAN': 1})
+ wrote docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json
+BYTE-EQUAL: temp regen == delivered JSON

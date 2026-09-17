@@ -279,7 +279,11 @@ class BlindOrderingEnforcementTests(unittest.TestCase):
                            None, "researcher_self_review", TS)
         self.assertIn("blind ordering", str(ctx.exception))
 
-    def test_context_review_allowed_after_blind_annotation(self):
+    def test_context_review_refused_after_single_rater(self):
+        # E2a fail-closed gate: one rating (PARTIAL_ONE_RATER) must NOT open
+        # context. The positive path (two independent ratings +
+        # agreement/adjudication) is covered by the two-rater tests below;
+        # a positive path with real human provenance is reviewer material.
         blind = copy.deepcopy(self.blind)
         qc = copy.deepcopy(self.qc)
         bid = next(m["blind_id"] for m in self.key["mapping"]
@@ -288,14 +292,16 @@ class BlindOrderingEnforcementTests(unittest.TestCase):
                                         "valence": "ambiguous_dual_use",
                                         "confidence": "high"}],
                      None, "researcher_self_review", TS)
-        record_context(qc, blind, self.key,
-                       [{"research_item_id": "RI-DU-001",
-                         "context_relevance": {"context_is_material": "true"},
-                         "notes": {"context_is_material": "concrete task detail"}}],
-                       None, "researcher_self_review", TS)
+        with self.assertRaises(QCError) as ctx:
+            record_context(qc, blind, self.key,
+                           [{"research_item_id": "RI-DU-001",
+                             "context_relevance": {"context_is_material": "true"},
+                             "notes": {"context_is_material": "concrete task detail"}}],
+                           None, "researcher_self_review", TS)
+        self.assertIn("ADJUDICATED", str(ctx.exception))
+        self.assertIn("blind ordering", str(ctx.exception))
         item = next(i for i in qc["items"] if i["research_item_id"] == "RI-DU-001")
-        self.assertEqual(item["context_review"]["status"], "COMPLETE")
-        self.assertEqual(validate(qc, blind, self.key), [])
+        self.assertEqual(item["context_review"]["status"], "NOT_STARTED")
 
 
 class AnnotationRecordingTests(unittest.TestCase):
@@ -352,7 +358,12 @@ class AnnotationRecordingTests(unittest.TestCase):
         self.assertEqual(proto["n_double_annotated"], 10)
         self.assertAlmostEqual(proto["percent_agreement"], 0.8)
         self.assertIsNotNone(proto["cohens_kappa"])
-        self.assertEqual(validate_blind(blind), [])
+        # E2a-R1: role-only ratings record fine, but ADJUDICATED status on
+        # role-only slots is not two-rater evidence — the 8 agreed items must
+        # be flagged, while the 2 disagreements stay gate-pending, not errors.
+        evidence_errors = [e for e in validate_blind(blind)
+                           if "without complete two-rater evidence" in e]
+        self.assertEqual(len(evidence_errors), 8)
 
     def test_disagreement_blocks_adjudication(self):
         blind = copy.deepcopy(self.blind)

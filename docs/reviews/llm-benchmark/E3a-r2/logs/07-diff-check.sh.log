@@ -1,0 +1,9 @@
+diff-check clean
+---WRITE-CHECK---
+?? docs/reviews/llm-benchmark/E3a-r1/helpers/e3a_scan.py
+?? docs/reviews/llm-benchmark/E3a-r1/stimulus-issues.json
+?? docs/reviews/llm-benchmark/E3a-r1/stimulus-issues.md
+?? docs/reviews/llm-benchmark/E3a/stimulus-issues.json
+?? docs/reviews/llm-benchmark/E3a/stimulus-issues.md
+(empty above = stimulus/audit/prior-deliveries/tests untouched)
+2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077  dataset/pilot/multiturn/stimulus_dataset_v1.json

@@ -1,0 +1,15 @@
+---DIFF---
+diff --git a/.gitignore b/.gitignore
+index 53b9581..86d063c 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -19,3 +19,7 @@ __pycache__/
+ *.py[cod]
+ .pytest_cache/
+ .venv/
++
++# Local deep-model handoff artifacts (bundles + prompts/reports)
++gptpro-bundles/
++gptpro/
+---UNTRACKED-E0---
+?? docs/reviews/llm-benchmark/E0/

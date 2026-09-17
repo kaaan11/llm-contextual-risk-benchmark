@@ -1,0 +1,9 @@
+docs/PHASE_7D_DESIGN_TABLE.md OK
+docs/PHASE_7D_EXPERIMENTAL_DESIGN.md OK
+docs/phase7e_annotation_protocol.md OK
+docs/phase7e_pre_evaluation_clarification.md OK
+docs/phase7e_preregistration.md OK
+results/dataset_audit/phase7e_design_snapshot.json OK
+composite recomputed: 47ae3fed4117639ef2575135a6ca63f000f4fcc8c052c629355f6ccf4bbcfc6f
+composite expected  : 47ae3fed4117639ef2575135a6ca63f000f4fcc8c052c629355f6ccf4bbcfc6f
+match: True

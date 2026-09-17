@@ -74,6 +74,7 @@ class TwoRaterGateTests(unittest.TestCase):
         }], "REV", "researcher_self_review", TS)
 
     def test_one_rater_cannot_reach_keep(self):
+        # E2a fail-closed gate: a single rating opens neither context nor KEEP.
         qc = copy.deepcopy(self.qc)
         blind = copy.deepcopy(self.blind)
         bid = _rid_to_bid(self.key, "RI-DU-001")
@@ -81,7 +82,9 @@ class TwoRaterGateTests(unittest.TestCase):
                      [{"blind_id": bid, "rater": "rater_a",
                        "valence": "ambiguous_dual_use", "confidence": "high"}],
                      "ONLY-RATER", "role", TS)
-        self._context_complete(qc, blind)
+        with self.assertRaises(QCError) as ctx:
+            self._context_complete(qc, blind)
+        self.assertIn("ADJUDICATED", str(ctx.exception))
         with self.assertRaises(QCError) as ctx:
             record_decision(qc, blind, self.key,
                             [{"research_item_id": "RI-DU-001", "decision": "KEEP"}],
@@ -112,7 +115,10 @@ class TwoRaterGateTests(unittest.TestCase):
         item = next(i for i in blind["items"] if i["blind_id"] == bid)
         self.assertEqual(item["annotation_status"], "DISAGREEMENT_PENDING_ADJUDICATION")
         self.assertIsNone(item["gate_result"])
-        self._context_complete(qc, blind, rid="RI-DU-003")
+        # E2a fail-closed gate: unresolved disagreement opens no context either.
+        with self.assertRaises(QCError) as ctx:
+            self._context_complete(qc, blind, rid="RI-DU-003")
+        self.assertIn("ADJUDICATED", str(ctx.exception))
         with self.assertRaises(QCError):  # disagreement unresolved -> no KEEP
             record_decision(qc, blind, self.key,
                             [{"research_item_id": "RI-DU-003", "decision": "KEEP"}],
@@ -129,6 +135,8 @@ class TwoRaterGateTests(unittest.TestCase):
         item = next(i for i in blind["items"] if i["blind_id"] == bid)
         self.assertEqual(item["annotation_status"], "ADJUDICATED")
         self.assertEqual(item["gate_result"], "PASS")
+        # E2a: context opens only after the blind record is ADJUDICATED.
+        self._context_complete(qc, blind, rid="RI-DU-003")
         record_decision(qc, blind, self.key,
                         [{"research_item_id": "RI-DU-003", "decision": "KEEP"}],
                         "DECIDER", None, TS)

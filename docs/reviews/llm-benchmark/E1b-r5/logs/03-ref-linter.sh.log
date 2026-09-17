@@ -1,0 +1,35 @@
+PASS schema version 0.6.0
+PASS status DRAFT/NOT EFFECTIVE
+PASS branch refs all declared in slot_schema (undeclared=[])
+PASS adjudication final fields all declared in slot_schema (undeclared=[])
+PASS nested F1 ref + values == top
+PASS nested F2 ref + values == top
+PASS nested F3 ref + values == top
+PASS nested F3 binds == top
+PASS nested F4 ref + values == top
+PASS f3_gap single value
+PASS f4_gap carries applicability reason
+PASS resolution is boolean + reason
+PASS resolution forbidden in non-conditional cells
+PASS Dal U requires reason
+PASS Dal U forbids F1-F4
+PASS Dal S requires F1+F2
+PASS Dal S forbids reason
+PASS Dal S F3 gap rule kept
+PASS Dal S F4 gap rule kept
+PASS final branches kept
+PASS raw immutability kept
+PASS gaps not required in Dal U
+PASS reason not required in Dal S
+PASS layer/timing intact
+PASS F5 slot still clean
+PASS contested placement intact
+PASS 6.2 intact
+PASS no human-label/corpus content 'probably_benign'
+PASS no human-label/corpus content 'probably_concerning'
+PASS no human-label/corpus content 'clearly_benign'
+PASS no human-label/corpus content 'clearly_concerning'
+PASS no human-label/corpus content 'BLIND-'
+PASS no human-label/corpus content 'RI-DU-'
+PASS no human-label/corpus content 'RI-AM-'
+LINTER: ALL PASS

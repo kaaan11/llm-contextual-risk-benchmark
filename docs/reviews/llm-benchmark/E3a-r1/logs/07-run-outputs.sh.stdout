@@ -1,0 +1,18 @@
+3d2cab7851762eda6c5dbc631aec5917dd8576941f683106b11c73b920125bce  docs/reviews/llm-benchmark/E3a-r1/README.md
+48878657cf78b4212008bba11ef5fe3daeced6bfe708c28010c1608931a0edab  docs/reviews/llm-benchmark/E3a-r1/stimulus-issues.md
+7205eb31c4c95d3a0949a26073cbec45c21fb63e3a927d2ec41c04e80741745e  docs/reviews/llm-benchmark/E3a-r1/stimulus-issues.json
+933b936b8e27de2c95cf5a877ab9248eedbdc6aa9a0a49fac3ffaba1a3f5cef8  docs/reviews/llm-benchmark/E3a-r1/helpers/e3a_scan.py
+d75b90bec1877b87ff3f6ae06e7406214811d11fdc7482d920495b4112ce9213  docs/reviews/llm-benchmark/E3a-r1/revision-map.md
+81508caffd12bf51743e29ff86a76f40d8e9ec1e51a429dda642e83090e190e0  docs/reviews/llm-benchmark/E3a-r1/comparisons.md
+533bc57bdffe00a4c0baf4073625a30e99fa8d97935e4f19ff5df178357742f3  docs/reviews/llm-benchmark/E3a-r1/hashes-start.txt
+0ec6f46b2e7e60e88de77c2d204f04d9bbf93bb1b7e52098f9c697e5996daca6  docs/reviews/llm-benchmark/E3a-r1/hashes-end.txt
+10ead5f9e9e00c8d80bfc20a3c407ab4173a831908a1f0a872e60dc986ec6d83  docs/reviews/llm-benchmark/E3a-r1/delivery.diff
+f9bc73cefd0979a1646bf1e8f1ed36ffe16b6f2729497a1b41d43d0bf622a6f2  docs/reviews/llm-benchmark/E3a-r1/logs/01-git-head-status.sh.stdout
+6ebc374bb1746961c57eba8286be8615d58028d97b40d903e8ebb27a6c586da6  docs/reviews/llm-benchmark/E3a-r1/logs/02-env.sh.stdout
+78cb8d5330c2992475bacc5a59c4aa87ba26afc62c28be443364943b6420a978  docs/reviews/llm-benchmark/E3a-r1/logs/03-regenerate.sh.stdout
+00bc5f56f3a5bc72f339165dc8b6b6b4b4e92eef80fd849daedff9cf08eb58c2  docs/reviews/llm-benchmark/E3a-r1/logs/04-targeted-tests.sh.stdout
+ad40a29fd5ca5522665f6aa369c3e1474703bb44920569d2b16e767374c04acc  docs/reviews/llm-benchmark/E3a-r1/logs/05-diff-check.sh.stdout
+19b31faad71b234c9fd80b3ec502b2a66b5072c7cbfcda60eb93aa48d81c25b0  docs/reviews/llm-benchmark/E3a-r1/logs/06-link-check.sh.stdout
+---SELF (log only, not in file)---
+7ae2f7b6a2f0969d240dea5d3e5ca055ef286b5590674944f21be3528f8d866a  docs/reviews/llm-benchmark/E3a-r1/run-outputs.sha256
+664afc0caa5de7ffcf16c85551543531b407d0d701f2427c9295521f892561df  docs/reviews/llm-benchmark/E3a-r1/commands.jsonl

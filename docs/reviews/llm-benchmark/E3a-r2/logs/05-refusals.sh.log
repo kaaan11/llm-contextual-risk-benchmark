@@ -1,0 +1,12 @@
+--- input==output ---
+exit=1
+--- frozen docs path ---
+exit=1
+--- another in-repo file ---
+exit=1
+--- content-change check ---
+(empty above = refused without content change)
+2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077  dataset/pilot/multiturn/stimulus_dataset_v1.json
+refusing to write: output == input (/home/kaan/AI_Search/dataset/pilot/multiturn/stimulus_dataset_v1.json)
+refusing to write into the repository: docs/phase7e_preregistration.md (allowlist: ['docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json'])
+refusing to write into the repository: tests/test_phase7f_stimulus.py (allowlist: ['docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json'])

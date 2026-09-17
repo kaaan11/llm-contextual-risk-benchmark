@@ -1,0 +1,18 @@
+2a16cb20cd22d0d22f461bb5553bc912dcc13c01b685d723210fbebee3685323  docs/reviews/llm-benchmark/E1b-r5/README.md
+39f2b1b61799ab1036a143dba32de6b0bde99117fb3b015931a54896cd597425  docs/reviews/llm-benchmark/E1b-r5/schema-draft.json
+bf84dc8ffa1e23e3cd6a9c4dcaac2aac37bc77171c8ea3be7388754f27bf7b42  docs/reviews/llm-benchmark/E1b-r5/rubric-ref-note.md
+17442d86dbf2a3a40b20ac9064531b3ef82537c3e5e9d792384fcf83c90748e7  docs/reviews/llm-benchmark/E1b-r5/revision-map.md
+08f18b497ee0f1823550f2760d8bb0b381db583a4c37c97b425275ad91676683  docs/reviews/llm-benchmark/E1b-r5/comparisons.md
+8c4d3025591c8fb4132103d8536a4c1dcbcd1938a1615f7a701e500764a1f9f1  docs/reviews/llm-benchmark/E1b-r5/hashes-start.txt
+a0bdc83cd924a4c206b90b5daaa5245e0d8c591c6b2aa28e1145313c203bbead  docs/reviews/llm-benchmark/E1b-r5/hashes-end.txt
+ee17b582c9efc76ffc6f8b1db336ef3e846fbd87f78834650e1ef5ee5d9e19bb  docs/reviews/llm-benchmark/E1b-r5/delivery.diff
+776c2a050f9159c7fbdf3a5f17122f9d8b10e0c1d0245c78c6565866ad89bd48  docs/reviews/llm-benchmark/E1b-r5/logs/01-git-head-status.sh.stdout
+beb11c3ec03d4f63e1cf2f528e6030e71202863910b432bcc53beda10fd39840  docs/reviews/llm-benchmark/E1b-r5/logs/02-env.sh.stdout
+bc6a5cbdc1f4bba3e82fe3271298660ad40ed3ed58c37c186aaaccf80e0f9c59  docs/reviews/llm-benchmark/E1b-r5/logs/03-ref-linter.sh.stdout
+a7b074e07009b028510db15d82e8063ffcf04764b336023eb28bda79fb72c2ee  docs/reviews/llm-benchmark/E1b-r5/logs/04-prior-untouched.sh.stdout
+1fd58db01205abb2a4d908a0d8aaf83bc9b53fff78df5861e58b5593ac490b05  docs/reviews/llm-benchmark/E1b-r5/logs/05-frozen-hashes.sh.stdout
+80e7a06db5594495d6222efe4e2670d9a499009ba2a8be861d80980a48ab20af  docs/reviews/llm-benchmark/E1b-r5/logs/06-diff-check.sh.stdout
+39a47235013613137b9e1fa6220f22fd2910498cd719a27d9743978bcfa44b5e  docs/reviews/llm-benchmark/E1b-r5/logs/07-link-check.sh.stdout
+---SELF (log only, not in file)---
+ad5b1e1638f5173a3f1599fc89461ebc414fc0455f74b28da7098eb1ca81effd  docs/reviews/llm-benchmark/E1b-r5/run-outputs.sha256
+8c8ed8fe20ec67c91de1cdf8cd4f55daba9cb99aa49c92a1668a04fafb8ce63f  docs/reviews/llm-benchmark/E1b-r5/commands.jsonl

@@ -1,0 +1,6 @@
+VALID — 50 items, 0 pending, 50 approved
+VALID — 50 items | pending=50 keep=0 revise=0 reject=0 approved=0
+phase_complete=False | inter_rater=not_available
+diff-check clean
+---POST-RUN-WRITES---
+(empty above = no audit/data writes)

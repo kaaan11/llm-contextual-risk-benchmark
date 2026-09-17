@@ -1,0 +1,16 @@
+3c52828a2942ed58e1faa1fa6429cd3f058b4f6eca659e02a652aff4467cb5d7  docs/reviews/llm-benchmark/E1b-r4/README.md
+7bbe2cd58d696b58c04133de2ad67395ac5d1b49ea366af6ee1b374732c72958  docs/reviews/llm-benchmark/E1b-r4/rubric-draft.md
+59280e279a0414629c4a63381b32b25a9080766e5b7c9c5973a92ff251477f13  docs/reviews/llm-benchmark/E1b-r4/schema-draft.json
+29b9b9b31b47f413b66222f1dbdd1123d27a1c940c01fcb26f2001abf8dc06a4  docs/reviews/llm-benchmark/E1b-r4/boundary-cases-r4.md
+c0427dda9a33138216e27018cb217479440319714fc0cb24e996cc7e1bb2e829  docs/reviews/llm-benchmark/E1b-r4/revision-map.md
+ff0c653817b2ddba5c899e97a474a846c24db99fce772462ad5e436fec9b5335  docs/reviews/llm-benchmark/E1b-r4/comparisons.md
+164129a638ad1c7a1a4b93d11a60bcc9151dcea7ae7908b74028833677b1b2a1  docs/reviews/llm-benchmark/E1b-r4/hashes-start.txt
+b62a6f6074da709890da36dbbc6dd597aa811ca5ac7cef16132ab195faff959d  docs/reviews/llm-benchmark/E1b-r4/hashes-end.txt
+ee17b582c9efc76ffc6f8b1db336ef3e846fbd87f78834650e1ef5ee5d9e19bb  docs/reviews/llm-benchmark/E1b-r4/delivery.diff
+d8f5e0d8459d4b11fcfc1b2d893e36415fd37a236feeb91727d2647739b1623a  docs/reviews/llm-benchmark/E1b-r4/logs/01-git-head-status.sh.stdout
+beb11c3ec03d4f63e1cf2f528e6030e71202863910b432bcc53beda10fd39840  docs/reviews/llm-benchmark/E1b-r4/logs/02-env.sh.stdout
+a30ce30337e0f8617aa347d4121f5e9efe55580aa17513bfdf0b78fb1aa1aa24  docs/reviews/llm-benchmark/E1b-r4/logs/03-structural-checks.sh.stdout
+b6aa7794a381bc512ef6ce351c7acc61ab73037fce9a761fc3f1a2191c95dac4  docs/reviews/llm-benchmark/E1b-r4/logs/04-prior-untouched.sh.stdout
+1fd58db01205abb2a4d908a0d8aaf83bc9b53fff78df5861e58b5593ac490b05  docs/reviews/llm-benchmark/E1b-r4/logs/05-frozen-hashes.sh.stdout
+74404d123098653be61c1ec53e77bb50a805852ac72dc96f51cbad71f9ac8d11  docs/reviews/llm-benchmark/E1b-r4/logs/06-diff-check.sh.stdout
+c22d7b6b86bafee29afa1d81b379d3c0372291ce029910766a64461c47626e37  docs/reviews/llm-benchmark/E1b-r4/logs/07-link-check.sh.stdout

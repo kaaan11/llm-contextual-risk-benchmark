@@ -1,0 +1,20 @@
+9dd9d31607b3d97c02fe3ef9b7cfb68b4a3ed50e
+---STATUS---
+ M .gitignore
+ M scripts/apply_phase7g_annotations.py
+ M scripts/decide_phase7g.py
+ M scripts/review_context.py
+ M scripts/validate_phase7g_review.py
+ M tests/test_phase7g_qc.py
+ M tests/test_remediation_regressions.py
+?? docs/llm-benchmark-E0-task.md
+?? docs/llm-benchmark-E1a-task.md
+?? docs/llm-benchmark-E1b-r2-task.md
+?? docs/llm-benchmark-E1b-r3-task.md
+?? docs/llm-benchmark-E1b-r4-task.md
+---BRANCH---
+master
+---LOG3---
+9dd9d31 docs: save session handoff and actionable next steps
+9f7c8d7 docs: establish canonical research roadmap (Phases 8-16) and status updates
+0488b1b feat(qc-phase8): complete Phase 7G human QC suite, pre-commit integrity hooks, and Phase 8 dry-run harness

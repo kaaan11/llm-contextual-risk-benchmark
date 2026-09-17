@@ -1,0 +1,17 @@
+e78a58a13187f17a17bd008e440a16981003bffa1922a0f4a7a4834dec153769  docs/reviews/llm-benchmark/E3a-r2/README.md
+981fc489c385a0d84c32510d9cef8027f1155569a194e4363be1e6e71fa29635  docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.md
+22cdc91090befe17d0e58e3c469903d9cce65421234f774fced78a5576d476c2  docs/reviews/llm-benchmark/E3a-r2/stimulus-issues.json
+2b7ff4cec66d9a80de5b38041fa96a955ae24c3ebaaa75dd9a01089672c727b7  docs/reviews/llm-benchmark/E3a-r2/helpers/e3a_scan.py
+5f06c73600eb565814d80b0784c46ac56a9e36ec96b6d500ef1d4950ab897468  docs/reviews/llm-benchmark/E3a-r2/revision-map.md
+7546ac4ccd99cb23e0f8602b6b6d3939e3d62d156b73bf0c05de6c60f5478d57  docs/reviews/llm-benchmark/E3a-r2/comparisons.md
+1a0985ae1effb205f0c9fb5d7702dcb15023da2bfa88212bc4bf983277f8274c  docs/reviews/llm-benchmark/E3a-r2/hashes-start.txt
+d0608ac3263534fa9b873baddfd6e306aa7aabd0485dc84edbe9a9898102d87e  docs/reviews/llm-benchmark/E3a-r2/hashes-end.txt
+aec0514d134b09f5314aa5875bc0d22d5c590dea9fecb776d7156803e6c343d4  docs/reviews/llm-benchmark/E3a-r2/delivery.diff
+f9bc73cefd0979a1646bf1e8f1ed36ffe16b6f2729497a1b41d43d0bf622a6f2  docs/reviews/llm-benchmark/E3a-r2/logs/01-git-head-status.sh.stdout
+6ebc374bb1746961c57eba8286be8615d58028d97b40d903e8ebb27a6c586da6  docs/reviews/llm-benchmark/E3a-r2/logs/02-env.sh.stdout
+e279ec4f42f54fb5a14a66d93655289e88cc2ecba52e336c10bd688ac5b05d6f  docs/reviews/llm-benchmark/E3a-r2/logs/03-regenerate.sh.stdout
+ec5441d535373d633ff7b551fa4980dd1b999e90103aee6292d095b90da9849a  docs/reviews/llm-benchmark/E3a-r2/logs/04-exact-stance.sh.stdout
+49d7cb7bdac02193b6af2cff4ee231caf2fc9f2dfc8aa74800bd840b67093b40  docs/reviews/llm-benchmark/E3a-r2/logs/05-refusals.sh.stdout
+b1f8f8378874091be0b51bba5aac7a44ecb50690c052ded6a27e79c6a972f43f  docs/reviews/llm-benchmark/E3a-r2/logs/06-targeted-tests.sh.stdout
+cba6386b28da3f436085012afbaf11ffe6f83150b98dd14a91218f4f44defbfc  docs/reviews/llm-benchmark/E3a-r2/logs/07-diff-check.sh.stdout
+aab7ba51c6a825570844b4ac777bae543565402532f6f4896a1c0ded1c7a90eb  docs/reviews/llm-benchmark/E3a-r2/logs/08-link-check.sh.stdout

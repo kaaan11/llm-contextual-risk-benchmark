@@ -14,6 +14,17 @@ import json
 import sys
 from pathlib import Path
 
+try:
+    from apply_phase7g_annotations import (
+        blind_item_eligible_for_context,
+        keep_gate_blockers,
+    )
+except ImportError:  # pragma: no cover - package-style import fallback
+    from scripts.apply_phase7g_annotations import (
+        blind_item_eligible_for_context,
+        keep_gate_blockers,
+    )
+
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT = ROOT / "results" / "dataset_audit"
 
@@ -119,6 +130,17 @@ def validate_blind(blind: dict) -> list[str]:
             errors.append(f"{item['blind_id']}: same reviewer_id on both rater slots "
                           f"— independence violated")
 
+    # Status/evidence consistency: a status of ADJUDICATED without the complete
+    # two-rater evidence (proven slots with different persistent identities,
+    # agreement or recorded adjudication) is a forged or corrupt record and
+    # must fail closed here, not only at phase completion.
+    for item in items:
+        if item.get("annotation_status") == "ADJUDICATED":
+            eligible, reason = blind_item_eligible_for_context(item)
+            if not eligible:
+                errors.append(f"{item['blind_id']}: status ADJUDICATED without "
+                              f"complete two-rater evidence ({reason})")
+
     proto = blind.get("two_rater_protocol", {})
     if proto.get("inter_rater_status") == "not_available":
         if proto.get("percent_agreement") is not None or proto.get("cohens_kappa") is not None:
@@ -138,10 +160,11 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
     if qc.get("model_evaluation_performed"):
         errors.append("model_evaluation_performed must be false in Phase 7G")
 
-    blind_status = {}
+    blind_by_id = {}
     keymap = {m["research_item_id"]: m["blind_id"] for m in key.get("mapping", [])}
+    keycat = {m["research_item_id"]: m.get("category") for m in key.get("mapping", [])}
     for item in blind.get("items", []):
-        blind_status[item["blind_id"]] = item["annotation_status"]
+        blind_by_id[item["blind_id"]] = item
 
     for item in items:
         rid = item.get("research_item_id", "<unknown>")
@@ -169,16 +192,27 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
                 if item[section]["status"] != "COMPLETE":
                     errors.append(f"{rid}: approved with incomplete {section}")
             bid = keymap.get(rid)
-            blind_state = blind_status.get(bid) if bid else None
-            if blind_state == "PENDING":
-                errors.append(f"{rid}: approved without a blind isolated-prompt annotation")
-            elif blind_state != "ADJUDICATED":
-                # Two-rater mandate (finding F-06): one-rater PARTIAL states and
-                # unresolved disagreements cannot satisfy the final gate.
-                errors.append(
-                    f"{rid}: approved while the blind annotation is {blind_state!r}; "
-                    f"two independent ratings plus agreement/adjudication "
-                    f"(status ADJUDICATED) are required")
+            bitem = blind_by_id.get(bid) if bid else None
+            for blocker in keep_gate_blockers(bitem, keycat.get(rid)):
+                if blocker == "blind_isolated_prompt_review":
+                    errors.append(f"{rid}: approved without a blind isolated-prompt annotation")
+                elif blocker == "isolated gate FAIL is never waived":
+                    errors.append(
+                        f"{rid}: approved despite isolated blind gate FAIL — "
+                        f"a FAIL is never waived")
+                elif blocker.startswith("two-rater mandate"):
+                    # Two-rater mandate (finding F-06): one-rater PARTIAL states,
+                    # unresolved disagreements and missing provenance cannot
+                    # satisfy the final gate.
+                    errors.append(
+                        f"{rid}: approved while the blind record lacks complete "
+                        f"two-rater evidence ({blocker}); two independent "
+                        f"ratings with different reviewer identities plus "
+                        f"agreement/adjudication (status ADJUDICATED) are required")
+                else:
+                    errors.append(
+                        f"{rid}: approved with an unverifiable blind gate "
+                        f"({blocker})")
 
         if decision in {"REVISE", "REJECT"} and qc_flag:
             errors.append(f"{rid}: {decision} item must not have researcher_qc true")
@@ -198,11 +232,25 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
                 errors.append(f"{rid}: PENDING item has a review_timestamp")
 
         # --- blind ordering --------------------------------------------------
+        # Any opened context review (beyond NOT_STARTED) requires the full
+        # two-rater evidence on the loaded blind record — PENDING, PARTIAL,
+        # unresolved disagreement, missing provenance and same-identity slots
+        # are all reported, so a state the writer could never produce is
+        # caught fail-closed on load.
         bid = keymap.get(rid)
-        if bid and blind_status.get(bid) == "PENDING":
-            if item["context_review"]["status"] != "NOT_STARTED":
-                errors.append(f"{rid}: context review recorded before the blind "
-                              f"isolated-prompt annotation was submitted")
+        if item["context_review"]["status"] != "NOT_STARTED":
+            bitem = blind_by_id.get(bid) if bid else None
+            if bitem is None:
+                errors.append(f"{rid}: context review recorded without a blind "
+                              f"mapping; context must not be revealed before "
+                              f"the blind isolated-prompt annotation")
+            else:
+                eligible, reason = blind_item_eligible_for_context(bitem)
+                if not eligible:
+                    errors.append(f"{rid}: context review recorded without complete "
+                                  f"blind evidence ({reason}); context must not be "
+                                  f"revealed before the blind isolated-prompt "
+                                  f"annotation is complete")
 
         # --- vocabulary ------------------------------------------------------
         for section in ("context_relevance", "context_direction",
@@ -243,15 +291,23 @@ def validate(qc: dict, blind: dict, key: dict) -> list[str]:
     if qc.get("phase_complete") != (c.get("pending") == 0):
         errors.append("phase_complete does not match the pending count")
 
-    # Two-rater mandate: the phase can only be complete when every item's blind
-    # annotation is ADJUDICATED (two ratings + agreement or recorded adjudication).
+    # Two-rater mandate (AGENTS.md R2): the phase can only be complete when
+    # every blind record carries complete two-rater evidence — two filled and
+    # different persistent human identities, two ratings with timestamps, and
+    # agreement or a recorded adjudication. The check is independent of the
+    # final decision type (KEEP, REVISE or REJECT all pass through it) and
+    # never trusts the status field alone.
     if qc.get("phase_complete"):
-        unadjudicated = [i["blind_id"] for i in blind.get("items", [])
-                         if i["annotation_status"] != "ADJUDICATED"]
-        if unadjudicated:
+        unproven = []
+        for i in blind.get("items", []):
+            eligible, _reason = blind_item_eligible_for_context(i)
+            if not eligible:
+                unproven.append(i["blind_id"])
+        if unproven:
             errors.append(
-                f"phase_complete while {len(unadjudicated)} blind annotations are not "
-                f"ADJUDICATED (two-rater mandate): {unadjudicated[:5]}…")
+                f"phase_complete while {len(unproven)} blind records are not "
+                f"ADJUDICATED with complete two-rater evidence "
+                f"(two-rater mandate): {unproven[:5]}…")
 
     return errors
 

@@ -1,0 +1,3742 @@
+{
+ "meta": {
+  "helper": "helpers/e3a_scan.py (this file)",
+  "population": "50 items / 171 condition records (full corpus, no sampling)",
+  "rules": {
+   "normalization": "regex [a-z0-9]+ over lowercased text; keep len>=5; drop STOPWORDS; no stemming",
+   "stopwords": "fixed set in helper source (function words + single letters + contraction fragments)",
+   "df_universe": "presence across items in pre-final turn texts, 50-item universe",
+   "ordered_pairs": "X!=Y ordered; target Y-assistant only; source X-USER turns only",
+   "overlap": "|A&B|/min(|A|,|B|), rounded to 3 decimals",
+   "tie_ordering": "stable sort keeps corpus order on ties",
+   "top5": "first 5 after descending max-overlap ordering, REVIEW queue with no-verdict caveat",
+   "exact_shared": "ordered (role, UTF-8 text bytes) equality of B/C assistant sequences; order, case, punctuation and stopwords all count",
+   "jaccard": "descriptive Jaccard distance over content-token sets; NOT the shared boolean",
+   "R-REF1": "this/these + token(len>=4) in A; that/those excluded (relative-pronoun dominant)",
+   "R-REF2": "rare token (len>=5, df<=2) in Y-assistant, absent Y-user + prompt, present X-user",
+   "R-DHINT": "overlap D-assistant vs prompt/B-assistant/C-assistant",
+   "R-STANCE/R-LEN": "descriptive only; token-tolerance verdict OPEN (no tokenizer profile)"
+  },
+  "limits": [
+   "automation finds candidates, never verdicts",
+   "lexical screens miss semantic adjacency (DU004 screen values bound the screen, not the item)",
+   "no extrapolation from examples to corpus totals",
+   "no KEEP/REVISE/REJECT decisions; proposed REVIEW = human-queue only"
+  ],
+  "counts": {
+   "items": 50,
+   "conditions": 171,
+   "assistant_shared": 7,
+   "assistant_differing": 43
+  },
+  "stimulus_input": "dataset/pilot/multiturn/stimulus_dataset_v1.json"
+ },
+ "structural": [
+  {
+   "research_item_id": "RI-DU-001",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-001-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-001-B-turn-00",
+     "RI-DU-001-B-turn-01",
+     "RI-DU-001-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-001-C-turn-00",
+     "RI-DU-001-C-turn-01",
+     "RI-DU-001-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-002",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-002-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-002-B-turn-00",
+     "RI-DU-002-B-turn-01",
+     "RI-DU-002-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-002-C-turn-00",
+     "RI-DU-002-C-turn-01",
+     "RI-DU-002-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-003",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-003-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-003-B-turn-00",
+     "RI-DU-003-B-turn-01",
+     "RI-DU-003-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-003-C-turn-00",
+     "RI-DU-003-C-turn-01",
+     "RI-DU-003-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-003-D-turn-00",
+     "RI-DU-003-D-turn-01",
+     "RI-DU-003-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-004",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-004-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-004-B-turn-00",
+     "RI-DU-004-B-turn-01",
+     "RI-DU-004-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-004-C-turn-00",
+     "RI-DU-004-C-turn-01",
+     "RI-DU-004-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-004-D-turn-00",
+     "RI-DU-004-D-turn-01",
+     "RI-DU-004-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-005",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-005-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-005-B-turn-00",
+     "RI-DU-005-B-turn-01",
+     "RI-DU-005-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-005-C-turn-00",
+     "RI-DU-005-C-turn-01",
+     "RI-DU-005-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-006",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-006-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-006-B-turn-00",
+     "RI-DU-006-B-turn-01",
+     "RI-DU-006-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-006-C-turn-00",
+     "RI-DU-006-C-turn-01",
+     "RI-DU-006-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-006-D-turn-00",
+     "RI-DU-006-D-turn-01",
+     "RI-DU-006-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-007",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-007-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-007-B-turn-00",
+     "RI-DU-007-B-turn-01",
+     "RI-DU-007-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-007-C-turn-00",
+     "RI-DU-007-C-turn-01",
+     "RI-DU-007-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-008",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-008-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-008-B-turn-00",
+     "RI-DU-008-B-turn-01",
+     "RI-DU-008-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-008-C-turn-00",
+     "RI-DU-008-C-turn-01",
+     "RI-DU-008-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-008-D-turn-00",
+     "RI-DU-008-D-turn-01",
+     "RI-DU-008-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-009",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-009-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-009-B-turn-00",
+     "RI-DU-009-B-turn-01",
+     "RI-DU-009-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-009-C-turn-00",
+     "RI-DU-009-C-turn-01",
+     "RI-DU-009-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-010",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-010-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-010-B-turn-00",
+     "RI-DU-010-B-turn-01",
+     "RI-DU-010-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-010-C-turn-00",
+     "RI-DU-010-C-turn-01",
+     "RI-DU-010-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-010-D-turn-00",
+     "RI-DU-010-D-turn-01",
+     "RI-DU-010-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-011",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-011-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-011-B-turn-00",
+     "RI-DU-011-B-turn-01",
+     "RI-DU-011-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-011-C-turn-00",
+     "RI-DU-011-C-turn-01",
+     "RI-DU-011-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-012",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-012-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-012-B-turn-00",
+     "RI-DU-012-B-turn-01",
+     "RI-DU-012-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-012-C-turn-00",
+     "RI-DU-012-C-turn-01",
+     "RI-DU-012-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-012-D-turn-00",
+     "RI-DU-012-D-turn-01",
+     "RI-DU-012-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-013",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-013-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-013-B-turn-00",
+     "RI-DU-013-B-turn-01",
+     "RI-DU-013-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-013-C-turn-00",
+     "RI-DU-013-C-turn-01",
+     "RI-DU-013-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-014",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-014-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-014-B-turn-00",
+     "RI-DU-014-B-turn-01",
+     "RI-DU-014-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-014-C-turn-00",
+     "RI-DU-014-C-turn-01",
+     "RI-DU-014-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-014-D-turn-00",
+     "RI-DU-014-D-turn-01",
+     "RI-DU-014-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-015",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-015-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-015-B-turn-00",
+     "RI-DU-015-B-turn-01",
+     "RI-DU-015-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-015-C-turn-00",
+     "RI-DU-015-C-turn-01",
+     "RI-DU-015-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-016",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-016-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-016-B-turn-00",
+     "RI-DU-016-B-turn-01",
+     "RI-DU-016-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-016-C-turn-00",
+     "RI-DU-016-C-turn-01",
+     "RI-DU-016-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-016-D-turn-00",
+     "RI-DU-016-D-turn-01",
+     "RI-DU-016-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-017",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-017-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-017-B-turn-00",
+     "RI-DU-017-B-turn-01",
+     "RI-DU-017-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-017-C-turn-00",
+     "RI-DU-017-C-turn-01",
+     "RI-DU-017-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-017-D-turn-00",
+     "RI-DU-017-D-turn-01",
+     "RI-DU-017-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-018",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-018-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-018-B-turn-00",
+     "RI-DU-018-B-turn-01",
+     "RI-DU-018-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-018-C-turn-00",
+     "RI-DU-018-C-turn-01",
+     "RI-DU-018-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-019",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-019-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-019-B-turn-00",
+     "RI-DU-019-B-turn-01",
+     "RI-DU-019-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-019-C-turn-00",
+     "RI-DU-019-C-turn-01",
+     "RI-DU-019-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-020",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-020-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-020-B-turn-00",
+     "RI-DU-020-B-turn-01",
+     "RI-DU-020-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-020-C-turn-00",
+     "RI-DU-020-C-turn-01",
+     "RI-DU-020-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-020-D-turn-00",
+     "RI-DU-020-D-turn-01",
+     "RI-DU-020-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-021",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-021-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-021-B-turn-00",
+     "RI-DU-021-B-turn-01",
+     "RI-DU-021-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-021-C-turn-00",
+     "RI-DU-021-C-turn-01",
+     "RI-DU-021-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-022",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-022-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-022-B-turn-00",
+     "RI-DU-022-B-turn-01",
+     "RI-DU-022-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-022-C-turn-00",
+     "RI-DU-022-C-turn-01",
+     "RI-DU-022-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-022-D-turn-00",
+     "RI-DU-022-D-turn-01",
+     "RI-DU-022-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-023",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-023-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-023-B-turn-00",
+     "RI-DU-023-B-turn-01",
+     "RI-DU-023-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-023-C-turn-00",
+     "RI-DU-023-C-turn-01",
+     "RI-DU-023-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-023-D-turn-00",
+     "RI-DU-023-D-turn-01",
+     "RI-DU-023-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-024",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-024-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-024-B-turn-00",
+     "RI-DU-024-B-turn-01",
+     "RI-DU-024-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-024-C-turn-00",
+     "RI-DU-024-C-turn-01",
+     "RI-DU-024-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-025",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-025-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-025-B-turn-00",
+     "RI-DU-025-B-turn-01",
+     "RI-DU-025-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-025-C-turn-00",
+     "RI-DU-025-C-turn-01",
+     "RI-DU-025-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-025-D-turn-00",
+     "RI-DU-025-D-turn-01",
+     "RI-DU-025-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-026",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-026-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-026-B-turn-00",
+     "RI-DU-026-B-turn-01",
+     "RI-DU-026-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-026-C-turn-00",
+     "RI-DU-026-C-turn-01",
+     "RI-DU-026-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-027",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-027-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-027-B-turn-00",
+     "RI-DU-027-B-turn-01",
+     "RI-DU-027-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-027-C-turn-00",
+     "RI-DU-027-C-turn-01",
+     "RI-DU-027-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-028",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3,
+    "neutral_filler_control": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-028-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-028-B-turn-00",
+     "RI-DU-028-B-turn-01",
+     "RI-DU-028-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-028-C-turn-00",
+     "RI-DU-028-C-turn-01",
+     "RI-DU-028-C-turn-02"
+    ],
+    "neutral_filler_control": [
+     "RI-DU-028-D-turn-00",
+     "RI-DU-028-D-turn-01",
+     "RI-DU-028-D-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-029",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-029-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-029-B-turn-00",
+     "RI-DU-029-B-turn-01",
+     "RI-DU-029-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-029-C-turn-00",
+     "RI-DU-029-C-turn-01",
+     "RI-DU-029-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-DU-030",
+   "category": "dual_use_nonnull",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-DU-030-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-DU-030-B-turn-00",
+     "RI-DU-030-B-turn-01",
+     "RI-DU-030-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-DU-030-C-turn-00",
+     "RI-DU-030-C-turn-01",
+     "RI-DU-030-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "T",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-001",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-001-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-001-B-turn-00",
+     "RI-AM-001-B-turn-01",
+     "RI-AM-001-B-turn-02",
+     "RI-AM-001-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-001-C-turn-00",
+     "RI-AM-001-C-turn-01",
+     "RI-AM-001-C-turn-02",
+     "RI-AM-001-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-001-D-turn-00",
+     "RI-AM-001-D-turn-01",
+     "RI-AM-001-D-turn-02",
+     "RI-AM-001-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-002",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-002-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-002-B-turn-00",
+     "RI-AM-002-B-turn-01",
+     "RI-AM-002-B-turn-02",
+     "RI-AM-002-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-002-C-turn-00",
+     "RI-AM-002-C-turn-01",
+     "RI-AM-002-C-turn-02",
+     "RI-AM-002-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-002-D-turn-00",
+     "RI-AM-002-D-turn-01",
+     "RI-AM-002-D-turn-02",
+     "RI-AM-002-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-003",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-003-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-003-B-turn-00",
+     "RI-AM-003-B-turn-01",
+     "RI-AM-003-B-turn-02",
+     "RI-AM-003-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-003-C-turn-00",
+     "RI-AM-003-C-turn-01",
+     "RI-AM-003-C-turn-02",
+     "RI-AM-003-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-003-D-turn-00",
+     "RI-AM-003-D-turn-01",
+     "RI-AM-003-D-turn-02",
+     "RI-AM-003-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-004",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-004-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-004-B-turn-00",
+     "RI-AM-004-B-turn-01",
+     "RI-AM-004-B-turn-02",
+     "RI-AM-004-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-004-C-turn-00",
+     "RI-AM-004-C-turn-01",
+     "RI-AM-004-C-turn-02",
+     "RI-AM-004-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-004-D-turn-00",
+     "RI-AM-004-D-turn-01",
+     "RI-AM-004-D-turn-02",
+     "RI-AM-004-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-005",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-005-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-005-B-turn-00",
+     "RI-AM-005-B-turn-01",
+     "RI-AM-005-B-turn-02",
+     "RI-AM-005-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-005-C-turn-00",
+     "RI-AM-005-C-turn-01",
+     "RI-AM-005-C-turn-02",
+     "RI-AM-005-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-005-D-turn-00",
+     "RI-AM-005-D-turn-01",
+     "RI-AM-005-D-turn-02",
+     "RI-AM-005-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-006",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-006-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-006-B-turn-00",
+     "RI-AM-006-B-turn-01",
+     "RI-AM-006-B-turn-02",
+     "RI-AM-006-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-006-C-turn-00",
+     "RI-AM-006-C-turn-01",
+     "RI-AM-006-C-turn-02",
+     "RI-AM-006-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-006-D-turn-00",
+     "RI-AM-006-D-turn-01",
+     "RI-AM-006-D-turn-02",
+     "RI-AM-006-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-AM-007",
+   "category": "persistent_ambiguity",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating",
+    "neutral_filler_control"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 4,
+    "full_context_incriminating": 4,
+    "neutral_filler_control": 4
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-AM-007-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-AM-007-B-turn-00",
+     "RI-AM-007-B-turn-01",
+     "RI-AM-007-B-turn-02",
+     "RI-AM-007-B-turn-03"
+    ],
+    "full_context_incriminating": [
+     "RI-AM-007-C-turn-00",
+     "RI-AM-007-C-turn-01",
+     "RI-AM-007-C-turn-02",
+     "RI-AM-007-C-turn-03"
+    ],
+    "neutral_filler_control": [
+     "RI-AM-007-D-turn-00",
+     "RI-AM-007-D-turn-01",
+     "RI-AM-007-D-turn-02",
+     "RI-AM-007-D-turn-03"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": true,
+   "control_strategy": "N",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-001",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-001-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-001-B-turn-00",
+     "RI-NB-001-B-turn-01",
+     "RI-NB-001-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-001-C-turn-00",
+     "RI-NB-001-C-turn-01",
+     "RI-NB-001-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-002",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-002-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-002-B-turn-00",
+     "RI-NB-002-B-turn-01",
+     "RI-NB-002-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-002-C-turn-00",
+     "RI-NB-002-C-turn-01",
+     "RI-NB-002-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-003",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-003-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-003-B-turn-00",
+     "RI-NB-003-B-turn-01",
+     "RI-NB-003-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-003-C-turn-00",
+     "RI-NB-003-C-turn-01",
+     "RI-NB-003-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-004",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-004-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-004-B-turn-00",
+     "RI-NB-004-B-turn-01",
+     "RI-NB-004-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-004-C-turn-00",
+     "RI-NB-004-C-turn-01",
+     "RI-NB-004-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-005",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-005-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-005-B-turn-00",
+     "RI-NB-005-B-turn-01",
+     "RI-NB-005-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-005-C-turn-00",
+     "RI-NB-005-C-turn-01",
+     "RI-NB-005-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-006",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-006-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-006-B-turn-00",
+     "RI-NB-006-B-turn-01",
+     "RI-NB-006-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-006-C-turn-00",
+     "RI-NB-006-C-turn-01",
+     "RI-NB-006-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NB-007",
+   "category": "null_benign",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NB-007-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NB-007-B-turn-00",
+     "RI-NB-007-B-turn-01",
+     "RI-NB-007-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NB-007-C-turn-00",
+     "RI-NB-007-C-turn-01",
+     "RI-NB-007-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-001",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-001-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-001-B-turn-00",
+     "RI-NH-001-B-turn-01",
+     "RI-NH-001-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-001-C-turn-00",
+     "RI-NH-001-C-turn-01",
+     "RI-NH-001-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-002",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-002-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-002-B-turn-00",
+     "RI-NH-002-B-turn-01",
+     "RI-NH-002-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-002-C-turn-00",
+     "RI-NH-002-C-turn-01",
+     "RI-NH-002-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-003",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-003-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-003-B-turn-00",
+     "RI-NH-003-B-turn-01",
+     "RI-NH-003-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-003-C-turn-00",
+     "RI-NH-003-C-turn-01",
+     "RI-NH-003-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-004",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-004-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-004-B-turn-00",
+     "RI-NH-004-B-turn-01",
+     "RI-NH-004-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-004-C-turn-00",
+     "RI-NH-004-C-turn-01",
+     "RI-NH-004-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-005",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-005-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-005-B-turn-00",
+     "RI-NH-005-B-turn-01",
+     "RI-NH-005-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-005-C-turn-00",
+     "RI-NH-005-C-turn-01",
+     "RI-NH-005-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  },
+  {
+   "research_item_id": "RI-NH-006",
+   "category": "null_highrisk",
+   "conditions": [
+    "final_prompt_only",
+    "full_context_incriminating",
+    "full_context_legitimating"
+   ],
+   "turn_counts": {
+    "final_prompt_only": 1,
+    "full_context_legitimating": 3,
+    "full_context_incriminating": 3
+   },
+   "turn_ids": {
+    "final_prompt_only": [
+     "RI-NH-006-A-turn-00"
+    ],
+    "full_context_legitimating": [
+     "RI-NH-006-B-turn-00",
+     "RI-NH-006-B-turn-01",
+     "RI-NH-006-B-turn-02"
+    ],
+    "full_context_incriminating": [
+     "RI-NH-006-C-turn-00",
+     "RI-NH-006-C-turn-01",
+     "RI-NH-006-C-turn-02"
+    ]
+   },
+   "final_byte_equal": true,
+   "has_d": false,
+   "control_strategy": "F",
+   "d_matches_strategy": true
+  }
+ ],
+ "measurements": [
+  {
+   "research_item_id": "RI-DU-001",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 379,
+     "words": 67,
+     "heuristic_tokens": 87
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 249,
+     "words": 42,
+     "heuristic_tokens": 55
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-002",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 295,
+     "words": 47,
+     "heuristic_tokens": 61
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 288,
+     "words": 53,
+     "heuristic_tokens": 69
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-003",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.944,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 282,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 274,
+     "words": 50,
+     "heuristic_tokens": 65
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 241,
+     "words": 38,
+     "heuristic_tokens": 49
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-004",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.9,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 283,
+     "words": 49,
+     "heuristic_tokens": 64
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 250,
+     "words": 43,
+     "heuristic_tokens": 56
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 218,
+     "words": 35,
+     "heuristic_tokens": 46
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-005",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 275,
+     "words": 49,
+     "heuristic_tokens": 64
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 272,
+     "words": 44,
+     "heuristic_tokens": 57
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-006",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.952,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 270,
+     "words": 44,
+     "heuristic_tokens": 57
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 274,
+     "words": 51,
+     "heuristic_tokens": 66
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 245,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-007",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.9,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 320,
+     "words": 48,
+     "heuristic_tokens": 62
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 233,
+     "words": 44,
+     "heuristic_tokens": 57
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-008",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.955,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 252,
+     "words": 41,
+     "heuristic_tokens": 53
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 255,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 206,
+     "words": 34,
+     "heuristic_tokens": 44
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-009",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.941,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 292,
+     "words": 50,
+     "heuristic_tokens": 65
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 238,
+     "words": 45,
+     "heuristic_tokens": 58
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-010",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.952,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 271,
+     "words": 42,
+     "heuristic_tokens": 55
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 232,
+     "words": 38,
+     "heuristic_tokens": 49
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 241,
+     "words": 37,
+     "heuristic_tokens": 48
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-011",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 279,
+     "words": 46,
+     "heuristic_tokens": 60
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 222,
+     "words": 38,
+     "heuristic_tokens": 49
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-012",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 255,
+     "words": 42,
+     "heuristic_tokens": 55
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 237,
+     "words": 44,
+     "heuristic_tokens": 57
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 211,
+     "words": 39,
+     "heuristic_tokens": 51
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-013",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.952,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 253,
+     "words": 44,
+     "heuristic_tokens": 57
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 252,
+     "words": 41,
+     "heuristic_tokens": 53
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-014",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 301,
+     "words": 55,
+     "heuristic_tokens": 72
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 264,
+     "words": 49,
+     "heuristic_tokens": 64
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 207,
+     "words": 36,
+     "heuristic_tokens": 47
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-015",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.917,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 305,
+     "words": 51,
+     "heuristic_tokens": 66
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 244,
+     "words": 45,
+     "heuristic_tokens": 58
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-016",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 247,
+     "words": 46,
+     "heuristic_tokens": 60
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 253,
+     "words": 42,
+     "heuristic_tokens": 55
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 262,
+     "words": 47,
+     "heuristic_tokens": 61
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-017",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.952,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 270,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 208,
+     "words": 36,
+     "heuristic_tokens": 47
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 249,
+     "words": 36,
+     "heuristic_tokens": 47
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-018",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 243,
+     "words": 39,
+     "heuristic_tokens": 51
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 259,
+     "words": 41,
+     "heuristic_tokens": 53
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-019",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 267,
+     "words": 48,
+     "heuristic_tokens": 62
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 252,
+     "words": 47,
+     "heuristic_tokens": 61
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-020",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.955,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 259,
+     "words": 44,
+     "heuristic_tokens": 57
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 266,
+     "words": 46,
+     "heuristic_tokens": 60
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 210,
+     "words": 34,
+     "heuristic_tokens": 44
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-021",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.913,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 275,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 289,
+     "words": 47,
+     "heuristic_tokens": 61
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-022",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.963,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 275,
+     "words": 43,
+     "heuristic_tokens": 56
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 245,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 259,
+     "words": 44,
+     "heuristic_tokens": 57
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-023",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.958,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 294,
+     "words": 49,
+     "heuristic_tokens": 64
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 247,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 240,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-024",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 316,
+     "words": 53,
+     "heuristic_tokens": 69
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 242,
+     "words": 42,
+     "heuristic_tokens": 55
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-025",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 244,
+     "words": 40,
+     "heuristic_tokens": 52
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 239,
+     "words": 40,
+     "heuristic_tokens": 52
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 235,
+     "words": 33,
+     "heuristic_tokens": 43
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-026",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 296,
+     "words": 50,
+     "heuristic_tokens": 65
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 267,
+     "words": 43,
+     "heuristic_tokens": 56
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-027",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.857,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 257,
+     "words": 41,
+     "heuristic_tokens": 53
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 219,
+     "words": 41,
+     "heuristic_tokens": 53
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-028",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.958,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 277,
+     "words": 42,
+     "heuristic_tokens": 55
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 240,
+     "words": 45,
+     "heuristic_tokens": 58
+    },
+    "neutral_filler_control": {
+     "pre_turns": 2,
+     "bytes": 205,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-029",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 308,
+     "words": 49,
+     "heuristic_tokens": 64
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 237,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-DU-030",
+   "category": "dual_use_nonnull",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 264,
+     "words": 43,
+     "heuristic_tokens": 56
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 242,
+     "words": 45,
+     "heuristic_tokens": 58
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-001",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 393,
+     "words": 70,
+     "heuristic_tokens": 91
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 347,
+     "words": 66,
+     "heuristic_tokens": 86
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 321,
+     "words": 51,
+     "heuristic_tokens": 66
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-002",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 410,
+     "words": 74,
+     "heuristic_tokens": 96
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 331,
+     "words": 60,
+     "heuristic_tokens": 78
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 312,
+     "words": 53,
+     "heuristic_tokens": 69
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-003",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 376,
+     "words": 72,
+     "heuristic_tokens": 94
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 365,
+     "words": 65,
+     "heuristic_tokens": 84
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 332,
+     "words": 55,
+     "heuristic_tokens": 72
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-004",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 377,
+     "words": 69,
+     "heuristic_tokens": 90
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 314,
+     "words": 61,
+     "heuristic_tokens": 79
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 281,
+     "words": 51,
+     "heuristic_tokens": 66
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-005",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 339,
+     "words": 62,
+     "heuristic_tokens": 81
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 331,
+     "words": 60,
+     "heuristic_tokens": 78
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 287,
+     "words": 51,
+     "heuristic_tokens": 66
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-006",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 339,
+     "words": 60,
+     "heuristic_tokens": 78
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 320,
+     "words": 54,
+     "heuristic_tokens": 70
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 288,
+     "words": 52,
+     "heuristic_tokens": 68
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-AM-007",
+   "category": "persistent_ambiguity",
+   "assistant_shared_bc": true,
+   "assistant_jaccard_bc": 0.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 3,
+     "bytes": 404,
+     "words": 69,
+     "heuristic_tokens": 90
+    },
+    "full_context_incriminating": {
+     "pre_turns": 3,
+     "bytes": 334,
+     "words": 56,
+     "heuristic_tokens": 73
+    },
+    "neutral_filler_control": {
+     "pre_turns": 3,
+     "bytes": 304,
+     "words": 55,
+     "heuristic_tokens": 72
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-001",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.941,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 227,
+     "words": 39,
+     "heuristic_tokens": 51
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 203,
+     "words": 36,
+     "heuristic_tokens": 47
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-002",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 247,
+     "words": 40,
+     "heuristic_tokens": 52
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 216,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-003",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.938,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 244,
+     "words": 42,
+     "heuristic_tokens": 55
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 223,
+     "words": 39,
+     "heuristic_tokens": 51
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-004",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.889,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 229,
+     "words": 39,
+     "heuristic_tokens": 51
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 233,
+     "words": 38,
+     "heuristic_tokens": 49
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-005",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 209,
+     "words": 33,
+     "heuristic_tokens": 43
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 226,
+     "words": 39,
+     "heuristic_tokens": 51
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-006",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.905,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 261,
+     "words": 40,
+     "heuristic_tokens": 52
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 234,
+     "words": 44,
+     "heuristic_tokens": 57
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NB-007",
+   "category": "null_benign",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.95,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 227,
+     "words": 38,
+     "heuristic_tokens": 49
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 247,
+     "words": 40,
+     "heuristic_tokens": 52
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-001",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 163,
+     "words": 27,
+     "heuristic_tokens": 35
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 149,
+     "words": 30,
+     "heuristic_tokens": 39
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-002",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 191,
+     "words": 28,
+     "heuristic_tokens": 36
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 131,
+     "words": 27,
+     "heuristic_tokens": 35
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-003",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 0.833,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 179,
+     "words": 29,
+     "heuristic_tokens": 38
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 103,
+     "words": 21,
+     "heuristic_tokens": 27
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-004",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 168,
+     "words": 27,
+     "heuristic_tokens": 35
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 161,
+     "words": 27,
+     "heuristic_tokens": 35
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-005",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 184,
+     "words": 32,
+     "heuristic_tokens": 42
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 127,
+     "words": 24,
+     "heuristic_tokens": 31
+    }
+   }
+  },
+  {
+   "research_item_id": "RI-NH-006",
+   "category": "null_highrisk",
+   "assistant_shared_bc": false,
+   "assistant_jaccard_bc": 1.0,
+   "context": {
+    "final_prompt_only": {
+     "pre_turns": 0,
+     "bytes": 0,
+     "words": 0,
+     "heuristic_tokens": 0
+    },
+    "full_context_legitimating": {
+     "pre_turns": 2,
+     "bytes": 160,
+     "words": 26,
+     "heuristic_tokens": 34
+    },
+    "full_context_incriminating": {
+     "pre_turns": 2,
+     "bytes": 147,
+     "words": 24,
+     "heuristic_tokens": 31
+    }
+   }
+  }
+ ],
+ "findings": [
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-001",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-001-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-001-A-turn-00": "285449d801a2c64086aff33a24057bbd7a97dcc8cdf351a4a830307cc56b5446"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-002",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-002-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-002-A-turn-00": "461b344750544acdedb42ca97ee02d92bc49265b0bad768d5484e3b0e694e04b"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-003",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-003-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-003-A-turn-00": "cfcd1a0b735f79d295c4f23cdd5570845c0d1938dfb21d55df8f99582d03b25a"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-004",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-004-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-004-A-turn-00": "94f25efcdaf718a8575c335c567e3006e679a682a15198532faf3156f590b3fb"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-005",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-005-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-005-A-turn-00": "160e47a5a5a9d037295834a905ec5b7747ebb79346679abd07d9a05bc4b40699"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF1",
+   "research_item_id": "RI-AM-006",
+   "condition": "final_prompt_only",
+   "location": {
+    "turn_ids": [
+     "RI-AM-006-A-turn-00"
+    ],
+    "text_sha256": {
+     "RI-AM-006-A-turn-00": "ef5e22eaf3e87d32a19b664f459da9cce738b44f4bc10e44d9eec1a6b54639a4"
+    }
+   },
+   "issue_type": "T-REF",
+   "evidence": "detector R-REF1 fired (determiner + token, len>=4); match location above",
+   "human_decisions_open": {
+    "is_noun_phrase": "undecided",
+    "has_referent": "undecided",
+    "needs_context": "undecided",
+    "risk_ambiguity_relation": "undecided"
+   },
+   "alternative": "ordinary anaphora, verb/adverb use, or no defect",
+   "auto_check": "regex hit only; noun-hood and discourse status need human reading",
+   "human_decision_needed": "noun-phrasehood, referent existence, context need, risk relation, naturalness",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 canonical A-prompts"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-DU-006",
+   "condition": "full_context_legitimating",
+   "location": {
+    "turn_ids": [
+     "RI-DU-006-B-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-006-B-turn-01": "65d94fffbea5572730f1bde39ba2bc73db85fba307727648dd541f493c7a80ec"
+    },
+    "source_turn_ids": [
+     "RI-DU-006-D-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-DU-006-D-turn-00": "1d391ee86290ba8f64ae376e96c77511ac60fe454d16f4331b82f19a2d13e044"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=1) in full_context_legitimating assistant turn, absent from same-condition user turns and prompt, present in ['neutral_filler_control'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-DU-008",
+   "condition": "full_context_legitimating",
+   "location": {
+    "turn_ids": [
+     "RI-DU-008-B-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-008-B-turn-01": "166c270df4e66ef5533711eb9780281d03ecf0803024f7b4163dd8bb573323fb"
+    },
+    "source_turn_ids": [
+     "RI-DU-008-D-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-DU-008-D-turn-00": "d8b213b39d07f13ae27abcd6343bf7295eeb3875fbb7b86083bfd0065c2a89ec"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=1) in full_context_legitimating assistant turn, absent from same-condition user turns and prompt, present in ['neutral_filler_control'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-DU-022",
+   "condition": "full_context_legitimating",
+   "location": {
+    "turn_ids": [
+     "RI-DU-022-B-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-022-B-turn-01": "958ba958f1a6855c1acb45461a3196ff42ca465f91f62a6368672d914d8c1fc4"
+    },
+    "source_turn_ids": [
+     "RI-DU-022-D-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-DU-022-D-turn-00": "4b8aeb399c1f6ae63dbc7ba558ef6de7220e6823444298d8fb4be73d4ea29769"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=2) in full_context_legitimating assistant turn, absent from same-condition user turns and prompt, present in ['neutral_filler_control'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-AM-002",
+   "condition": "full_context_incriminating",
+   "location": {
+    "turn_ids": [
+     "RI-AM-002-C-turn-01"
+    ],
+    "text_sha256": {
+     "RI-AM-002-C-turn-01": "90645b8f5730ef09ab06b5966b2ca13eb4f08bd74684df6b55593effa0322d82"
+    },
+    "source_turn_ids": [
+     "RI-AM-002-B-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-AM-002-B-turn-00": "d0460fa55b5d3569b09e1da6da55252b2aa41fa79f6e883c047050975bd5eaf0"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=2) in full_context_incriminating assistant turn, absent from same-condition user turns and prompt, present in ['full_context_legitimating'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-AM-003",
+   "condition": "full_context_incriminating",
+   "location": {
+    "turn_ids": [
+     "RI-AM-003-C-turn-01"
+    ],
+    "text_sha256": {
+     "RI-AM-003-C-turn-01": "00c5bb35d18a6492a595bf841d347f1cfbe60a8be888e6617d041a1f61ad88eb"
+    },
+    "source_turn_ids": [
+     "RI-AM-003-B-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-AM-003-B-turn-00": "163e6c5ab829407735a129b66d47f4a7d0448c647f6228e609dfdaa47f61ac7d"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=2) in full_context_incriminating assistant turn, absent from same-condition user turns and prompt, present in ['full_context_legitimating'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-AM-006",
+   "condition": "full_context_legitimating",
+   "location": {
+    "turn_ids": [
+     "RI-AM-006-B-turn-01"
+    ],
+    "text_sha256": {
+     "RI-AM-006-B-turn-01": "1c349c86fc4ad0970abffc364c365b0faadabc06b85f35da59e5975369a727a7"
+    },
+    "source_turn_ids": [
+     "RI-AM-006-C-turn-02"
+    ],
+    "source_text_sha256": {
+     "RI-AM-006-C-turn-02": "8515891fef109e36a29ad7f1777534b09906b01c466b9fab4170dbdda4266bb5"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=2) in full_context_legitimating assistant turn, absent from same-condition user turns and prompt, present in ['full_context_incriminating'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-REF2",
+   "research_item_id": "RI-NB-003",
+   "condition": "full_context_incriminating",
+   "location": {
+    "turn_ids": [
+     "RI-NB-003-C-turn-01"
+    ],
+    "text_sha256": {
+     "RI-NB-003-C-turn-01": "cb8c8eda360b508c854be8ca6b47cfb6106675040cfe51fa2910eae2948be1c7"
+    },
+    "source_turn_ids": [
+     "RI-NB-003-B-turn-00"
+    ],
+    "source_text_sha256": {
+     "RI-NB-003-B-turn-00": "82864051c1de86dbac035a17184a0fc84366553b1ef98a0524e37004cb7a4681"
+    }
+   },
+   "issue_type": "T-XCOND",
+   "evidence": "detector R-REF2 fired: rare token (df=1) in full_context_incriminating assistant turn, absent from same-condition user turns and prompt, present in ['full_context_legitimating'] user turns; match locations above",
+   "alternative": "independent benign word choice in both places; no defect",
+   "auto_check": "rule fired (len>=5, df<=2, user-source only)",
+   "human_decision_needed": "coherence/naturalness judgment: does the turn depend on information the reader of this condition never received?",
+   "proposed_status": "REVIEW",
+   "scanned_population": "50 items x ordered condition pairs, assistant turns"
+  },
+  {
+   "rule_id": "R-DHINT",
+   "research_item_id": "RI-AM-004",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-AM-004-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-AM-004-D-turn-01": "b831173b0ec077a5139290ba2513e1479f7012e45e9af84f6cddd29f5ba97f74"
+    }
+   },
+   "issue_type": "T-DHINT-LEX",
+   "evidence": "lexical-adjacency rank #1/21 (ov_prompt=0.0, ov_b=0.286, ov_c=0.286); RANKING IS NOT A DEFECT VERDICT",
+   "alternative": "topic-adjacent filler with no task-solving content",
+   "auto_check": "ranked by overlap coefficient; semantic task-priming needs human reading",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "21 D arms"
+  },
+  {
+   "rule_id": "R-DHINT",
+   "research_item_id": "RI-DU-008",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-DU-008-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-008-D-turn-01": "bab9d45bfe2921c8523321a43b2b50b1dc9f2cf20aa0473baacfe16342323795"
+    }
+   },
+   "issue_type": "T-DHINT-LEX",
+   "evidence": "lexical-adjacency rank #2/21 (ov_prompt=0.0, ov_b=0.125, ov_c=0.25); RANKING IS NOT A DEFECT VERDICT",
+   "alternative": "topic-adjacent filler with no task-solving content",
+   "auto_check": "ranked by overlap coefficient; semantic task-priming needs human reading",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "21 D arms"
+  },
+  {
+   "rule_id": "R-DHINT",
+   "research_item_id": "RI-DU-010",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-DU-010-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-010-D-turn-01": "09e8d92138b3b40ab63bd69fed6b9a0e2fd3b2df1446cb8d96b7dd4268cdcf39"
+    }
+   },
+   "issue_type": "T-DHINT-LEX",
+   "evidence": "lexical-adjacency rank #3/21 (ov_prompt=0.2, ov_b=0.1, ov_c=0.0); RANKING IS NOT A DEFECT VERDICT",
+   "alternative": "topic-adjacent filler with no task-solving content",
+   "auto_check": "ranked by overlap coefficient; semantic task-priming needs human reading",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "21 D arms"
+  },
+  {
+   "rule_id": "R-DHINT",
+   "research_item_id": "RI-DU-028",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-DU-028-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-028-D-turn-01": "68c665d445c77066665145421a4288ee4a57a62eaa86083aa5851deebeb4288f"
+    }
+   },
+   "issue_type": "T-DHINT-LEX",
+   "evidence": "lexical-adjacency rank #4/21 (ov_prompt=0.2, ov_b=0.0, ov_c=0.0); RANKING IS NOT A DEFECT VERDICT",
+   "alternative": "topic-adjacent filler with no task-solving content",
+   "auto_check": "ranked by overlap coefficient; semantic task-priming needs human reading",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "21 D arms"
+  },
+  {
+   "rule_id": "R-DHINT",
+   "research_item_id": "RI-AM-007",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-AM-007-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-AM-007-D-turn-01": "96a7cfc981018cd9ae2fe70b0915594e1d6488598069e32feca4d695b39ff699"
+    }
+   },
+   "issue_type": "T-DHINT-LEX",
+   "evidence": "lexical-adjacency rank #5/21 (ov_prompt=0.0, ov_b=0.2, ov_c=0.2); RANKING IS NOT A DEFECT VERDICT",
+   "alternative": "topic-adjacent filler with no task-solving content",
+   "auto_check": "ranked by overlap coefficient; semantic task-priming needs human reading",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "21 D arms"
+  },
+  {
+   "rule_id": "HUMAN-SRC",
+   "research_item_id": "RI-DU-004",
+   "condition": "neutral_filler_control",
+   "location": {
+    "turn_ids": [
+     "RI-DU-004-D-turn-01"
+    ],
+    "text_sha256": {
+     "RI-DU-004-D-turn-01": "682da64ccf1e31a0097cf02ab3a6256bf2411dca00192de8bf4ec721db999329"
+    }
+   },
+   "issue_type": "T-DHINT-HUMAN",
+   "evidence": "report-sourced D method-hint candidate; lexical screen values (ov_prompt=0.0, ov_b=0.0, ov_c=0.0) bound — not validate — the automated screen",
+   "alternative": "adjacent-but-inert filler per d_rationale",
+   "auto_check": "not fired by automation; listed from report P13",
+   "human_decision_needed": "neutrality judgment + d_rationale sufficiency",
+   "proposed_status": "REVIEW",
+   "scanned_population": "report P13 item note"
+  }
+ ]
+}

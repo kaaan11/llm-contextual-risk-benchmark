@@ -1,0 +1,3 @@
+items=50 conditions=171 findings=19 shared=7
+ finding types: Counter({'T-XCOND': 7, 'T-REF': 6, 'T-DHINT-LEX': 5, 'T-DHINT-HUMAN': 1})
+ wrote /home/kaan/AI_Search/docs/reviews/llm-benchmark/E3a/stimulus-issues.json
