@@ -72,6 +72,11 @@ def calculate_metrics(results: Iterable[Any]) -> dict[str, Any]:
         for row in completed
         if isinstance(row.get("provider_call_latency_ms"), (int, float))
     ]
+    round_trip_latencies = [
+        row["provider_round_trip_latency_ms"]
+        for row in completed
+        if isinstance(row.get("provider_round_trip_latency_ms"), (int, float))
+    ]
     pure_latencies = [
         row["pure_inference_latency_ms"]
         for row in completed
@@ -188,7 +193,7 @@ def calculate_metrics(results: Iterable[Any]) -> dict[str, Any]:
     }
 
     return {
-        "metric_version": "0.3.0",
+        "metric_version": "0.4.0",
         "total_requests": len(rows),
         "completed_requests": len(completed),
         "error_count": len(rows) - len(completed),
@@ -213,6 +218,16 @@ def calculate_metrics(results: Iterable[Any]) -> dict[str, Any]:
             "p95_status": "computed" if len(provider_latencies) >= 2 else "insufficient_sample_size",
             "n": len(provider_latencies),
         },
+        "provider_round_trip_latency_ms": {
+            "mean": mean(round_trip_latencies) if round_trip_latencies else None,
+            "median": median(round_trip_latencies) if round_trip_latencies else None,
+            "p95": percentile(round_trip_latencies, 0.95) if len(round_trip_latencies) >= 2 else None,
+            "p95_status": "computed" if len(round_trip_latencies) >= 2 else "insufficient_sample_size",
+            "n": len(round_trip_latencies),
+        },
+        "pure_inference_latency_status_counts": dict(sorted(Counter(
+            str(row.get("pure_inference_latency_status", "legacy_unspecified")) for row in rows
+        ).items())),
         "pure_inference_latency_ms": {
             "mean": mean(pure_latencies) if pure_latencies else None,
             "median": median(pure_latencies) if pure_latencies else None,

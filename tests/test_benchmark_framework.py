@@ -182,7 +182,7 @@ class BenchmarkFrameworkTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             percentile([1, 2], 1.1)
 
-    def test_pure_latency_and_retry_overhead_isolated(self):
+    def test_client_round_trip_and_retry_overhead_isolated(self):
         from benchmark.errors import AdapterRequestError
         from benchmark.retry import RetryPolicy
 
@@ -217,8 +217,10 @@ class BenchmarkFrameworkTests(unittest.TestCase):
         self.assertEqual(res.attempts, 2)
         self.assertIsNotNone(res.retry_overhead_ms)
         self.assertGreaterEqual(res.retry_overhead_ms, 30.0)
-        self.assertIsNotNone(res.pure_inference_latency_ms)
-        self.assertLess(res.pure_inference_latency_ms, res.provider_call_latency_ms)
+        self.assertIsNone(res.pure_inference_latency_ms)
+        self.assertEqual(res.pure_inference_latency_status, "unavailable_no_server_timing")
+        self.assertIsNotNone(res.provider_round_trip_latency_ms)
+        self.assertLess(res.provider_round_trip_latency_ms, res.provider_call_latency_ms)
         metrics = calculate_metrics(results)
         self.assertIn("pure_inference_latency_ms", metrics)
         self.assertIn("retry_overhead_ms", metrics)

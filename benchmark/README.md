@@ -64,3 +64,23 @@ Phase 6A için `benchmark.smoke_test` 20 kayıtlık deterministik manifesti doğ
 ```
 
 Çıktılar `results/smoke_test/phase6a-real-model-smoke/` altında yerel tutulur ve Git'e alınmaz. Mevcut ortamda gerekli credential/model sürümü yoksa her provider açıkça `not_evaluated` durumuyla raporlanır.
+
+## Client timing support boundary
+
+The legacy runner measures client wall time, not server inference. New response rows leave
+`pure_inference_latency_ms=null` with
+`pure_inference_latency_status=unavailable_no_server_timing`; current adapters do not expose
+server inference measurements. `provider_round_trip_latency_ms` sums the duration of every
+adapter attempt, including failed attempts, client serialization/parsing and network/provider
+time when applicable. Backoff is excluded and is measured separately as actual elapsed sleep
+in `retry_overhead_ms`. The historical `provider_call_latency_ms` field retains its outer
+retry-loop wall time, including backoff. Error rows keep these diagnostics but do not enter
+successful-response latency summaries or refusal rates.
+
+Metric version `0.4.0` adds the honest round-trip summary and timing-status counts. Legacy
+artifacts remain byte-unchanged and may contain the old mislabeled pure-inference estimates;
+reading their numeric fields does not validate them as server measurements. The mock console
+now handles unavailable inference timing without formatting a null value as a float. Fake
+clock tests exercise retry success and exhausted timeout, including actual sleep differing
+from the requested delay. These software timings are not empirical benchmark findings and
+do not complete E5/E6 or authorize a real evaluation.

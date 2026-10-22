@@ -95,13 +95,16 @@ class EvaluationRunner:
             messages: tuple[dict[str, str], ...] = ()
             provider_call_started = None
             provider_call_latency_ms = None
-            pure_inference_latency_ms = None
+            provider_round_trip_latency_ms = None
             retry_overhead_ms = None
             retry_sleep_total = 0.0
             def tracking_sleeper(delay: float) -> None:
                 nonlocal retry_sleep_total
-                retry_sleep_total += delay
-                sleep(delay)
+                sleep_started = perf_counter()
+                try:
+                    sleep(delay)
+                finally:
+                    retry_sleep_total += perf_counter() - sleep_started
 
             try:
                 messages = self._messages_for_case(case)
@@ -115,14 +118,22 @@ class EvaluationRunner:
                     generation_parameters=self.metadata.generation_parameters,
                 )
                 provider_call_started = perf_counter()
+                def tracked_generate():
+                    nonlocal provider_round_trip_latency_ms
+                    attempt_started = perf_counter()
+                    try:
+                        return self.adapter.generate(request)
+                    finally:
+                        elapsed = (perf_counter() - attempt_started) * 1000.0
+                        provider_round_trip_latency_ms = (provider_round_trip_latency_ms or 0.0) + elapsed
+
                 response, attempts = call_with_retry(
-                    lambda: self.adapter.generate(request),
+                    tracked_generate,
                     self.retry_policy,
                     sleeper=tracking_sleeper,
                 )
                 provider_call_latency_ms = (perf_counter() - provider_call_started) * 1000.0
                 retry_overhead_ms = retry_sleep_total * 1000.0
-                pure_inference_latency_ms = max(0.0, provider_call_latency_ms - retry_overhead_ms)
                 latency_ms = (perf_counter() - started) * 1000.0
                 refusal = self.refusal_detector.detect(response.text)
                 result = EvaluationResult(
@@ -136,7 +147,8 @@ class EvaluationRunner:
                     request_id=response.request_id,
                     latency_ms=latency_ms,
                     provider_call_latency_ms=provider_call_latency_ms,
-                    pure_inference_latency_ms=pure_inference_latency_ms,
+                    pure_inference_latency_ms=None,
+                    provider_round_trip_latency_ms=provider_round_trip_latency_ms,
                     retry_overhead_ms=retry_overhead_ms,
                     refusal=refusal,
                     usage=response.usage,
@@ -153,7 +165,6 @@ class EvaluationRunner:
                 if provider_call_started is not None:
                     provider_call_latency_ms = (perf_counter() - provider_call_started) * 1000.0
                     retry_overhead_ms = retry_sleep_total * 1000.0
-                    pure_inference_latency_ms = max(0.0, provider_call_latency_ms - retry_overhead_ms)
                 if isinstance(exc, RetryExhaustedError):
                     attempts = exc.attempts
                 refusal = self.refusal_detector.classify_error()
@@ -169,7 +180,8 @@ class EvaluationRunner:
                     refusal=refusal,
                     latency_ms=latency_ms,
                     provider_call_latency_ms=provider_call_latency_ms,
-                    pure_inference_latency_ms=pure_inference_latency_ms,
+                    pure_inference_latency_ms=None,
+                    provider_round_trip_latency_ms=provider_round_trip_latency_ms,
                     retry_overhead_ms=retry_overhead_ms,
                     error=sanitize_error_message(f"{type(exc).__name__}: {exc}"),
                     input_turn_count=len(messages),
