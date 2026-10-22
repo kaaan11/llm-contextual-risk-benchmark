@@ -155,7 +155,7 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements-dev.txt
 .venv/bin/python scripts/check_research_integrity.py
 .venv/bin/python scripts/offline_preview.py
-.venv/bin/python -m pytest --ignore=tests/test_annotate_blind.py \
+BENCHMARK_TEST_OFFLINE=1 .venv/bin/python -m pytest --ignore=tests/test_annotate_blind.py \
   --ignore=tests/test_phase7g_tooling.py --ignore=tests/test_phase7g_qc.py \
   --ignore=tests/test_remediation_regressions.py
 .venv/bin/python scripts/validate_phase7e_review.py

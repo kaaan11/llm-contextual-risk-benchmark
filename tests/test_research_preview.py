@@ -1,4 +1,6 @@
 """Read-only evidence checks; fixtures change only temporary byte sequences."""
+import hashlib
+import json
 import shutil
 import socket
 
@@ -42,3 +44,16 @@ def test_offline_guard_rejects_network_before_connecting():
         pytest.skip("offline CI profile only")
     with pytest.raises(AssertionError, match="Network access is disabled"):
         socket.create_connection(("127.0.0.1", 9))
+
+
+def test_integrity_rejects_changed_dataset_with_rewritten_manifest(tmp_path):
+    for folder in ("docs", "dataset", "results"):
+        shutil.copytree(ROOT / folder, tmp_path / folder)
+    manifest_path = tmp_path / "results/dataset_audit/phase7e_preregistration_hash.json"
+    manifest = json.loads(manifest_path.read_text())
+    relative = next(iter(manifest["protected_files"]))
+    dataset_path = tmp_path / relative
+    dataset_path.write_bytes(dataset_path.read_bytes() + b"\n")
+    manifest["protected_files"][relative]["sha256"] = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+    manifest_path.write_text(json.dumps(manifest))
+    assert "frozen integrity manifest mismatch" in verify(tmp_path)

@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+MANIFEST = "560c758e787f4acebbbc03f724eb7b9d43dbff373b7331583433b91ff78bf282"
 COMPOSITE = "47ae3fed4117639ef2575135a6ca63f000f4fcc8c052c629355f6ccf4bbcfc6f"
 STIMULUS = "2f78e79e19d844b84b6bc06a0c2bef47e19283cc7c54b91f6ae283e1a74af077"
 AUDIT_PREFIXES = {
@@ -22,8 +23,11 @@ def sha256(data: bytes) -> str:
 def verify(root: Path = ROOT) -> list[str]:
     """Return violations without changing files or printing blind material."""
     audit = root / "results/dataset_audit"
-    manifest = json.loads((audit / "phase7e_preregistration_hash.json").read_text(encoding="utf-8"))
+    manifest_bytes = (audit / "phase7e_preregistration_hash.json").read_bytes()
+    manifest = json.loads(manifest_bytes)
     errors = []
+    if sha256(manifest_bytes) != MANIFEST:
+        errors.append("frozen integrity manifest mismatch")
     protocol_hashes = {}
     for section in ("protocol_files", "protected_files"):
         for relative, record in manifest[section].items():
