@@ -1,5 +1,14 @@
 # Proje Durumu
 
+**Güncel yetkili kayıt (2026-10-22): ARAŞTIRMA DONDURULDU; İNSAN GİRDİSİ BEKLENİYOR.**
+[2026-09-10 dondurma kaydı](docs/reviews/llm-benchmark/PROJECT-FROZEN-2026-09-10.md)
+ve [research preview sınırları](docs/research-preview-readiness.md) aşağıdaki tarihsel
+açıklamalardan önce gelir. E1a/E1b/E1c teknik taslak kabulü bilimsel onay değildir;
+aktif araştırma briefi yoktur. Phase 7G: rater_a 1/50, rater_b 0/50, KEEP 0/50;
+Phase 8 kilitlidir. Tarihsel “hiçbir annotation yok” ifadeleri ilk rater girdisinden
+önceki durumu anlatır; güncel sayılar bunların yerine geçer.
+
+
 ## Phase 7 özet durumu (yetkili tablo)
 
 Bu tablo, aşağıdaki ayrıntılı bölümler arasında çelişki olması hâlinde geçerli olan tek yetkili kaynaktır.

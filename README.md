@@ -7,15 +7,18 @@ sitting at the intersection of jailbreak resistance and over-refusal.
 
 ---
 
-> ## Status: early-stage research pilot — **no results exist**
+> ## Status: research preview — **frozen; human input required**
 >
 > No model or API has ever been evaluated in this repository. There is **no** Attack Success
 > Rate, refusal rate, latency measurement, model comparison, expert validation, or empirical
 > finding of any kind. The project is currently at the **Phase 7G human quality-control gate**,
 > which is **incomplete**.
 >
-> Everything here is design, stimuli, tooling and audit trail. Treat every stimulus as
-> *unverified* until the human QC gate closes.
+> The research campaign was frozen on **2026-09-10**. E1a/E1b/E1c were accepted as
+> technical drafts, but their scientific choices are **not approved or effective**. There is
+> no active research worker brief. Treat every stimulus as *unverified* until human QC closes.
+> Read the [freeze and restart record](docs/reviews/llm-benchmark/PROJECT-FROZEN-2026-09-10.md)
+> and [current readiness boundaries](docs/research-preview-readiness.md) first.
 
 | Phase | Status |
 |---|---|
@@ -28,7 +31,9 @@ sitting at the intersection of jailbreak resistance and over-refusal.
 | **7G · blind review + human QC** | **incomplete — 1/50 isolated rater_a annotations (two-rater mandate), 0/50 decisions** |
 | 8 · model evaluation | not started |
 
-Canonical status: [`PROJECT_STATUS.md`](PROJECT_STATUS.md) *(written in Turkish)*.
+Current authority: the [freeze record](docs/reviews/llm-benchmark/PROJECT-FROZEN-2026-09-10.md).
+[`PROJECT_STATUS.md`](PROJECT_STATUS.md) contains the phase inventory and historical narratives;
+older completion statements do not approve the pending E1 decisions or open Phase 8.
 
 ---
 
@@ -129,7 +134,7 @@ scripts/       deterministic build, freeze, validation and
 benchmark/     loader, provider adapters, runner, refusal heuristic,
                metrics, retry, smoke-test harness  (never run live)
 results/       audit reports, review state, append-only history, snapshots
-tests/         314 tests, including negative controls
+tests/         offline validation and negative controls (see the safe CI profile)
 configs/       pinned construction and smoke-test configuration
 ```
 
@@ -143,18 +148,37 @@ configs/       pinned construction and smoke-test configuration
 
 ## Running things
 
-Requires Python 3.11+ and `pytest`. No network access, no API keys, no model calls.
+From a repository checkout, use Python 3.10+ and a virtual environment:
 
 ```bash
-pytest -q                                        # 314 tests
-
-python scripts/build_stimulus_dataset.py         # rebuild stimuli from approved designs
-python scripts/freeze_phase7e_preregistration.py # recompute protocol + dataset hashes
-python scripts/validate_phase7e_review.py        # researcher-review invariants
-python scripts/validate_phase7g_review.py        # blind-review and QC invariants
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements-dev.txt
+.venv/bin/python scripts/check_research_integrity.py
+.venv/bin/python scripts/offline_preview.py
+.venv/bin/python -m pytest --ignore=tests/test_annotate_blind.py \
+  --ignore=tests/test_phase7g_tooling.py --ignore=tests/test_phase7g_qc.py \
+  --ignore=tests/test_remediation_regressions.py
+.venv/bin/python scripts/validate_phase7e_review.py
+.venv/bin/python scripts/validate_phase7g_review.py
 ```
 
-Builds are deterministic: same inputs, same bytes.
+Dependency installation needs a package index or a local wheel cache. The example and checks
+then run offline with no API keys. The example uses one abstract, harmless in-memory prompt and
+`MockAdapter`; expected stdout is:
+
+```json
+{"attack_success_rate": null, "completed_requests": 1, "empirical_result": false, "provider": "mock", "total_requests": 1}
+```
+
+[Offline CI](.github/workflows/offline-preview.yml) runs this profile on Python 3.10, 3.12 and
+3.14, checks the expected output, validates the live review state, and verifies the frozen
+hashes and append-only audit prefixes before and after testing. The four excluded legacy test
+files contain invented rater-labelled fixtures; this profile respects `AGENTS.md` and does
+not exercise those paths. Negative structural QC gate tests remain enabled. Passing this
+profile proves the tested software behavior, not human QC or scientific readiness.
+
+Do not rebuild stimuli or regenerate freeze records as a getting-started step. The sealed
+stimulus and protocol remain fixed until an authorized amendment/version path is agreed.
 
 ### The tooling refuses things on purpose
 
