@@ -21,6 +21,31 @@ def _messages(request: GenerationRequest) -> list[dict[str, str]]:
     return messages
 
 
+def _token_parameters(
+    request: GenerationRequest, wire_name: str, *, require_canonical: bool = False,
+    default: int | None = None,
+) -> dict[str, Any]:
+    """Translate the canonical token limit without silently overriding an alias."""
+    parameters = dict(request.generation_parameters)
+    canonical = "max_output_tokens"
+    legacy = "max_tokens"
+    if canonical in parameters and legacy in parameters:
+        raise AdapterConfigurationError("Use only max_output_tokens; max_tokens alias is also present")
+    if require_canonical and canonical not in parameters:
+        raise AdapterConfigurationError(
+            "max_output_tokens missing from generation_parameters while frozen-config "
+            "enforcement is active; refusing undocumented provider default (F-10)"
+        )
+    limit = parameters.pop(canonical, parameters.pop(legacy, default))
+    if limit is not None:
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            raise AdapterConfigurationError("max_output_tokens must be a positive integer")
+        parameters[wire_name] = limit
+    elif canonical in request.generation_parameters or legacy in request.generation_parameters:
+        raise AdapterConfigurationError("max_output_tokens must be a positive integer")
+    return parameters
+
+
 def _response(request: GenerationRequest, provider: str, payload: Mapping[str, Any]) -> AdapterResponse:
     return AdapterResponse(
         text=extract_text(payload),
@@ -56,7 +81,7 @@ class OpenAIAdapter(ModelAdapter):
             "model": request.model.name,
             "input": _messages(request),
             "store": False,
-            **dict(request.generation_parameters),
+            **_token_parameters(request, "max_output_tokens"),
         }
         headers = {
             "Authorization": f"Bearer {api_key}",
@@ -95,15 +120,11 @@ class AnthropicAdapter(ModelAdapter):
         if not api_key:
             raise AdapterConfigurationError(f"{self.api_key_env} ortam değişkeni tanımlı değil")
         messages = [message for message in _messages(request) if message.get("role") != "system"]
-        parameters = dict(request.generation_parameters)
-        if "max_output_tokens" not in parameters and self.require_explicit_max_tokens:
-            raise AdapterConfigurationError(
-                "max_output_tokens missing from generation_parameters while frozen-config "
-                "enforcement is active; refusing undocumented provider default (F-10)")
-        max_tokens = parameters.pop("max_output_tokens", 1024)
+        parameters = _token_parameters(
+            request, "max_tokens", require_canonical=self.require_explicit_max_tokens, default=1024,
+        )
         payload: dict[str, Any] = {
             "model": request.model.name,
-            "max_tokens": max_tokens,
             "messages": messages,
             **parameters,
         }

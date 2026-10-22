@@ -64,3 +64,25 @@ Phase 6A için `benchmark.smoke_test` 20 kayıtlık deterministik manifesti doğ
 ```
 
 Çıktılar `results/smoke_test/phase6a-real-model-smoke/` altında yerel tutulur ve Git'e alınmaz. Mevcut ortamda gerekli credential/model sürümü yoksa her provider açıkça `not_evaluated` durumuyla raporlanır.
+
+## Output-token translation (legacy tooling)
+
+`generation_parameters.max_output_tokens` is the canonical positive-integer generation
+budget. The legacy `max_tokens` alias is accepted by the OpenAI/Anthropic adapters outside
+strict preflight; specifying both names is rejected before transport. OpenAI Responses
+receives `max_output_tokens`; Anthropic Messages receives `max_tokens`. Strict preflight
+still requires the canonical key and now rejects fractional/non-finite token budgets.
+Anthropic's historical 1024-token fallback exists only outside strict enforcement.
+
+The [official OpenAI token guide](https://developers.openai.com/api/docs/guides/token-counting)
+explains the Responses token limit, including non-visible generated tokens; the
+[official Anthropic Messages schema](https://platform.claude.com/docs/en/api/messages/create)
+uses `max_tokens`. These sources were checked on 2026-10-22. Captured fake transports verify
+wire fields; no current model availability or compatibility is claimed. Model-specific
+minimum/maximum limits and support for other generation parameters require later validation.
+The generic open-weight adapter retains its endpoint-specific parameter pass-through;
+no universal open-weight token schema is assumed.
+
+This is a local legacy bug fix, not E5a–d acceptance. The candidate Phase 8 config, canonical
+strict gate, r=3 schedule, complete payload provenance and real human prerequisites remain
+pending under the research freeze. No scientific decision or sealed artifact is changed.

@@ -73,9 +73,10 @@ def assert_run_config_frozen(metadata: ExperimentMetadata) -> str:
     if "top_p" in params and _is_number(params["top_p"]) \
             and not 0 < params["top_p"] <= 1:
         problems.append("generation_parameters.top_p outside (0, 1]")
-    if "max_output_tokens" in params and _is_number(params["max_output_tokens"]) \
-            and params["max_output_tokens"] < 1:
-        problems.append("generation_parameters.max_output_tokens must be >= 1")
+    if "max_output_tokens" in params:
+        limit = params["max_output_tokens"]
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            problems.append("generation_parameters.max_output_tokens must be a positive integer")
 
     if not metadata.retry_policy:
         problems.append("retry_policy must be recorded before evaluation")
