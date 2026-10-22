@@ -14,6 +14,17 @@ from ..errors import AdapterConfigurationError
 from ..types import AdapterResponse, GenerationRequest
 
 
+def _generation_parameters(request: GenerationRequest) -> dict[str, Any]:
+    parameters = dict(request.generation_parameters)
+    reserved = {"model", "input", "messages", "store", "system", "instructions"}
+    conflicts = reserved.intersection(parameters)
+    if conflicts:
+        raise AdapterConfigurationError(
+            "generation_parameters cannot override reserved request fields: " + ", ".join(sorted(conflicts))
+        )
+    return parameters
+
+
 def _messages(request: GenerationRequest) -> list[dict[str, str]]:
     messages = [dict(message) for message in request.messages]
     if request.system_instruction:
@@ -26,7 +37,7 @@ def _token_parameters(
     default: int | None = None,
 ) -> dict[str, Any]:
     """Translate the canonical token limit without silently overriding an alias."""
-    parameters = dict(request.generation_parameters)
+    parameters = _generation_parameters(request)
     canonical = "max_output_tokens"
     legacy = "max_tokens"
     if canonical in parameters and legacy in parameters:
@@ -164,7 +175,7 @@ class OpenWeightAdapter(ModelAdapter):
         payload: dict[str, Any] = {
             "model": request.model.name,
             "messages": _messages(request),
-            **dict(request.generation_parameters),
+            **_generation_parameters(request),
         }
         headers = {"Content-Type": "application/json"}
         api_key = os.environ.get(self.api_key_env)

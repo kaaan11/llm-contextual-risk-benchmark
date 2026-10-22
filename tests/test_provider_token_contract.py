@@ -3,7 +3,7 @@ import socket
 
 import pytest
 
-from benchmark.adapters.providers import AnthropicAdapter, OpenAIAdapter
+from benchmark.adapters.providers import AnthropicAdapter, OpenAIAdapter, OpenWeightAdapter
 from benchmark.errors import AdapterConfigurationError
 from benchmark.types import GenerationRequest, ModelSpec
 
@@ -79,3 +79,17 @@ def test_strict_preflight_requires_an_integer_token_budget(limit):
     )
     with pytest.raises(PreflightError, match="max_output_tokens"):
         assert_run_config_frozen(metadata)
+
+
+@pytest.mark.parametrize("adapter_type", [OpenAIAdapter, AnthropicAdapter, OpenWeightAdapter])
+@pytest.mark.parametrize("field", ["model", "input", "messages", "store", "system", "instructions"])
+def test_generation_parameters_cannot_override_request_contract(monkeypatch, adapter_type, field):
+    monkeypatch.setenv("OPENAI_API_KEY", "unit-placeholder")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "unit-placeholder")
+    def transport(*args):
+        pytest.fail("reserved request override must not dispatch")
+    request = GenerationRequest("abstract", (), ModelSpec("test", "declared-model", "test"),
+                                generation_parameters={field: "override"})
+    adapter = adapter_type(transport=transport, endpoint="https://invalid.example/test-only")
+    with pytest.raises(AdapterConfigurationError, match="reserved request fields"):
+        adapter.generate(request)

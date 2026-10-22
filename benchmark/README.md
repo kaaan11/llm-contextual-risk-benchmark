@@ -86,3 +86,10 @@ no universal open-weight token schema is assumed.
 This is a local legacy bug fix, not E5a–d acceptance. The candidate Phase 8 config, canonical
 strict gate, r=3 schedule, complete payload provenance and real human prerequisites remain
 pending under the research freeze. No scientific decision or sealed artifact is changed.
+
+Generation parameters are also forbidden from overriding the reserved transport fields
+`model`, `input`, `messages`, `store`, `system` and `instructions`. These values belong to
+the declared request and adapter retention/message contract. Negative capture tests verify
+zero dispatch for each override across OpenAI, Anthropic and generic open-weight adapters.
+This prevents a recorded model/message identity from silently differing from the wire payload
+or an OpenAI request enabling storage by replacing the adapter's `store=false`.
