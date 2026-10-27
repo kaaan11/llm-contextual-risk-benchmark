@@ -1,0 +1,42 @@
+name: Offline research preview
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.12', '3.14']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Verify research integrity before tests
+        run: python scripts/check_research_integrity.py
+      - name: Run offline checks without invented rater fixtures
+        env:
+          BENCHMARK_TEST_OFFLINE: '1'
+        run: >-
+          python -m pytest
+          --ignore=tests/test_annotate_blind.py
+          --ignore=tests/test_phase7g_tooling.py
+          --ignore=tests/test_phase7g_qc.py
+          --ignore=tests/test_remediation_regressions.py
+      - name: Run documented example and review validators
+        run: |
+          actual="$(python scripts/offline_preview.py)"
+          test "$actual" = '{"attack_success_rate": null, "completed_requests": 1, "empirical_result": false, "provider": "mock", "total_requests": 1}'
+          python scripts/validate_phase7e_review.py
+          python scripts/validate_phase7g_review.py
+      - name: Verify research integrity and unchanged evidence after tests
+        if: always()
+        run: |
+          python scripts/check_research_integrity.py
+          git diff --exit-code -- dataset results docs/phase7e_preregistration.md docs/phase7e_annotation_protocol.md docs/PHASE_7D_EXPERIMENTAL_DESIGN.md
