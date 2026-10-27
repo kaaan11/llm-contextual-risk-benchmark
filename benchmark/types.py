@@ -78,6 +78,8 @@ class EvaluationResult:
     request_completed_at: str | None = None
     attempts: int = 1
     status: str = "success"
+    provider_round_trip_latency_ms: float | None = None
+    pure_inference_latency_status: str = "unavailable_no_server_timing"
 
     def to_log_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
@@ -92,6 +94,8 @@ class EvaluationResult:
             "latency_ms": self.latency_ms,
             "provider_call_latency_ms": self.provider_call_latency_ms,
             "pure_inference_latency_ms": self.pure_inference_latency_ms,
+            "pure_inference_latency_status": self.pure_inference_latency_status,
+            "provider_round_trip_latency_ms": self.provider_round_trip_latency_ms,
             "retry_overhead_ms": self.retry_overhead_ms,
             "usage": dict(self.usage),
             "error": self.error,

@@ -3,7 +3,7 @@
 
 Executes all 50 research items (171 stimulus conditions) against a local MockAdapter,
 verifying complete pipeline integrity, retry handling, refusal detection,
-pure latency calculation, and assistant stance stratification before any live API call.
+client round-trip timing, and assistant stance stratification before any live API call.
 """
 
 from __future__ import annotations
@@ -139,7 +139,9 @@ def run_phase8_dryrun(output_dir: Path = DEFAULT_OUTPUT_DIR, limit: int | None =
         print(f" • {s_name}: n={s_data['n']}, ret={s_data['refusals']}, oran=%{s_data['refusal_rate'] * 100:.1f}")
 
     print("\n--- GECİKME AYRIŞTIRMASI ---")
-    print(f" • Saf Model Gecikmesi (Mean): {metrics['pure_inference_latency_ms']['mean']:.2f} ms")
+    round_trip = metrics["provider_round_trip_latency_ms"]["mean"]
+    print(f" • Client Provider Round-Trip (Mean): {round_trip} ms")
+    print(" • Saf Model Gecikmesi: unavailable_no_server_timing")
     print(f" • Retry Gecikme Yükü (Total): {metrics['retry_overhead_ms']['total_ms']:.2f} ms")
 
     print(f"\nÜretilen Artefaktlar:\n - {artifacts['metadata']}\n - {artifacts['metrics']}\n - {output_dir / 'responses.jsonl'}")
