@@ -48,7 +48,7 @@ def check_endpoint(url: str, *, allow_plaintext_loopback: bool = False) -> None:
         parsed = urlsplit(url)
     except Exception as exc:
         raise AdapterConfigurationError(
-            f"Endpoint URL cannot be parsed: '{url}'; scheme='', host='' "
+            "Endpoint URL cannot be parsed; scheme='', host='' "
             f"(rule: valid URL required: {exc})"
         ) from exc
 
