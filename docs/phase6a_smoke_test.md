@@ -46,7 +46,7 @@ Her sonuçta başlangıç/bitiş UTC zaman damgaları, toplam request yaşam dö
 
 ## Artifact'ler
 
-Canlı çalışma olursa `results/smoke_test/phase6a-real-model-smoke/<provider>/` altında metadata, metrics ve JSONL response log oluşur. Özet dosyası `summary.json` provider durumlarını, 20 kayıt manifestini, kaynak hash'lerini ve maliyet tahminini içerir. Fiyat yapılandırılmadığında maliyet `pricing_not_configured` olarak kalır; token tahmini gerçek usage değildir.
+Canlı çalışma olursa `results/smoke_test/phase6a-real-model-smoke/<provider>/` altında metadata, metrics ve JSONL response log oluşur. Varsayılan olarak `responses.jsonl` içinde model yanıt metinleri saklanmaz (`response_text: null`). Ham yanıt metinlerinin saklanması için `--raw-response-dir DIR` ile `results/` dışındaki bir dizin açıkça belirtilmelidir. Özet dosyası `summary.json` provider durumlarını, 20 kayıt manifestini, kaynak hash'lerini ve maliyet tahminini içerir. Fiyat yapılandırılmadığında maliyet `pricing_not_configured` olarak kalır; token tahmini gerçek usage değildir.
 
 ## Phase 6A sonucu
 

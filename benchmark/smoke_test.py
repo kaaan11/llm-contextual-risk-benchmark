@@ -23,7 +23,7 @@ from .metadata import ExperimentMetadata, utc_now
 from .metrics import calculate_metrics
 from .retry import RetryPolicy
 from .runner import EvaluationRunner
-from .types import ModelSpec
+from .types import EvaluationResult, ModelSpec
 
 
 PROVIDER_ORDER = ("openai", "anthropic", "open_weight")
@@ -32,6 +32,27 @@ MAX_SMOKE_SAMPLES = 20
 
 class SmokeConfigError(ValueError):
     """Smoke test yapılandırması veya manifesti geçersiz."""
+
+
+class _CompositeResponseLogger:
+    """Dispatches log and close calls to multiple ResponseLoggers."""
+
+    def __init__(self, loggers: list[JsonlResponseLogger]) -> None:
+        self.loggers = list(loggers)
+
+    def log(self, result: EvaluationResult) -> None:
+        for logger in self.loggers:
+            logger.log(result)
+
+    def close(self) -> None:
+        errors: list[Exception] = []
+        for logger in self.loggers:
+            try:
+                logger.close()
+            except Exception as exc:
+                errors.append(exc)
+        if errors:
+            raise errors[0]
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -75,6 +96,23 @@ def load_smoke_config(path: str | Path) -> tuple[dict[str, Any], Path]:
         raise SmokeConfigError(f"retry yapılandırması geçersiz: {exc}") from exc
     config["max_samples"] = max_samples
     config["retry"] = retry.to_dict()
+
+    response_logging = config.get("response_logging")
+    include_response_text = None
+    if isinstance(response_logging, Mapping) and "include_response_text" in response_logging:
+        include_response_text = response_logging.get("include_response_text")
+    if include_response_text is None and "include_response_text" in config:
+        include_response_text = config.get("include_response_text")
+
+    if include_response_text is True or (
+        isinstance(include_response_text, str)
+        and include_response_text.strip().lower() in {"true", "1", "yes"}
+    ):
+        raise SmokeConfigError(
+            "include_response_text cannot be true in configuration; "
+            "use --raw-response-dir to persist raw responses outside results/"
+        )
+
     return config, config_path
 
 
@@ -222,15 +260,36 @@ def _make_adapter(name: str, provider_config: Mapping[str, Any], timeout_s: floa
     raise SmokeConfigError(f"Desteklenmeyen provider: {name}")
 
 
-def run_smoke(config_path: str | Path, *, live: bool = False) -> dict[str, Any]:
+def run_smoke(
+    config_path: str | Path,
+    *,
+    live: bool = False,
+    raw_response_dir: Path | None = None,
+) -> dict[str, Any]:
+    source_root = Path(__file__).resolve().parent.parent
+    results_root = (source_root / "results").resolve()
+    resolved_raw_dir: Path | None = None
+    if raw_response_dir is not None:
+        resolved_raw_dir = Path(raw_response_dir).resolve()
+        if resolved_raw_dir.is_relative_to(results_root):
+            raise SmokeConfigError(
+                f"raw_response_dir ({resolved_raw_dir}) cannot be inside results directory ({results_root})"
+            )
+
     config, resolved_config_path = load_smoke_config(config_path)
+    cfg_source_root = resolved_config_path.parent.parent
+    cfg_results_root = (cfg_source_root / "results").resolve()
+    if resolved_raw_dir is not None and resolved_raw_dir.is_relative_to(cfg_results_root):
+        raise SmokeConfigError(
+            f"raw_response_dir ({resolved_raw_dir}) cannot be inside results directory ({cfg_results_root})"
+        )
+
     manifest, records_by_id, dataset_path, manifest_path = load_and_validate_manifest(config, resolved_config_path)
     dataset_sha256_before = _sha256(dataset_path)
     manifest_sha256 = _sha256(manifest_path)
     if len(records_by_id) > config["max_samples"]:
         raise SmokeConfigError("Smoke manifesti config.max_samples sınırını aşıyor")
-    source_root = resolved_config_path.parent.parent
-    output_root = _resolve_path(str(config["output_root"]), base_dir=source_root) / str(config["experiment_id"])
+    output_root = _resolve_path(str(config["output_root"]), base_dir=cfg_source_root) / str(config["experiment_id"])
     output_root.mkdir(parents=True, exist_ok=True)
     cases_bundle = DatasetLoader().load(dataset_path, sample_ids=manifest["sample_ids"])
     cases_by_id = {case.sample_id: case for case in DatasetLoader.to_cases(cases_bundle)}
@@ -246,6 +305,8 @@ def run_smoke(config_path: str | Path, *, live: bool = False) -> dict[str, Any]:
         "temperature": config.get("temperature", 0.0),
         "max_output_tokens": config.get("max_output_tokens", 256),
     }
+    if "top_p" in config:
+        generation_parameters["top_p"] = config["top_p"]
     for preflight in preflights:
         name = preflight["provider"]
         if not preflight["enabled"]:
@@ -286,11 +347,21 @@ def run_smoke(config_path: str | Path, *, live: bool = False) -> dict[str, Any]:
             timeout_s=config.get("timeout_s"),
             retry_policy=retry_policy.to_dict(),
         )
-        logger = JsonlResponseLogger(
+        primary_logger = JsonlResponseLogger(
             provider_dir / "responses.jsonl",
-            include_response_text=bool(config.get("response_logging", {}).get("include_response_text", True)),
+            include_response_text=False,
             append_ok=True,  # local scratch; explicit opt-in (F-08/F-24 guard)
         )
+        active_loggers: list[JsonlResponseLogger] = [primary_logger]
+        if resolved_raw_dir is not None:
+            raw_provider_dir = resolved_raw_dir / str(config["experiment_id"]) / name
+            raw_logger = JsonlResponseLogger(
+                raw_provider_dir / "responses.raw.jsonl",
+                include_response_text=True,
+                append_ok=True,
+            )
+            active_loggers.append(raw_logger)
+        logger = _CompositeResponseLogger(active_loggers)
         started = perf_counter()
         try:
             runner = EvaluationRunner(
@@ -324,6 +395,19 @@ def run_smoke(config_path: str | Path, *, live: bool = False) -> dict[str, Any]:
         finally:
             logger.close()
 
+    raw_response_text_retained = bool(
+        resolved_raw_dir is not None
+        and any(item.get("status") == "completed" for item in provider_results)
+    )
+    raw_response_dir_val = str(resolved_raw_dir) if resolved_raw_dir is not None else None
+    if not raw_response_text_retained:
+        raw_responses_are_local_only = True
+    else:
+        raw_responses_are_local_only = not (
+            resolved_raw_dir.is_relative_to(source_root)
+            or resolved_raw_dir.is_relative_to(cfg_source_root.resolve())
+        )
+
     summary = {
         "phase": "6A",
         "summary_version": "0.1.0",
@@ -347,7 +431,9 @@ def run_smoke(config_path: str | Path, *, live: bool = False) -> dict[str, Any]:
         "safety": {
             "full_dataset_evaluation_performed": False,
             "real_model_evaluation_performed": any(item["status"] == "completed" for item in provider_results),
-            "raw_responses_are_local_only": True,
+            "raw_response_text_retained": raw_response_text_retained,
+            "raw_response_dir": raw_response_dir_val,
+            "raw_responses_are_local_only": raw_responses_are_local_only,
             "api_keys_written_to_artifacts": False,
         },
     }
@@ -361,8 +447,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Phase 6A bounded real-model smoke test")
     parser.add_argument("--config", type=Path, default=Path("configs/phase6a_smoke.json"))
     parser.add_argument("--live", action="store_true", help="Configured providers için ağ çağrısını etkinleştir")
+    parser.add_argument(
+        "--raw-response-dir",
+        type=Path,
+        default=None,
+        help="results/ dışındaki ham yanıt logları için hedef dizin",
+    )
     args = parser.parse_args()
-    summary = run_smoke(args.config, live=args.live)
+    summary = run_smoke(args.config, live=args.live, raw_response_dir=args.raw_response_dir)
     print(json.dumps({
         "phase": summary["phase"],
         "sample_count": summary["dataset"]["sample_count"],
