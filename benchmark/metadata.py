@@ -43,7 +43,15 @@ class ExperimentMetadata:
         return value
 
 
-def write_metadata(metadata: ExperimentMetadata, path: str | Path) -> None:
+def write_metadata(
+    metadata: ExperimentMetadata,
+    path: str | Path,
+    *,
+    extra: Mapping[str, Any] | None = None,
+) -> None:
     target = Path(path)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(metadata.to_dict(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    payload = metadata.to_dict()
+    if extra:
+        payload.update(extra)
+    target.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
