@@ -25,7 +25,9 @@ from urllib.request import Request
 
 import pytest
 
-from benchmark.adapters.base import DisallowRedirectHandler, default_json_transport
+import urllib.request
+
+from benchmark.adapters.base import DisallowRedirectHandler, _build_opener, default_json_transport
 from benchmark.adapters.endpoint_policy import check_endpoint, is_loopback_host
 from benchmark.adapters.providers import AnthropicAdapter, OpenAIAdapter, OpenWeightAdapter
 from benchmark.errors import AdapterConfigurationError, AdapterRequestError
@@ -159,20 +161,28 @@ def test_adapter_http_non_loopback_refused_even_with_opt_in():
     assert "loopback" in str(exc_info.value).lower()
 
 
-def test_adapter_http_loopback_opt_in_matrix():
+@pytest.mark.parametrize(
+    ("adapter_cls", "provider", "env_vars"),
+    [
+        (OpenAIAdapter, "openai", {"OPENAI_API_KEY": "test-key"}),
+        (AnthropicAdapter, "anthropic", {"ANTHROPIC_API_KEY": "test-key"}),
+        (OpenWeightAdapter, "open_weight", {}),
+    ],
+)
+def test_adapter_http_loopback_opt_in_matrix(adapter_cls, provider, env_vars):
     # Without opt-in -> refused
     stub = StubTransport()
-    adapter = OpenAIAdapter(endpoint="http://localhost:8000/v1", transport=stub, allow_plaintext_loopback=False)
-    with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
+    adapter = adapter_cls(endpoint="http://localhost:8000/v1", transport=stub, allow_plaintext_loopback=False)
+    with patch.dict(os.environ, env_vars):
         with pytest.raises(AdapterConfigurationError):
-            adapter.generate(_make_request("openai"))
+            adapter.generate(_make_request(provider))
     assert len(stub.calls) == 0
 
     # With opt-in -> called
     stub_ok = StubTransport()
-    adapter_ok = OpenAIAdapter(endpoint="http://localhost:8000/v1", transport=stub_ok, allow_plaintext_loopback=True)
-    with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}):
-        adapter_ok.generate(_make_request("openai"))
+    adapter_ok = adapter_cls(endpoint="http://localhost:8000/v1", transport=stub_ok, allow_plaintext_loopback=True)
+    with patch.dict(os.environ, env_vars):
+        adapter_ok.generate(_make_request(provider))
     assert len(stub_ok.calls) == 1
 
 
@@ -399,3 +409,137 @@ def test_make_adapter_passes_allow_plaintext_loopback():
 
     open_weight_adapter = _make_adapter("open_weight", cfg_true, timeout_s=30.0)
     assert open_weight_adapter.allow_plaintext_loopback is True
+
+
+# --- Post-audit fixes: endpoint transport and scheme redaction (brief A) ---
+
+def test_check_endpoint_unparseable_url_does_not_leak_secret():
+    secret = "SUPER_SECRET_TOKEN_VALUE_XYZ"
+    url = f"https://[invalid/path?token={secret}"
+    with pytest.raises(AdapterConfigurationError) as exc_info:
+        check_endpoint(url)
+    err_msg = str(exc_info.value)
+    assert secret not in err_msg
+    assert "rule" in err_msg
+
+
+def test_check_endpoint_redacts_credentials_in_scheme_and_host():
+    secret_scheme = "sk-secret-token-123"
+    secret_pass = "password456"
+    url = f"{secret_scheme}:{secret_pass}@127.0.0.1:8000/v1"
+    with pytest.raises(AdapterConfigurationError) as exc_info:
+        check_endpoint(url)
+    msg = str(exc_info.value)
+    assert secret_scheme not in msg
+    assert secret_pass not in msg
+    assert "scheme='<redacted>'" in msg
+
+    userinfo_url = "http://admin:supersecret@localhost:8000/v1"
+    with pytest.raises(AdapterConfigurationError) as exc_info2:
+        check_endpoint(userinfo_url, allow_plaintext_loopback=True)
+    msg2 = str(exc_info2.value)
+    assert "supersecret" not in msg2
+    assert "admin" not in msg2
+    assert "host='<redacted>'" in msg2
+
+
+def test_transport_opener_includes_disallow_redirect_handler():
+    opener = _build_opener()
+    redirect_handlers = [h for h in opener.handlers if isinstance(h, DisallowRedirectHandler)]
+    assert len(redirect_handlers) == 1
+    from urllib.request import HTTPRedirectHandler
+    standard_redirect_handlers = [
+        h for h in opener.handlers
+        if type(h) is HTTPRedirectHandler
+    ]
+    assert len(standard_redirect_handlers) == 0
+
+
+def test_opener_filters_http_proxy(monkeypatch):
+    monkeypatch.setenv("http_proxy", "http://127.0.0.1:8080")
+    monkeypatch.setenv("https_proxy", "http://127.0.0.1:8443")
+    opener = _build_opener()
+    proxy_handlers = [h for h in opener.handlers if isinstance(h, urllib.request.ProxyHandler)]
+    assert len(proxy_handlers) == 1
+    proxies = proxy_handlers[0].proxies
+    assert "http" not in proxies
+    assert "https" in proxies
+
+
+@pytest.mark.skipif(
+    os.environ.get("BENCHMARK_TEST_OFFLINE") == "1",
+    reason="needs loopback sockets; the offline profile blocks every connect",
+)
+def test_transport_never_sends_http_through_proxy(monkeypatch):
+    target_requests: list[dict[str, Any]] = []
+    proxy_requests: list[dict[str, Any]] = []
+
+    class TargetHandler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            target_requests.append({
+                "path": self.path,
+                "headers": dict(self.headers),
+            })
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"status": "ok"}')
+
+        def log_message(self, format, *args):
+            pass
+
+    class ProxyHandlerServer(http.server.BaseHTTPRequestHandler):
+        def do_POST(self):
+            proxy_requests.append({
+                "path": self.path,
+                "headers": dict(self.headers),
+            })
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"status": "proxied"}')
+
+        def do_GET(self):
+            proxy_requests.append({
+                "path": self.path,
+                "headers": dict(self.headers),
+            })
+            self.send_response(200)
+            self.end_headers()
+
+        def log_message(self, format, *args):
+            pass
+
+    target_server = http.server.HTTPServer(("127.0.0.1", 0), TargetHandler)
+    proxy_server = http.server.HTTPServer(("127.0.0.1", 0), ProxyHandlerServer)
+    target_port = target_server.server_port
+    proxy_port = proxy_server.server_port
+
+    target_thread = threading.Thread(target=target_server.serve_forever)
+    proxy_thread = threading.Thread(target=proxy_server.serve_forever)
+    target_thread.start()
+    proxy_thread.start()
+
+    try:
+        monkeypatch.setenv("http_proxy", f"http://127.0.0.1:{proxy_port}")
+        monkeypatch.setenv("HTTP_PROXY", f"http://127.0.0.1:{proxy_port}")
+
+        result = default_json_transport(
+            url=f"http://127.0.0.1:{target_port}/v1/chat",
+            headers={"Authorization": "Bearer TEST_SECRET_KEY"},
+            payload={"test": 1},
+            timeout_s=5.0,
+        )
+        assert result == {"status": "ok"}
+        assert len(target_requests) == 1
+        assert target_requests[0]["headers"].get("Authorization") == "Bearer TEST_SECRET_KEY"
+        assert len(proxy_requests) == 0
+    finally:
+        target_server.shutdown()
+        target_server.server_close()
+        target_thread.join(timeout=5)
+
+        proxy_server.shutdown()
+        proxy_server.server_close()
+        proxy_thread.join(timeout=5)
+

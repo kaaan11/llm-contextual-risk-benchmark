@@ -226,3 +226,22 @@ def test_main_cli_parses_raw_response_dir(tmp_path, mock_env):
             assert ret_code == 0
 
     assert (raw_dir / "phase6a-real-model-smoke" / "openai" / "responses.raw.jsonl").exists()
+
+
+def test_raw_response_text_retained_measured_from_disk_even_if_write_artifacts_fails(tmp_path, mock_env):
+    cfg_path = _build_test_config(tmp_path)
+    raw_dir = tmp_path / "raw_dir_target"
+
+    with patch("benchmark.smoke_test._make_adapter", return_value=StubAdapter()), \
+         patch("benchmark.runner.EvaluationRunner.write_artifacts", side_effect=OSError("disk error after logging")):
+        summary = run_smoke(cfg_path, live=True, raw_response_dir=raw_dir)
+
+    raw_file = raw_dir / "phase6a-real-model-smoke" / "openai" / "responses.raw.jsonl"
+    assert raw_file.exists(), f"Expected raw file at {raw_file}"
+    assert raw_file.stat().st_size > 0, "Raw file should have content"
+
+    safety = summary["safety"]
+    assert safety["raw_response_text_retained"] is True
+    assert safety["raw_response_dir"] == str(raw_dir.resolve())
+    assert safety["raw_responses_are_local_only"] is True
+
