@@ -9,6 +9,8 @@ results/*
 # provenance-essential; they must enter version control with the first anchor.
 !results/dataset_audit/*.jsonl
 !results/dataset_audit/snapshots/
+# Writer lock (#17); never committed, a stale one is removed by hand.
+results/dataset_audit/.review.lock
 # Sanitized smoke summaries document provider preflight provenance; raw responses
 # (none exist today) stay excluded.
 !results/smoke_test/

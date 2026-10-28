@@ -33,6 +33,17 @@ import shutil
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+try:
+    from scripts.review_store import commit_state_and_history, review_lock
+except ModuleNotFoundError:
+    from review_store import commit_state_and_history, review_lock
+
 VALID_DECISIONS = {"PENDING", "KEEP", "REVISE", "REJECT"}
 TERMINAL_NEEDING_NOTE = {"REVISE", "REJECT"}
 
@@ -207,53 +218,57 @@ def append_history(path: Path, events: list[dict]) -> None:
             fh.write(json.dumps(event, ensure_ascii=False) + "\n")
 
 
-def main() -> int:
+def main(argv: list[str] | None = None, root: Path | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--decisions", required=True, help="file of researcher decision lines")
     ap.add_argument("--reviewer-id", default=None)
     ap.add_argument("--reviewer-role", default=None)
     ap.add_argument("--timestamp", required=True, help="ISO-8601 review timestamp")
     ap.add_argument("--dry-run", action="store_true")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
-    root = Path(__file__).resolve().parents[1]
+    if root is None:
+        root = ROOT
     review_path = root / "results" / "dataset_audit" / "phase7e_review.json"
     history_path = root / "results" / "dataset_audit" / "phase7e_review_history.jsonl"
     snap_dir = root / "results" / "dataset_audit" / "snapshots"
+    audit_dir = review_path.parent
 
-    record = json.loads(review_path.read_text(encoding="utf-8"))
-    try:
-        decisions = parse_decisions(Path(args.decisions).read_text(encoding="utf-8"))
-        events = apply_decisions(record, decisions, args.reviewer_id,
-                                 args.reviewer_role, args.timestamp)
-    except DecisionError as exc:
-        print(f"REFUSED: {exc}", file=sys.stderr)
-        return 1
+    with review_lock(audit_dir):
+        record = json.loads(review_path.read_text(encoding="utf-8"))
+        try:
+            decisions = parse_decisions(Path(args.decisions).read_text(encoding="utf-8"))
+            events = apply_decisions(record, decisions, args.reviewer_id,
+                                     args.reviewer_role, args.timestamp)
+        except DecisionError as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 1
 
-    if args.dry_run:
-        print(f"dry run: {len(events)} decision(s) would be recorded; nothing written")
-        for e in events:
-            print(f"  {e['research_item_id']}: {e['previous_decision']} -> {e['new_decision']}")
+        if args.dry_run:
+            print(f"dry run: {len(events)} decision(s) would be recorded; nothing written")
+            for e in events:
+                print(f"  {e['research_item_id']}: {e['previous_decision']} -> {e['new_decision']}")
+            return 0
+
+        # Snapshot before writing; never destroy a prior state.
+        snap_dir.mkdir(parents=True, exist_ok=True)
+        snap = snap_dir / f"phase7e_review.{args.timestamp.replace(':', '')}.json"
+        if snap.exists():
+            print(f"CONFLICT: snapshot {snap.name} already exists; refusing to overwrite",
+                  file=sys.stderr)
+            return 1
+
+        try:
+            commit_state_and_history(review_path, record, history_path, events, snap)
+        except FileExistsError as exc:
+            print(f"CONFLICT: {exc}", file=sys.stderr)
+            return 1
+
+        c = record["counts"]
+        print(f"recorded {len(events)} decision(s); snapshot: {snap.name}")
+        print(f"pending={c['pending']} keep={c['keep']} revise={c['revise']} "
+              f"reject={c['reject']} approved={c['approved']}")
         return 0
-
-    # Snapshot before writing; never destroy a prior state.
-    snap_dir.mkdir(parents=True, exist_ok=True)
-    snap = snap_dir / f"phase7e_review.{args.timestamp.replace(':', '')}.json"
-    if snap.exists():
-        print(f"CONFLICT: snapshot {snap.name} already exists; refusing to overwrite",
-              file=sys.stderr)
-        return 1
-    shutil.copy(review_path, snap)
-
-    review_path.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n",
-                           encoding="utf-8")
-    append_history(history_path, events)
-
-    c = record["counts"]
-    print(f"recorded {len(events)} decision(s); snapshot: {snap.name}")
-    print(f"pending={c['pending']} keep={c['keep']} revise={c['revise']} "
-          f"reject={c['reject']} approved={c['approved']}")
-    return 0
 
 
 if __name__ == "__main__":

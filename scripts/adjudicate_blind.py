@@ -19,13 +19,16 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from scripts.apply_phase7g_annotations import (
     BLIND,
+    HISTORY,
     KEY,
+    SNAPS,
     VALENCE_SCALE,
     _load,
     append_history,
     record_adjudication,
     snapshot,
 )
+from scripts.review_store import commit_state_and_history, review_lock
 from scripts.refresh_phase7g_rollups import main as refresh_rollups
 
 
@@ -130,9 +133,9 @@ def run_adjudication_wizard(
             timestamp=timestamp,
         )
 
-        snapshot([BLIND], timestamp)
-        BLIND.write_text(json.dumps(blind_data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        append_history(events)
+        clean_stamp = timestamp.replace(":", "")
+        snap = SNAPS / f"phase7g_blind_review.{clean_stamp}.json"
+        commit_state_and_history(BLIND, blind_data, HISTORY, events, snap)
         refresh_rollups()
         recorded_count += 1
         print(f"✓ {bid} için hakem kararı kaydedildi -> {valence}")
@@ -141,14 +144,15 @@ def run_adjudication_wizard(
     return recorded_count
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Phase 7G Interactive Adjudication CLI")
     parser.add_argument("--reviewer-id", required=True, help="Unique identifier of the adjudicator")
     parser.add_argument("--reviewer-role", default="researcher_adjudication", help="Optional role description")
     parser.add_argument("--limit", type=int, default=None, help="Maximum number of items to adjudicate this run")
 
-    args = parser.parse_args()
-    run_adjudication_wizard(args.reviewer_id, args.reviewer_role, limit=args.limit)
+    args = parser.parse_args(argv)
+    with review_lock(BLIND.parent):
+        run_adjudication_wizard(args.reviewer_id, args.reviewer_role, limit=args.limit)
 
 
 if __name__ == "__main__":

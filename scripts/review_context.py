@@ -20,9 +20,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from scripts.apply_phase7g_annotations import (
     BLIND,
+    HISTORY,
     KEY,
     QC,
     QCError,
+    SNAPS,
     _load,
     append_history,
     blind_item_eligible_for_context,
@@ -30,6 +32,7 @@ from scripts.apply_phase7g_annotations import (
     record_context,
     snapshot,
 )
+from scripts.review_store import commit_state_and_history, review_lock
 from scripts.refresh_phase7g_rollups import main as refresh_rollups
 
 STIMULI_PATH = ROOT / "dataset" / "pilot" / "multiturn" / "stimulus_dataset_v1.json"
@@ -193,9 +196,9 @@ def run_context_wizard(
             timestamp=timestamp,
         )
 
-        snapshot([QC], timestamp)
-        QC.write_text(json.dumps(qc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        append_history(events)
+        clean_stamp = timestamp.replace(":", "")
+        snap = SNAPS / f"phase7g_human_qc.{clean_stamp}.json"
+        commit_state_and_history(QC, qc, HISTORY, events, snap)
         refresh_rollups()
         recorded_count += 1
         print(f"✓ {rid} için bağlam ve güvenlik incelemesi kaydedildi.")
@@ -204,14 +207,15 @@ def run_context_wizard(
     return recorded_count
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Phase 7G Interactive Context & Safety Review CLI")
     parser.add_argument("--reviewer-id", required=True, help="Unique identifier of the researcher")
     parser.add_argument("--reviewer-role", default="researcher_qc", help="Optional role description")
     parser.add_argument("--limit", type=int, default=None, help="Maximum number of items to review this run")
 
-    args = parser.parse_args()
-    run_context_wizard(args.reviewer_id, args.reviewer_role, limit=args.limit)
+    args = parser.parse_args(argv)
+    with review_lock(QC.parent):
+        run_context_wizard(args.reviewer_id, args.reviewer_role, limit=args.limit)
 
 
 if __name__ == "__main__":
