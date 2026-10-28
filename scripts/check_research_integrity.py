@@ -49,157 +49,67 @@ def verify(root: Path = ROOT) -> list[str]:
     return errors
 
 
-def check_integrity_flags(root: Path = ROOT) -> dict[str, Any]:
-    """Derive Phase 7G quality summary integrity flags from manifest and pins.
+def _load_pinned_manifest(root: Path) -> dict | None:
+    """Return the integrity manifest only if its bytes match the MANIFEST pin."""
+    try:
+        data = (root / "results/dataset_audit/phase7e_preregistration_hash.json").read_bytes()
+    except OSError:
+        return None
+    if sha256(data) != MANIFEST:
+        return None
+    return json.loads(data)
 
-    Returns deterministic flag objects with status, checked_files, and basis.
-    A missing file or manifest mismatch yields status=False.
-    Unmapped datasets without repository pins yield status='unknown'.
-    """
-    audit = root / "results" / "dataset_audit"
-    manifest_file = audit / "phase7e_preregistration_hash.json"
 
-    manifest: dict | None = None
-    manifest_valid = False
-    if manifest_file.is_file():
+def _files_match(root: Path, files: list[str], expected: dict[str, str]) -> bool:
+    for relative in files:
         try:
-            manifest_bytes = manifest_file.read_bytes()
-            if sha256(manifest_bytes) == MANIFEST:
-                data = json.loads(manifest_bytes.decode("utf-8"))
-                if isinstance(data, dict) and "protocol_files" in data:
-                    manifest = data
-                    manifest_valid = True
-        except (OSError, ValueError, TypeError, json.JSONDecodeError):
-            manifest_valid = False
-            manifest = None
-
-    # 1. phase7d_design_unchanged: compare docs/PHASE_7D_EXPERIMENTAL_DESIGN.md
-    # and docs/PHASE_7D_DESIGN_TABLE.md with manifest protocol_files hashes.
-    p7d_files = [
-        "docs/PHASE_7D_EXPERIMENTAL_DESIGN.md",
-        "docs/PHASE_7D_DESIGN_TABLE.md",
-    ]
-    p7d_ok = manifest_valid
-    if p7d_ok and manifest:
-        proto_files = manifest.get("protocol_files", {})
-        for rel in p7d_files:
-            target = root / rel
-            if not target.is_file():
-                p7d_ok = False
-                break
-            expected = proto_files.get(rel, {}).get("sha256")
-            try:
-                if not expected or sha256(target.read_bytes()) != expected:
-                    p7d_ok = False
-                    break
-            except OSError:
-                p7d_ok = False
-                break
-    else:
-        p7d_ok = False
-
-    phase7d_flag = {
-        "status": p7d_ok,
-        "checked_files": p7d_files,
-        "basis": (
-            f"sha256 matches manifest protocol_files ({MANIFEST})"
-            if p7d_ok
-            else "File missing, hash mismatch, or manifest invalid against protocol_files"
-        ),
-    }
-
-    # 2. phase7e_preregistration_unchanged: compare docs/phase7e_preregistration.md,
-    # docs/phase7e_annotation_protocol.md and docs/phase7e_pre_evaluation_clarification.md
-    # with manifest hashes, plus the composite protocol hash check.
-    p7e_files = [
-        "docs/phase7e_preregistration.md",
-        "docs/phase7e_annotation_protocol.md",
-        "docs/phase7e_pre_evaluation_clarification.md",
-    ]
-    p7e_ok = manifest_valid
-    if p7e_ok and manifest:
-        proto_files = manifest.get("protocol_files", {})
-        for rel in p7e_files:
-            target = root / rel
-            if not target.is_file():
-                p7e_ok = False
-                break
-            expected = proto_files.get(rel, {}).get("sha256")
-            try:
-                if not expected or sha256(target.read_bytes()) != expected:
-                    p7e_ok = False
-                    break
-            except OSError:
-                p7e_ok = False
-                break
-        if p7e_ok:
-            if manifest.get("composite_protocol_hash") != COMPOSITE:
-                p7e_ok = False
-            else:
-                try:
-                    proto_hashes = {p: rec["sha256"] for p, rec in proto_files.items()}
-                    computed_composite = sha256(
-                        "\n".join(f"{p}:{h}" for p, h in sorted(proto_hashes.items())).encode()
-                    )
-                    if computed_composite != COMPOSITE:
-                        p7e_ok = False
-                except (KeyError, TypeError):
-                    p7e_ok = False
-    else:
-        p7e_ok = False
-
-    phase7e_flag = {
-        "status": p7e_ok,
-        "checked_files": p7e_files,
-        "basis": (
-            f"sha256 matches manifest protocol_files and composite matches "
-            f"COMPOSITE pin ({COMPOSITE})"
-            if p7e_ok
-            else "File missing, hash mismatch, or composite protocol hash mismatch"
-        ),
-    }
-
-    # 3. phase7f_stimulus_v1_preserved: compare stimulus_dataset_v1.json with STIMULUS pin.
-    p7f_files = ["dataset/pilot/multiturn/stimulus_dataset_v1.json"]
-    p7f_ok = False
-    stimulus_target = root / p7f_files[0]
-    if stimulus_target.is_file():
-        try:
-            if sha256(stimulus_target.read_bytes()) == STIMULUS:
-                p7f_ok = True
+            actual = sha256((root / relative).read_bytes())
         except OSError:
-            pass
+            return False
+        if actual != expected.get(relative):
+            return False
+    return True
 
-    phase7f_flag = {
-        "status": p7f_ok,
-        "checked_files": p7f_files,
-        "basis": (
-            f"sha256 matches pinned STIMULUS hash ({STIMULUS})"
-            if p7f_ok
-            else f"File missing or sha256 mismatch against pinned STIMULUS hash ({STIMULUS})"
-        ),
-    }
 
-    # 4. public_benchmark_unchanged: unmapped without pinned file
-    public_flag = {
-        "status": "unknown",
-        "checked_files": [],
-        "basis": "No external public benchmark corpus is vendored or pinned in the repository.",
-    }
+def _flag(ok: bool, files: list[str], basis: str) -> dict[str, Any]:
+    return {"status": ok, "checked_files": files,
+            "basis": basis if ok else f"missing file or hash mismatch ({basis})"}
 
-    # 5. turkish_dataset_unchanged: unmapped without definition in code/docs
-    turkish_flag = {
-        "status": "unknown",
-        "checked_files": [],
-        "basis": "No repository file is defined or pinned as the Turkish dataset.",
-    }
 
+def check_integrity_flags(root: Path = ROOT) -> dict[str, Any]:
+    """Derive the Phase 7G summary integrity flags from real hash comparisons.
+
+    A flag is True only after a comparison against a pinned hash, False on a
+    missing file or mismatch, and "unknown" when nothing in the repository pins it.
+    """
+    manifest = _load_pinned_manifest(root)
+    protocol = {p: r["sha256"] for p, r in (manifest or {}).get("protocol_files", {}).items()}
+    protected = {p: r["sha256"] for p, r in (manifest or {}).get("protected_files", {}).items()}
+    composite_ok = manifest is not None and manifest.get("composite_protocol_hash") == COMPOSITE
+
+    design = ["docs/PHASE_7D_EXPERIMENTAL_DESIGN.md", "docs/PHASE_7D_DESIGN_TABLE.md"]
+    prereg = ["docs/phase7e_preregistration.md", "docs/phase7e_annotation_protocol.md",
+              "docs/phase7e_pre_evaluation_clarification.md"]
+    stimulus = ["dataset/pilot/multiturn/stimulus_dataset_v1.json"]
+    # docs/PHASE_7D_EXPERIMENTAL_DESIGN.md:154 names the Turkish set EXPLORATORY_DRAFT_V0.1_TR.
+    turkish = ["dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"]
+    basis = f"manifest sha256 {MANIFEST}"
     return {
-        "phase7d_design_unchanged": phase7d_flag,
-        "phase7e_preregistration_unchanged": phase7e_flag,
-        "phase7f_stimulus_v1_preserved": phase7f_flag,
-        "public_benchmark_unchanged": public_flag,
-        "turkish_dataset_unchanged": turkish_flag,
+        "phase7d_design_unchanged": _flag(
+            manifest is not None and _files_match(root, design, protocol), design,
+            f"protocol_files, {basis}"),
+        "phase7e_preregistration_unchanged": _flag(
+            composite_ok and _files_match(root, prereg, protocol), prereg,
+            f"protocol_files + composite {COMPOSITE}, {basis}"),
+        "phase7f_stimulus_v1_preserved": _flag(
+            _files_match(root, stimulus, {stimulus[0]: STIMULUS}), stimulus,
+            f"STIMULUS pin {STIMULUS}"),
+        "public_benchmark_unchanged": {
+            "status": "unknown", "checked_files": [],
+            "basis": "No public benchmark corpus is vendored or pinned in this repository."},
+        "turkish_dataset_unchanged": _flag(
+            manifest is not None and _files_match(root, turkish, protected), turkish,
+            f"protected_files, {basis}"),
         "pre_review_snapshot": "results/dataset_audit/snapshots/phase7f_stimulus.v1.pre_qc.json",
     }
 

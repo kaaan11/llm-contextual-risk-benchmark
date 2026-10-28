@@ -22,6 +22,7 @@ NEEDED_FILES = [
     "docs/phase7e_annotation_protocol.md",
     "docs/phase7e_pre_evaluation_clarification.md",
     "dataset/pilot/multiturn/stimulus_dataset_v1.json",
+    "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json",
 ]
 
 
@@ -64,7 +65,7 @@ def test_clean_copy_integrity_flags(tmp_path: Path):
         "docs/PHASE_7D_EXPERIMENTAL_DESIGN.md",
         "docs/PHASE_7D_DESIGN_TABLE.md",
     ]
-    assert "sha256 matches" in flags["phase7d_design_unchanged"]["basis"]
+    assert "manifest sha256" in flags["phase7d_design_unchanged"]["basis"]
 
     assert flags["phase7e_preregistration_unchanged"]["status"] is True
     assert flags["phase7e_preregistration_unchanged"]["checked_files"] == [
@@ -72,22 +73,23 @@ def test_clean_copy_integrity_flags(tmp_path: Path):
         "docs/phase7e_annotation_protocol.md",
         "docs/phase7e_pre_evaluation_clarification.md",
     ]
-    assert "sha256 matches" in flags["phase7e_preregistration_unchanged"]["basis"]
+    assert "manifest sha256" in flags["phase7e_preregistration_unchanged"]["basis"]
 
     assert flags["phase7f_stimulus_v1_preserved"]["status"] is True
     assert flags["phase7f_stimulus_v1_preserved"]["checked_files"] == [
         "dataset/pilot/multiturn/stimulus_dataset_v1.json"
     ]
-    assert "sha256 matches" in flags["phase7f_stimulus_v1_preserved"]["basis"]
+    assert "STIMULUS pin" in flags["phase7f_stimulus_v1_preserved"]["basis"]
 
     # 2 unmapped flags must be 'unknown'
     assert flags["public_benchmark_unchanged"]["status"] == "unknown"
     assert flags["public_benchmark_unchanged"]["checked_files"] == []
     assert isinstance(flags["public_benchmark_unchanged"]["basis"], str)
 
-    assert flags["turkish_dataset_unchanged"]["status"] == "unknown"
-    assert flags["turkish_dataset_unchanged"]["checked_files"] == []
-    assert isinstance(flags["turkish_dataset_unchanged"]["basis"], str)
+    assert flags["turkish_dataset_unchanged"]["status"] is True
+    assert flags["turkish_dataset_unchanged"]["checked_files"] == [
+        "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"
+    ]
 
     # pre_review_snapshot preserved
     assert (
@@ -106,7 +108,7 @@ def test_build_quality_summary_uses_derived_integrity(tmp_path: Path):
     assert integrity["phase7e_preregistration_unchanged"]["status"] is True
     assert integrity["phase7f_stimulus_v1_preserved"]["status"] is True
     assert integrity["public_benchmark_unchanged"]["status"] == "unknown"
-    assert integrity["turkish_dataset_unchanged"]["status"] == "unknown"
+    assert integrity["turkish_dataset_unchanged"]["status"] is True
 
 
 def test_change_byte_in_phase7d_design_table(tmp_path: Path):
@@ -126,7 +128,7 @@ def test_change_byte_in_phase7d_design_table(tmp_path: Path):
     assert flags["phase7e_preregistration_unchanged"]["status"] is True
     assert flags["phase7f_stimulus_v1_preserved"]["status"] is True
     assert flags["public_benchmark_unchanged"]["status"] == "unknown"
-    assert flags["turkish_dataset_unchanged"]["status"] == "unknown"
+    assert flags["turkish_dataset_unchanged"]["status"] is True
 
 
 def test_delete_copied_stimulus_file(tmp_path: Path):
@@ -144,7 +146,7 @@ def test_delete_copied_stimulus_file(tmp_path: Path):
     assert flags["phase7d_design_unchanged"]["status"] is True
     assert flags["phase7e_preregistration_unchanged"]["status"] is True
     assert flags["public_benchmark_unchanged"]["status"] == "unknown"
-    assert flags["turkish_dataset_unchanged"]["status"] == "unknown"
+    assert flags["turkish_dataset_unchanged"]["status"] is True
 
 
 def test_summary_never_contains_literal_true_for_empty_checked_files(tmp_path: Path):
@@ -208,3 +210,13 @@ def test_output_is_deterministic(tmp_path: Path):
     assert json.dumps(summary1["integrity"], sort_keys=True) == json.dumps(
         summary2["integrity"], sort_keys=True
     )
+
+
+def test_turkish_dataset_change_is_detected(tmp_path: Path):
+    copy_needed_files(ROOT, tmp_path)
+    target = tmp_path / "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"
+    target.write_bytes(target.read_bytes() + b" ")
+
+    flags = check_integrity_flags(tmp_path)
+    assert flags["turkish_dataset_unchanged"]["status"] is False
+    assert flags["phase7d_design_unchanged"]["status"] is True
