@@ -28,6 +28,9 @@ def is_loopback_host(hostname: str | None) -> bool:
     return False
 
 
+_ALLOWED_SCHEMES = frozenset({"http", "https", "ftp", "file", "ws", "wss", ""})
+
+
 def check_endpoint(url: str, *, allow_plaintext_loopback: bool = False) -> None:
     """Validate endpoint URL against owner-approved trust policy.
 
@@ -52,48 +55,59 @@ def check_endpoint(url: str, *, allow_plaintext_loopback: bool = False) -> None:
             f"(rule: valid URL required: {exc})"
         ) from exc
 
-    scheme = (parsed.scheme or "").lower()
-    host = parsed.hostname or ""
+    raw_scheme = (parsed.scheme or "").lower()
+    disp_scheme = raw_scheme if raw_scheme in _ALLOWED_SCHEMES else "<redacted>"
+
+    try:
+        raw_host = parsed.hostname or ""
+    except ValueError:
+        raw_host = ""
+
+    netloc = parsed.netloc or ""
+    if "@" in netloc or "@" in raw_host or parsed.username is not None or parsed.password is not None:
+        disp_host = "<redacted>"
+    else:
+        disp_host = raw_host
 
     # Rule 4: Userinfo is forbidden
-    if parsed.username is not None or parsed.password is not None or "@" in parsed.netloc:
+    if parsed.username is not None or parsed.password is not None or "@" in netloc:
         raise AdapterConfigurationError(
-            f"Endpoint URL contains userinfo: scheme='{scheme}', host='{host}' "
+            f"Endpoint URL contains userinfo: scheme='{disp_scheme}', host='{disp_host}' "
             "(rule: URLs containing userinfo are forbidden)"
         )
 
-    if not scheme:
+    if not raw_scheme:
         raise AdapterConfigurationError(
-            f"Endpoint URL missing scheme: scheme='', host='{host}' "
+            f"Endpoint URL missing scheme: scheme='', host='{disp_host}' "
             "(rule: only https and opt-in loopback http are allowed)"
         )
 
-    if not host:
+    if not raw_host:
         raise AdapterConfigurationError(
-            f"Endpoint URL missing host: scheme='{scheme}', host='' "
+            f"Endpoint URL missing host: scheme='{disp_scheme}', host='' "
             "(rule: endpoint URL must include a host)"
         )
 
     # Rule 1: https is allowed for any host
-    if scheme == "https":
+    if raw_scheme == "https":
         return
 
     # Rule 2 & 5: http is allowed only for loopback with explicit opt-in
-    if scheme == "http":
-        if not is_loopback_host(host):
+    if raw_scheme == "http":
+        if not is_loopback_host(raw_host):
             raise AdapterConfigurationError(
-                f"Plaintext HTTP endpoint is not loopback: scheme='{scheme}', host='{host}' "
+                f"Plaintext HTTP endpoint is not loopback: scheme='{disp_scheme}', host='{disp_host}' "
                 "(rule: plaintext HTTP is only allowed for loopback hosts; no opt-in for non-loopback http)"
             )
         if not allow_plaintext_loopback:
             raise AdapterConfigurationError(
-                f"Plaintext HTTP loopback endpoint requires allow_plaintext_loopback opt-in: scheme='{scheme}', host='{host}' "
+                f"Plaintext HTTP loopback endpoint requires allow_plaintext_loopback opt-in: scheme='{disp_scheme}', host='{disp_host}' "
                 "(rule: http loopback requires allow_plaintext_loopback: true)"
             )
         return
 
     # Rule 3: Any other scheme is refused
     raise AdapterConfigurationError(
-        f"Endpoint scheme is not allowed: scheme='{scheme}', host='{host}' "
+        f"Endpoint scheme is not allowed: scheme='{disp_scheme}', host='{disp_host}' "
         "(rule: only https and opt-in loopback http are allowed)"
     )

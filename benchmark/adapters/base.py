@@ -8,7 +8,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Callable, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from urllib.request import (
+    HTTPRedirectHandler,
+    OpenerDirector,
+    ProxyHandler,
+    Request,
+    build_opener,
+    getproxies,
+)
 
 from ..errors import AdapterRequestError, sanitize_error_message
 from ..types import AdapterResponse, GenerationRequest
@@ -45,11 +52,15 @@ class DisallowRedirectHandler(HTTPRedirectHandler):
         raise AdapterRequestError(f"redirect not followed: HTTP {code} -> {scheme}://{host}")
 
 
-_default_opener = build_opener(DisallowRedirectHandler)
+def _build_opener() -> OpenerDirector:
+    """Yönlendirmeleri engelleyen ve yalnızca HTTPS proxy'lerine izin veren opener oluşturur."""
+    filtered_proxies = {k: v for k, v in getproxies().items() if k.lower() == "https"}
+    return build_opener(ProxyHandler(filtered_proxies), DisallowRedirectHandler)
 
 
 def urlopen(request: Request, timeout: float = 60.0):
-    return _default_opener.open(request, timeout=timeout)
+    opener = _build_opener()
+    return opener.open(request, timeout=timeout)
 
 
 def default_json_transport(

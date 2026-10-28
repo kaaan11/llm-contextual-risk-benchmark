@@ -402,10 +402,14 @@ def run_smoke(
         finally:
             logger.close()
 
-    raw_response_text_retained = bool(
-        resolved_raw_dir is not None
-        and any(item.get("status") == "completed" for item in provider_results)
-    )
+    raw_response_text_retained = False
+    if resolved_raw_dir is not None:
+        raw_exp_dir = resolved_raw_dir / str(config["experiment_id"])
+        if raw_exp_dir.is_dir():
+            raw_response_text_retained = any(
+                p.is_file() and p.stat().st_size > 0
+                for p in raw_exp_dir.rglob("responses.raw.jsonl")
+            )
     raw_response_dir_val = str(resolved_raw_dir) if resolved_raw_dir is not None else None
     if not raw_response_text_retained:
         raw_responses_are_local_only = True
