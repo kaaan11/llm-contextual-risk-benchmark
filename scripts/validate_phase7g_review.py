@@ -352,12 +352,86 @@ def validate_summary(qc: dict, blind: dict, summary: dict) -> list[str]:
     return errors
 
 
+def validate_history(history_lines: list[str], qc: dict) -> list[str]:
+    """Validate the append-only review history against the Phase 7G human QC record."""
+    errors: list[str] = []
+    events: list[tuple[int, dict]] = []
+    for n, line in enumerate(history_lines, start=1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            events.append((n, json.loads(line)))
+        except json.JSONDecodeError:
+            errors.append(f"history line {n}: not valid JSON")
+
+    if not events:
+        errors.append("history log is empty; it must at least record initialisation")
+        return errors
+
+    # Every item starts at PENDING
+    replayed_state: dict[str, str] = {
+        item.get("research_item_id"): "PENDING"
+        for item in qc.get("items", [])
+        if "research_item_id" in item
+    }
+    seen_events_for_item: set[str] = set()
+
+    for n, e in events:
+        event_type = e.get("event")
+        if event_type == "review_reinitialised":
+            # A logged reinit resets every item; earlier decisions stay in the backup.
+            replayed_state = {rid: "PENDING" for rid in replayed_state}
+            seen_events_for_item.clear()
+        elif event_type == "review_decision":
+            rid = e.get("research_item_id")
+            for field in ("research_item_id", "previous_decision", "new_decision", "timestamp"):
+                if field not in e:
+                    errors.append(f"history line {n}: history event for {rid} lacks {field}")
+            if e.get("new_decision") not in DECISIONS:
+                errors.append(f"history line {n}: history event has invalid decision {e.get('new_decision')!r}")
+
+            current = replayed_state.get(rid, "PENDING")
+            prev = e.get("previous_decision")
+            if prev != current:
+                errors.append(
+                    f"history line {n}: {rid} previous_decision {prev!r} does not match replayed state {current!r}"
+                )
+
+            if rid:
+                replayed_state[rid] = e.get("new_decision")
+                seen_events_for_item.add(rid)
+
+    # After replay, each item's review_decision in phase7g_human_qc.json must equal its replayed state
+    for item in qc.get("items", []):
+        rid = item.get("research_item_id")
+        actual = item.get("review_decision")
+        expected = replayed_state.get(rid, "PENDING")
+        if actual != expected:
+            if actual != "PENDING" and rid not in seen_events_for_item:
+                errors.append(
+                    f"{rid}: decided as {actual} but no history event records it"
+                )
+            else:
+                errors.append(
+                    f"{rid}: review_decision {actual!r} does not match replayed history state {expected!r}"
+                )
+
+    return errors
+
+
 def main() -> int:
     qc = json.loads((AUDIT / "phase7g_human_qc.json").read_text(encoding="utf-8"))
     blind = json.loads((AUDIT / "phase7g_blind_review.json").read_text(encoding="utf-8"))
     key = json.loads((AUDIT / "phase7g_blind_key.json").read_text(encoding="utf-8"))
 
     errors = validate_blind(blind) + validate(qc, blind, key)
+
+    history_path = AUDIT / "phase7g_review_history.jsonl"
+    if history_path.exists():
+        errors.extend(validate_history(history_path.read_text(encoding="utf-8").splitlines(), qc))
+    else:
+        errors.append(f"missing {history_path}")
 
     # F-03: the generated roll-up must agree with the canonical live records.
     summary_path = AUDIT / "phase7g_quality_summary.json"

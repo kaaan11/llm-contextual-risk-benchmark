@@ -24,10 +24,14 @@ Performs no network access and calls no model API.
 
 from __future__ import annotations
 
+import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
-import random
 from pathlib import Path
+import random
+import shutil
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 STIMULI = ROOT / "dataset" / "pilot" / "multiturn" / "stimulus_dataset_v1.json"
@@ -412,28 +416,121 @@ def build_quality_summary(qc: dict, blind: dict, recheck: dict) -> dict:
     }
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out-dir", type=Path, default=None, help="write all outputs under DIR")
+    parser.add_argument("--reinit", action="store_true", help="overwrite existing canonical outputs")
+    parser.add_argument("--backup-dir", type=Path, default=None, help="backup directory for reinit")
+    args = parser.parse_args(argv)
+
+    if args.reinit and not args.backup_dir:
+        parser.error("--reinit requires --backup-dir")
+    if args.backup_dir and not args.reinit:
+        parser.error("--backup-dir requires --reinit")
+
+    root = args.out_dir if args.out_dir is not None else ROOT
+    audit = root / "results" / "dataset_audit"
+    blind_path = audit / "phase7g_blind_review.json"
+    key_path = audit / "phase7g_blind_key.json"
+    qc_path = audit / "phase7g_human_qc.json"
+    summary_path = audit / "phase7g_quality_summary.json"
+    history_path = audit / "phase7g_review_history.jsonl"
+    canonical_files = [blind_path, key_path, qc_path, summary_path]
+
+    existing = [p for p in canonical_files if p.exists()]
+    if existing and not args.reinit:
+        print("Refusing to overwrite existing canonical output files:", file=sys.stderr)
+        for p in existing:
+            print(f"  {p}", file=sys.stderr)
+        return 2
+
     data = json.loads(STIMULI.read_text(encoding="utf-8"))
     records = data["records"]
-    AUDIT.mkdir(parents=True, exist_ok=True)
+    audit.mkdir(parents=True, exist_ok=True)
 
     recheck = structural_recheck(records)
     blind, key = build_blind_review(records)
     qc = build_human_qc(records, recheck)
     summary = build_quality_summary(qc, blind, recheck)
 
-    (AUDIT / "phase7g_blind_review.json").write_text(
+    if args.reinit:
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        backup_target = args.backup_dir / ts
+        if backup_target.exists():
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            backup_target = args.backup_dir / ts
+        backup_target.mkdir(parents=True, exist_ok=True)
+
+        to_backup = [p for p in canonical_files + [history_path] if p.exists()]
+        backed_up: list[tuple[Path, str]] = []
+        for src in to_backup:
+            orig_hash = hashlib.sha256(src.read_bytes()).hexdigest()
+            dest = backup_target / src.name
+            shutil.copy2(src, dest)
+            dest_hash = hashlib.sha256(dest.read_bytes()).hexdigest()
+            if orig_hash != dest_hash:
+                raise RuntimeError(f"Backup verification failed for {src}: {orig_hash} != {dest_hash}")
+            backed_up.append((src, orig_hash))
+
+        manifest_data = {
+            "phase": PHASE,
+            "timestamp": ts,
+            "backup_dir": str(backup_target),
+            "files": [
+                {
+                    "path": str(src),
+                    "original_path": str(src),
+                    "sha256": orig_hash,
+                    "backup_name": src.name,
+                }
+                for src, orig_hash in backed_up
+            ],
+            "file_hashes": {
+                str(src): orig_hash
+                for src, orig_hash in backed_up
+            },
+        }
+        manifest_file = backup_target / "MANIFEST.json"
+        manifest_bytes = (json.dumps(manifest_data, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        manifest_file.write_bytes(manifest_bytes)
+        manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+
+        blind_path.write_text(json.dumps(blind, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        key_path.write_text(json.dumps(key, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        qc_path.write_text(json.dumps(qc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        summary_path.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+        history_path.parent.mkdir(parents=True, exist_ok=True)
+        reinit_event = {
+            "event": "review_reinitialised",
+            "phase": PHASE,
+            "timestamp": ts,
+            "backup_dir": str(backup_target),
+            "manifest_sha256": manifest_sha256,
+        }
+        with history_path.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(reinit_event, ensure_ascii=False) + "\n")
+        print(f"appended review_reinitialised event to {history_path}")
+
+        print(f"blind packet: {blind['item_count']} items in "
+              f"{qc['batch_count']} batches of {BATCH_SIZE}")
+        print(f"structural re-verification: all_pass={recheck['all_pass']} "
+              f"failures={len(recheck['failures'])}")
+        print(f"decisions: pending={qc['counts']['pending']} keep={qc['counts']['keep']} "
+              f"researcher_qc_true={qc['counts']['researcher_qc_true']}")
+        return 0
+
+    blind_path.write_text(
         json.dumps(blind, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    (AUDIT / "phase7g_blind_key.json").write_text(
+    key_path.write_text(
         json.dumps(key, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    (AUDIT / "phase7g_human_qc.json").write_text(
+    qc_path.write_text(
         json.dumps(qc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    (AUDIT / "phase7g_quality_summary.json").write_text(
+    summary_path.write_text(
         json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    history = AUDIT / "phase7g_review_history.jsonl"
-    if not history.exists():
-        history.write_text(json.dumps({
+    if not history_path.exists():
+        history_path.write_text(json.dumps({
             "event": "qc_log_initialised",
             "phase": PHASE,
             "timestamp": CREATED_AT,

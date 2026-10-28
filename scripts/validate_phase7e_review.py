@@ -192,41 +192,71 @@ def validate(record: dict) -> list[str]:
 def validate_history(history_lines: list[str], record: dict) -> list[str]:
     """Validate the append-only review history against the review record."""
     errors: list[str] = []
-    events = []
+    events: list[tuple[int, dict]] = []
     for n, line in enumerate(history_lines, start=1):
         line = line.strip()
         if not line:
             continue
         try:
-            events.append(json.loads(line))
+            events.append((n, json.loads(line)))
         except json.JSONDecodeError:
             errors.append(f"history line {n}: not valid JSON")
     if not events:
         errors.append("history log is empty; it must at least record initialisation")
         return errors
-    if events[0].get("event") != "review_log_initialised":
+    if events[0][1].get("event") != "review_log_initialised":
         errors.append("history log must open with a review_log_initialised event")
 
-    decision_events = [e for e in events if e.get("event") == "review_decision"]
-    for e in decision_events:
-        for field in ("research_item_id", "previous_decision", "new_decision",
-                      "timestamp", "version"):
-            if field not in e:
-                errors.append(f"history event for {e.get('research_item_id')} lacks {field}")
-        if e.get("new_decision") not in VALID_DECISIONS:
-            errors.append(f"history event has invalid decision {e.get('new_decision')!r}")
-        if e.get("new_decision") in {"KEEP", "REVISE", "REJECT"} and not (
-                e.get("reviewer_id") or e.get("reviewer_role")):
-            errors.append(f"history event for {e.get('research_item_id')} lacks a reviewer")
+    # Every item starts at PENDING
+    replayed_state: dict[str, str] = {
+        item.get("research_item_id"): "PENDING"
+        for item in record.get("items", [])
+        if "research_item_id" in item
+    }
+    seen_events_for_item: set[str] = set()
 
-    # Every non-PENDING item in the record must be explained by the history.
-    logged = {e["research_item_id"] for e in decision_events if "research_item_id" in e}
+    for n, e in events:
+        if e.get("event") == "review_reinitialised":
+            # A logged reinit resets every item; earlier decisions stay in the backup.
+            replayed_state = {rid: "PENDING" for rid in replayed_state}
+            seen_events_for_item.clear()
+        elif e.get("event") == "review_decision":
+            rid = e.get("research_item_id")
+            for field in ("research_item_id", "previous_decision", "new_decision",
+                          "timestamp", "version"):
+                if field not in e:
+                    errors.append(f"history line {n}: history event for {rid} lacks {field}")
+            if e.get("new_decision") not in VALID_DECISIONS:
+                errors.append(f"history line {n}: history event has invalid decision {e.get('new_decision')!r}")
+            if e.get("new_decision") in {"KEEP", "REVISE", "REJECT"} and not (
+                    e.get("reviewer_id") or e.get("reviewer_role")):
+                errors.append(f"history line {n}: history event for {rid} lacks a reviewer")
+
+            current = replayed_state.get(rid, "PENDING")
+            prev = e.get("previous_decision")
+            if prev != current:
+                errors.append(
+                    f"history line {n}: {rid} previous_decision {prev!r} does not match replayed state {current!r}"
+                )
+
+            if rid:
+                replayed_state[rid] = e.get("new_decision")
+                seen_events_for_item.add(rid)
+
+    # After replay, each item's review_decision in phase7e_review.json must equal its replayed state
     for item in record.get("items", []):
-        if item.get("review_decision") != "PENDING" and item["research_item_id"] not in logged:
-            errors.append(
-                f"{item['research_item_id']}: decided as {item['review_decision']} but "
-                f"no history event records it"
-            )
+        rid = item.get("research_item_id")
+        actual = item.get("review_decision")
+        expected = replayed_state.get(rid, "PENDING")
+        if actual != expected:
+            if actual != "PENDING" and rid not in seen_events_for_item:
+                errors.append(
+                    f"{rid}: decided as {actual} but no history event records it"
+                )
+            else:
+                errors.append(
+                    f"{rid}: review_decision {actual!r} does not match replayed history state {expected!r}"
+                )
     return errors
 
 
