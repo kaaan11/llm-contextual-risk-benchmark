@@ -293,6 +293,11 @@ def test_direct_call_disallow_redirect_handler():
     assert "leaked" not in str(exc)
 
 
+@pytest.mark.skipif(
+    os.environ.get("BENCHMARK_TEST_OFFLINE") == "1",
+    reason="needs loopback sockets; the offline profile blocks every connect. "
+           "test_direct_call_disallow_redirect_handler covers the handler offline.",
+)
 def test_default_transport_blocks_redirect_and_protects_credentials():
     received_on_target: list[dict[str, Any]] = []
 
@@ -311,6 +316,7 @@ def test_default_transport_blocks_redirect_and_protects_credentials():
             pass
 
     target_server = http.server.HTTPServer(("127.0.0.1", 0), TargetHandler)
+    target_server.timeout = 5
     target_port = target_server.server_port
     target_thread = threading.Thread(target=target_server.handle_request)
     target_thread.start()
@@ -325,6 +331,7 @@ def test_default_transport_blocks_redirect_and_protects_credentials():
             pass
 
     redirect_server = http.server.HTTPServer(("127.0.0.1", 0), RedirectHandler)
+    redirect_server.timeout = 5
     redirect_port = redirect_server.server_port
     redirect_thread = threading.Thread(target=redirect_server.handle_request)
     redirect_thread.start()
@@ -352,7 +359,7 @@ def test_default_transport_blocks_redirect_and_protects_credentials():
 
     finally:
         redirect_server.server_close()
-        redirect_thread.join()
+        redirect_thread.join(timeout=10)
         # Ping target server if it is still waiting so handle_request returns
         try:
             import urllib.request
@@ -360,7 +367,7 @@ def test_default_transport_blocks_redirect_and_protects_credentials():
         except Exception:
             pass
         target_server.server_close()
-        target_thread.join()
+        target_thread.join(timeout=10)
 
 
 # --- _make_adapter config pass-through tests ---
