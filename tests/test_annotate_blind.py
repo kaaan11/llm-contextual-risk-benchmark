@@ -18,6 +18,15 @@ from scripts.annotate_blind import (
 
 
 class AnnotateBlindTests(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_path = Path(self.tmp_dir.name)
+        patcher = patch("scripts.annotate_blind.BLIND", self.tmp_path / "phase7g_blind_review.json")
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.addCleanup(self.tmp_dir.cleanup)
+
     def test_get_pending_items_filters_correctly(self):
         sample_data = {
             "items": [

@@ -492,7 +492,12 @@ def test_phase7g_validator_other_events_skipped():
         json.dumps({"event": "blind_adjudication", "blind_id": "B-1"}),
         json.dumps({"event": "context_review", "research_item_id": "SYN-001"}),
         json.dumps({"event": "review_session_invalidated", "blind_id": "B-1"}),
-        json.dumps({"event": "review_reinitialised", "phase": "7G"}),
+        json.dumps({
+            "event": "review_reinitialised",
+            "phase": "7G",
+            "backup_dir": "/tmp/dummy_backup",
+            "manifest_sha256": "0" * 64,
+        }),
     ]
     errors = validate_phase7g_review.validate_history(history, qc)
     assert errors == []
@@ -553,7 +558,12 @@ def test_phase7g_validator_accepts_state_after_logged_reinit():
         json.dumps({"event": "review_decision", "research_item_id": "X-1",
                     "previous_decision": "PENDING", "new_decision": "KEEP",
                     "timestamp": "2026-01-01T00:00:00Z"}),
-        json.dumps({"event": "review_reinitialised", "phase": "7G"}),
+        json.dumps({
+            "event": "review_reinitialised",
+            "phase": "7G",
+            "backup_dir": "/tmp/dummy_backup",
+            "manifest_sha256": "0" * 64,
+        }),
     ]
     assert validate_phase7g_review.validate_history(lines, qc) == []
     # Without the reinit event the same state is drift.

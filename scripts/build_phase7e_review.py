@@ -463,7 +463,7 @@ def main(argv: list[str] | None = None) -> int:
     out = root / "results" / "dataset_audit" / "phase7e_review.json"
     table = root / "docs" / "PHASE_7D_DESIGN_TABLE.md"
     history = root / "results" / "dataset_audit" / "phase7e_review_history.jsonl"
-    canonical_files = [out, table]
+    canonical_files = [out, table, history]
 
     existing = [p for p in canonical_files if p.exists()]
     if existing and not args.reinit:
@@ -480,7 +480,7 @@ def main(argv: list[str] | None = None) -> int:
             backup_target = args.backup_dir / ts
         backup_target.mkdir(parents=True, exist_ok=True)
 
-        to_backup = [p for p in canonical_files + [history] if p.exists()]
+        to_backup = [p for p in canonical_files if p.exists()]
         backed_up: list[tuple[Path, str]] = []
         for src in to_backup:
             orig_hash = hashlib.sha256(src.read_bytes()).hexdigest()
@@ -524,6 +524,23 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {table}")
 
         history.parent.mkdir(parents=True, exist_ok=True)
+        if not history.exists() or history.stat().st_size == 0:
+            init_event = {
+                "event": "review_log_initialised",
+                "phase": PHASE,
+                "timestamp": FROZEN_AT,
+                "item_count": record["counts"]["total"],
+                "initial_decision_for_all_items": "PENDING",
+                "reviewer_id": None,
+                "reviewer_role": None,
+                "notes": (
+                    "Append-only review history. No researcher decisions have been supplied. "
+                    "No item was auto-approved. Entries are only written by "
+                    "scripts/apply_phase7e_decisions.py from explicit human input."
+                ),
+            }
+            with history.open("a", encoding="utf-8") as f:
+                f.write(json.dumps(init_event, ensure_ascii=False) + "\n")
         reinit_event = {
             "event": "review_reinitialised",
             "phase": PHASE,
@@ -544,6 +561,24 @@ def main(argv: list[str] | None = None) -> int:
     table.parent.mkdir(parents=True, exist_ok=True)
     table.write_text(render_design_table(build_items()), encoding="utf-8")
     print(f"wrote {table}")
+
+    history.parent.mkdir(parents=True, exist_ok=True)
+    init_event = {
+        "event": "review_log_initialised",
+        "phase": PHASE,
+        "timestamp": FROZEN_AT,
+        "item_count": record["counts"]["total"],
+        "initial_decision_for_all_items": "PENDING",
+        "reviewer_id": None,
+        "reviewer_role": None,
+        "notes": (
+            "Append-only review history. No researcher decisions have been supplied. "
+            "No item was auto-approved. Entries are only written by "
+            "scripts/apply_phase7e_decisions.py from explicit human input."
+        ),
+    }
+    history.write_text(json.dumps(init_event, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"wrote {history}")
     return 0
 
 

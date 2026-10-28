@@ -21,8 +21,16 @@ NEEDED_FILES = [
     "docs/phase7e_preregistration.md",
     "docs/phase7e_annotation_protocol.md",
     "docs/phase7e_pre_evaluation_clarification.md",
+    "results/dataset_audit/phase7e_design_snapshot.json",
     "dataset/pilot/multiturn/stimulus_dataset_v1.json",
     "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json",
+    "dataset/pilot/multiturn/multiturn_dataset.json",
+    "dataset/pilot/multiturn/records.jsonl",
+    "dataset/pilot/multiturn/construction_plan_snapshot.json",
+    "dataset/pilot/multiturn/README.md",
+    "results/dataset_audit/multiturn_statistics.json",
+    "results/dataset_audit/multiturn_validation.json",
+    "results/dataset_audit/multiturn_construction_report.json",
 ]
 
 
@@ -72,6 +80,7 @@ def test_clean_copy_integrity_flags(tmp_path: Path):
         "docs/phase7e_preregistration.md",
         "docs/phase7e_annotation_protocol.md",
         "docs/phase7e_pre_evaluation_clarification.md",
+        "results/dataset_audit/phase7e_design_snapshot.json",
     ]
     assert "manifest sha256" in flags["phase7e_preregistration_unchanged"]["basis"]
 
@@ -88,7 +97,14 @@ def test_clean_copy_integrity_flags(tmp_path: Path):
 
     assert flags["turkish_dataset_unchanged"]["status"] is True
     assert flags["turkish_dataset_unchanged"]["checked_files"] == [
-        "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"
+        "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json",
+        "dataset/pilot/multiturn/multiturn_dataset.json",
+        "dataset/pilot/multiturn/records.jsonl",
+        "dataset/pilot/multiturn/construction_plan_snapshot.json",
+        "dataset/pilot/multiturn/README.md",
+        "results/dataset_audit/multiturn_statistics.json",
+        "results/dataset_audit/multiturn_validation.json",
+        "results/dataset_audit/multiturn_construction_report.json",
     ]
 
     # pre_review_snapshot preserved
@@ -124,8 +140,8 @@ def test_change_byte_in_phase7d_design_table(tmp_path: Path):
     flags = check_integrity_flags(tmp_path)
     assert flags["phase7d_design_unchanged"]["status"] is False
 
-    # Others must be completely unaffected
-    assert flags["phase7e_preregistration_unchanged"]["status"] is True
+    # phase7e_preregistration_unchanged is also False because PHASE_7D_DESIGN_TABLE.md is in protocol_files and breaks the recomputed composite
+    assert flags["phase7e_preregistration_unchanged"]["status"] is False
     assert flags["phase7f_stimulus_v1_preserved"]["status"] is True
     assert flags["public_benchmark_unchanged"]["status"] == "unknown"
     assert flags["turkish_dataset_unchanged"]["status"] is True
@@ -220,3 +236,62 @@ def test_turkish_dataset_change_is_detected(tmp_path: Path):
     flags = check_integrity_flags(tmp_path)
     assert flags["turkish_dataset_unchanged"]["status"] is False
     assert flags["phase7d_design_unchanged"]["status"] is True
+
+
+def test_corrupt_turkish_artifact_makes_flag_false(tmp_path: Path):
+    copy_needed_files(ROOT, tmp_path)
+    target = tmp_path / "dataset/pilot/multiturn/multiturn_dataset.json"
+    target.write_bytes(target.read_bytes() + b" ")
+
+    flags = check_integrity_flags(tmp_path)
+    assert flags["turkish_dataset_unchanged"]["status"] is False
+
+
+def test_corrupt_design_snapshot_makes_preregistration_flag_false(tmp_path: Path):
+    copy_needed_files(ROOT, tmp_path)
+    target = tmp_path / "results/dataset_audit/phase7e_design_snapshot.json"
+    target.write_bytes(target.read_bytes() + b" ")
+
+    flags = check_integrity_flags(tmp_path)
+    assert flags["phase7e_preregistration_unchanged"]["status"] is False
+
+
+def test_corrupt_protocol_file_breaks_recomputed_composite(tmp_path: Path):
+    copy_needed_files(ROOT, tmp_path)
+    target = tmp_path / "docs/PHASE_7D_EXPERIMENTAL_DESIGN.md"
+    target.write_bytes(target.read_bytes() + b" ")
+
+    flags = check_integrity_flags(tmp_path)
+    assert flags["phase7e_preregistration_unchanged"]["status"] is False
+
+
+def test_build_phase7g_review_ignores_docs_in_out_dir(tmp_path: Path):
+    """build_phase7g_review always derives integrity from ROOT even if out_dir contains docs/."""
+    from scripts import build_phase7g_review
+
+    out_dir = tmp_path / "out"
+    (out_dir / "docs").mkdir(parents=True)
+    (out_dir / "docs" / "dummy.txt").write_text("not protocol")
+
+    ret = build_phase7g_review.main(["--out-dir", str(out_dir)])
+    assert ret == 0
+
+    summary = json.loads(
+        (out_dir / "results" / "dataset_audit" / "phase7g_quality_summary.json").read_text(encoding="utf-8")
+    )
+    assert summary["integrity"]["phase7d_design_unchanged"]["status"] is True
+    assert summary["integrity"]["phase7e_preregistration_unchanged"]["status"] is True
+    assert summary["integrity"]["turkish_dataset_unchanged"]["status"] is True
+
+
+def test_build_phase7g_review_refuses_overwrite_when_only_history_exists(tmp_path: Path):
+    """build_phase7g_review pre-existence check includes history file."""
+    from scripts import build_phase7g_review
+
+    out_dir = tmp_path / "out"
+    hist = out_dir / "results" / "dataset_audit" / "phase7g_review_history.jsonl"
+    hist.parent.mkdir(parents=True)
+    hist.write_text('{"event": "qc_log_initialised"}\n', encoding="utf-8")
+
+    ret = build_phase7g_review.main(["--out-dir", str(out_dir)])
+    assert ret == 2

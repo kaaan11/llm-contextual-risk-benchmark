@@ -15,7 +15,9 @@ the roll-up drifts from the live records.
 from __future__ import annotations
 
 import json
+import os
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -28,9 +30,9 @@ AUDIT = ROOT / "results" / "dataset_audit"
 SUMMARY = AUDIT / "phase7g_quality_summary.json"
 
 
-def main() -> int:
-    blind = json.loads((AUDIT / "phase7g_blind_review.json").read_text(encoding="utf-8"))
-    qc = json.loads((AUDIT / "phase7g_human_qc.json").read_text(encoding="utf-8"))
+def refresh(audit_dir: Path = AUDIT, summary_path: Path = SUMMARY) -> int:
+    blind = json.loads((audit_dir / "phase7g_blind_review.json").read_text(encoding="utf-8"))
+    qc = json.loads((audit_dir / "phase7g_human_qc.json").read_text(encoding="utf-8"))
 
     recheck = qc.get("structural_verification_summary", {})
     summary = build_quality_summary(qc, blind, recheck)
@@ -111,13 +113,46 @@ def main() -> int:
         "phase7g_human_qc.json. Those two files are the canonical sources; a "
         "validator cross-checks this file against them."
     )
-    SUMMARY.write_text(json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
-                       encoding="utf-8")
-    print(f"regenerated {SUMMARY.name}: "
+
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_content = json.dumps(summary, indent=2, ensure_ascii=False) + "\n"
+    summary_bytes = summary_content.encode("utf-8")
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            dir=summary_path.parent,
+            prefix=f".{summary_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as tmp:
+            tmp_path = Path(tmp.name)
+            tmp.write(summary_bytes)
+            tmp.flush()
+            os.fsync(tmp.fileno())
+        os.replace(tmp_path, summary_path)
+        tmp_path = None
+    finally:
+        if tmp_path is not None and tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+
+    print(f"regenerated {summary_path.name}: "
           f"annotations_submitted="
           f"{summary['isolated_prompt_review']['annotations_submitted']}, "
           f"pending={summary['totals']['pending']}")
     return 0
+
+
+def main() -> int:
+    try:
+        from scripts.review_store import review_lock
+    except ModuleNotFoundError:
+        from review_store import review_lock
+
+    with review_lock(AUDIT):
+        return refresh(AUDIT, SUMMARY)
 
 
 if __name__ == "__main__":
