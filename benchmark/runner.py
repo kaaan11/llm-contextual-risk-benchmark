@@ -168,10 +168,8 @@ class EvaluationRunner:
                 if isinstance(exc, RetryExhaustedError):
                     attempts = exc.attempts
                 refusal = self.refusal_detector.classify_error()
-                underlying = exc.last_error if isinstance(exc, RetryExhaustedError) and exc.last_error is not None else exc
+                # RetryExhaustedError.detail forwards the last underlying error's detail.
                 raw_detail = getattr(exc, "detail", None)
-                if raw_detail is None:
-                    raw_detail = getattr(underlying, "detail", None)
                 error_detail = sanitize_error_message(raw_detail) if raw_detail is not None else None
                 result = EvaluationResult(
                     evaluation_id=evaluation_id,
@@ -188,7 +186,7 @@ class EvaluationRunner:
                     pure_inference_latency_ms=None,
                     provider_round_trip_latency_ms=provider_round_trip_latency_ms,
                     retry_overhead_ms=retry_overhead_ms,
-                    error=sanitize_error_message(f"{type(underlying).__name__}: {underlying}"),
+                    error=sanitize_error_message(f"{type(exc).__name__}: {exc}"),
                     error_detail=error_detail,
                     input_turn_count=len(messages),
                     request_digest=request_digest,

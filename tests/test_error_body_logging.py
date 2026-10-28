@@ -146,7 +146,7 @@ def test_runner_results_tree_logger_excludes_marker(tmp_path: Path):
     assert len(results) == 1
     res = results[0]
     assert res.status == "error"
-    assert "AdapterRequestError" in str(res.error)
+    assert "sağlayıcı hatası" in str(res.error)  # error keeps class chain + HTTP code, not the body
     assert "503" in str(res.error)
     assert marker not in str(res.error)
     assert res.error_detail == f'{{"detail": "{marker}"}}'
@@ -165,7 +165,7 @@ def test_runner_results_tree_logger_excludes_marker(tmp_path: Path):
     record = lines[0]
     assert record["response_text"] is None
     assert record["error_detail"] is None
-    assert "AdapterRequestError" in record["error"]
+    assert "sağlayıcı hatası" in record["error"]  # error keeps class chain + HTTP code, not the body
     assert "503" in record["error"]
     assert marker not in json.dumps(record)
 
@@ -189,7 +189,7 @@ def test_runner_raw_logger_retains_marker(tmp_path: Path):
     assert len(lines) == 1
     record = lines[0]
     assert record["error_detail"] == f'{{"detail": "{marker}"}}'
-    assert "AdapterRequestError" in record["error"]
+    assert "sağlayıcı hatası" in record["error"]  # error keeps class chain + HTTP code, not the body
     assert "500" in record["error"]
 
 
@@ -249,7 +249,7 @@ def test_smoke_level_error_body_isolated(tmp_path: Path, monkeypatch: pytest.Mon
     for record in results_records:
         assert record["response_text"] is None
         assert record["error_detail"] is None
-        assert "AdapterRequestError" in record["error"]
+        assert "sağlayıcı hatası" in record["error"]  # error keeps class chain + HTTP code, not the body
         assert "502" in record["error"]
         assert marker not in json.dumps(record)
 
@@ -260,5 +260,5 @@ def test_smoke_level_error_body_isolated(tmp_path: Path, monkeypatch: pytest.Mon
     assert len(raw_records) > 0
     for record in raw_records:
         assert record["error_detail"] == f'{{"detail": "{marker}"}}'
-        assert "AdapterRequestError" in record["error"]
+        assert "sağlayıcı hatası" in record["error"]  # error keeps class chain + HTTP code, not the body
         assert "502" in record["error"]
