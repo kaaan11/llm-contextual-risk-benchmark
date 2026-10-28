@@ -164,6 +164,7 @@ def commit_state_and_history(
             fh.flush()
             os.fsync(fh.fileno())
     except Exception as append_exc:
+        rollback_problems: list[str] = []
         # Rollback history append
         try:
             if history_pre_exists:
@@ -174,16 +175,24 @@ def commit_state_and_history(
             else:
                 if history_path.exists():
                     history_path.unlink()
-        except Exception:
-            pass
+        except Exception as exc:
+            rollback_problems.append(f"history truncate failed: {exc}")
 
         # Rollback state write by restoring from snapshot
         try:
             if snapshot_path.exists():
                 _atomic_copy_replace(snapshot_path, state_path)
-        except Exception:
-            pass
+            else:
+                rollback_problems.append("no snapshot to restore state from")
+        except Exception as exc:
+            rollback_problems.append(f"state restore failed: {exc}")
 
+        if rollback_problems:
+            raise HistoryAppendError(
+                f"History append failed: {append_exc}; ROLLBACK INCOMPLETE: "
+                f"{'; '.join(rollback_problems)}. Check {state_path.name} and "
+                f"{history_path.name} against {snapshot_path.name} before any further write."
+            ) from append_exc
         raise HistoryAppendError(
             f"History append failed: {append_exc}; rolled back state from "
             f"{snapshot_path.name} and truncated history to {history_pre_size} bytes"

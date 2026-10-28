@@ -520,3 +520,115 @@ def test_phase7g_writer_end_to_end(tmp_path: Path, monkeypatch):
 
     # Verify lock cleaned up
     assert not lock_file.exists()
+
+
+# ---------------------------------------------------------------------------
+# Reviewer-added tests (mutation check found these contracts unmeasured)
+# ---------------------------------------------------------------------------
+
+
+def test_multi_event_append_is_exact_lines(tmp_path: Path):
+    """Several events append as exactly one JSON line each, nothing between them."""
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.jsonl"
+    state_path.write_text("{}\n", encoding="utf-8")
+    history_path.write_bytes(b'{"event":"init"}\n')
+    events = [{"event": "review_decision", "n": i, "note": "ü"} for i in range(3)]
+
+    commit_state_and_history(state_path, {"v": 2}, history_path, events,
+                             tmp_path / "snap.json")
+
+    expected = b'{"event":"init"}\n' + "".join(
+        json.dumps(e, ensure_ascii=False) + "\n" for e in events).encode("utf-8")
+    assert history_path.read_bytes() == expected
+
+
+def test_phase7e_writer_reads_state_inside_lock(tmp_path: Path, monkeypatch):
+    """Lost-update guard: a decision committed by another writer just before this
+    writer gets the lock must survive; the state is loaded after acquiring it."""
+    import contextlib
+    import copy
+
+    audit_dir = tmp_path / "results" / "dataset_audit"
+    audit_dir.mkdir(parents=True)
+    review_file = audit_dir / "phase7e_review.json"
+    history_file = audit_dir / "phase7e_review_history.jsonl"
+
+    checklist = {k: False for k in (
+        "represents_intended_construct", "final_prompt_can_be_made_ambiguous",
+        "bc_differ_semantically_not_by_length", "realistic_user_workflow",
+        "context_effect_defensible_pre_model", "safe_for_controlled_research",
+        "not_redundant_with_another_item", "control_strategy_appropriate")}
+    design = {
+        "research_item_id": "RI-NB-001", "triplet_id": "TRP-NB-001",
+        "category": "null_benign", "context_mechanism": "secure logging",
+        "canonical_final_prompt_intent": "checklist",
+        "isolated_prompt_target_valence": "clearly_benign",
+        "legitimating_context_intent": "benign", "incriminating_context_intent": "framing",
+        "expected_context_effect": "context_has_no_material_effect",
+        "expected_risk_profile": "low", "intended_turn_count": 3,
+        "control_strategy": "F", "safety_constraints": "none",
+    }
+    item = {"research_item_id": "RI-NB-001", "current_version": 1,
+            "review_decision": "PENDING", "researcher_approved": False, "notes": None,
+            "versions": [{"version": 1, "source_phase": "7D", "design": design}],
+            "decision_rule_checklist": checklist}
+    item2 = copy.deepcopy(item)
+    item2["research_item_id"] = "RI-NB-002"
+    record = {"status": "AWAITING_HUMAN_REVIEW", "review_complete": False,
+              "counts": {"total": 2, "pending": 2, "keep": 0, "revise": 0,
+                         "reject": 0, "approved": 0},
+              "items": [item, item2], "reviewer_registry": []}
+    review_file.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+    history_file.write_text(json.dumps({"event": "review_log_initialised"}) + "\n",
+                            encoding="utf-8")
+
+    real_lock = p7e.review_lock
+
+    @contextlib.contextmanager
+    def lock_after_concurrent_commit(audit):
+        # Another writer decided RI-NB-002 and released the lock just now.
+        other = json.loads(review_file.read_text(encoding="utf-8"))
+        other["items"][1]["review_decision"] = "KEEP"
+        review_file.write_text(json.dumps(other, indent=2) + "\n", encoding="utf-8")
+        with real_lock(audit) as held:
+            yield held
+
+    monkeypatch.setattr(p7e, "review_lock", lock_after_concurrent_commit)
+
+    dec_file = tmp_path / "decisions.txt"
+    dec_file.write_text("RI-NB-001: KEEP\n", encoding="utf-8")
+    assert p7e.main(["--decisions", str(dec_file), "--reviewer-id", "r1",
+                     "--reviewer-role", "lead", "--timestamp", "2026-08-14T12:00:00Z"],
+                    root=tmp_path) == 0
+
+    final = json.loads(review_file.read_text(encoding="utf-8"))
+    assert final["items"][0]["review_decision"] == "KEEP"
+    assert final["items"][1]["review_decision"] == "KEEP", "concurrent decision was lost"
+
+
+def test_failed_rollback_is_reported_not_claimed(tmp_path: Path, monkeypatch):
+    """If restoring the state also fails, the error must say the rollback is incomplete."""
+    import builtins
+    import scripts.review_store as rs
+
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.jsonl"
+    state_path.write_text("{}\n", encoding="utf-8")
+    history_path.write_bytes(b'{"event":"init"}\n')
+
+    real_open = builtins.open
+
+    def failing_open(file, mode="r", *a, **k):
+        if Path(file) == history_path and "a" in mode:
+            raise OSError("disk full")
+        return real_open(file, mode, *a, **k)
+
+    def failing_restore(src, dest):
+        raise OSError("restore denied")
+
+    monkeypatch.setattr(builtins, "open", failing_open)
+    monkeypatch.setattr(rs, "_atomic_copy_replace", failing_restore)
+    with pytest.raises(rs.HistoryAppendError, match="ROLLBACK INCOMPLETE"):
+        commit_state_and_history(state_path, {"v": 2}, history_path,
+                                 [{"event": "x"}], tmp_path / "snap.json")
