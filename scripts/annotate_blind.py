@@ -20,13 +20,16 @@ sys.path.insert(0, str(ROOT))
 from scripts.apply_phase7g_annotations import (
     BLIND,
     CONFIDENCE,
+    HISTORY,
     KEY,
+    SNAPS,
     VALENCE_SCALE,
     _load,
     append_history,
     record_blind,
     snapshot,
 )
+from scripts.review_store import commit_state_and_history, review_lock
 from scripts.refresh_phase7g_rollups import main as refresh_rollups
 
 
@@ -134,9 +137,9 @@ def run_wizard(
             timestamp=timestamp,
         )
 
-        snapshot([BLIND], timestamp)
-        BLIND.write_text(json.dumps(blind_data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        append_history(events)
+        clean_stamp = timestamp.replace(":", "")
+        snap = SNAPS / f"phase7g_blind_review.{clean_stamp}.json"
+        commit_state_and_history(BLIND, blind_data, HISTORY, events, snap)
         refresh_rollups()
         recorded_count += 1
         print(f"✓ {bid} başarıyla kaydedildi.")
@@ -145,15 +148,16 @@ def run_wizard(
     return recorded_count
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Phase 7G Interactive Blind Annotation CLI")
     parser.add_argument("--rater", choices=["rater_a", "rater_b"], required=True, help="Rater slot")
     parser.add_argument("--reviewer-id", required=True, help="Unique identifier of the rater")
     parser.add_argument("--reviewer-role", default=None, help="Optional role description")
     parser.add_argument("--limit", type=int, default=None, help="Maximum number of items to annotate this run")
 
-    args = parser.parse_args()
-    run_wizard(args.rater, args.reviewer_id, args.reviewer_role, limit=args.limit)
+    args = parser.parse_args(argv)
+    with review_lock(BLIND.parent):
+        run_wizard(args.rater, args.reviewer_id, args.reviewer_role, limit=args.limit)
 
 
 if __name__ == "__main__":

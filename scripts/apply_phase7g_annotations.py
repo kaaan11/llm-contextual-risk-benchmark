@@ -40,6 +40,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+if str(ROOT / "scripts") not in sys.path:
+    sys.path.insert(0, str(ROOT / "scripts"))
+
+try:
+    from scripts.review_store import commit_state_and_history, review_lock
+except ModuleNotFoundError:
+    from review_store import commit_state_and_history, review_lock
+
 AUDIT = ROOT / "results" / "dataset_audit"
 BLIND = AUDIT / "phase7g_blind_review.json"
 KEY = AUDIT / "phase7g_blind_key.json"
@@ -673,7 +683,7 @@ def snapshot(paths: list[Path], stamp: str) -> None:
         shutil.copy(p, dest)
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("mode", choices=["blind", "context", "decide", "adjudicate"])
     ap.add_argument("--input", required=True, help="JSON file of human-supplied annotations")
@@ -681,45 +691,57 @@ def main() -> int:
     ap.add_argument("--reviewer-role", default=None)
     ap.add_argument("--timestamp", required=True)
     ap.add_argument("--dry-run", action="store_true")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
-    blind, key, qc = _load(BLIND), _load(KEY), _load(QC)
 
-    try:
-        if args.mode == "blind":
-            events = record_blind(blind, key, payload, args.reviewer_id,
-                                  args.reviewer_role, args.timestamp)
-            targets = [BLIND]
-        elif args.mode == "context":
-            events = record_context(qc, blind, key, payload, args.reviewer_id,
-                                    args.reviewer_role, args.timestamp)
-            targets = [QC]
-        elif args.mode == "adjudicate":
-            events = record_adjudication(blind, key, payload, args.reviewer_id,
+    with review_lock(AUDIT):
+        blind, key, qc = _load(BLIND), _load(KEY), _load(QC)
+
+        try:
+            if args.mode == "blind":
+                events = record_blind(blind, key, payload, args.reviewer_id,
+                                      args.reviewer_role, args.timestamp)
+                target = BLIND
+                target_state = blind
+            elif args.mode == "context":
+                events = record_context(qc, blind, key, payload, args.reviewer_id,
+                                        args.reviewer_role, args.timestamp)
+                target = QC
+                target_state = qc
+            elif args.mode == "adjudicate":
+                events = record_adjudication(blind, key, payload, args.reviewer_id,
+                                             args.reviewer_role, args.timestamp)
+                target = BLIND
+                target_state = blind
+            else:
+                events = record_decision(qc, blind, key, payload, args.reviewer_id,
                                          args.reviewer_role, args.timestamp)
-            targets = [BLIND]
-        else:
-            events = record_decision(qc, blind, key, payload, args.reviewer_id,
-                                     args.reviewer_role, args.timestamp)
-            targets = [QC]
-    except QCError as exc:
-        print(f"REFUSED: {exc}", file=sys.stderr)
-        return 1
+                target = QC
+                target_state = qc
+        except QCError as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 1
 
-    if args.dry_run:
-        print(f"dry run: {len(events)} event(s) would be recorded; nothing written")
+        if args.dry_run:
+            print(f"dry run: {len(events)} event(s) would be recorded; nothing written")
+            return 0
+
+        clean_stamp = args.timestamp.replace(":", "")
+        snap = SNAPS / f"{target.stem}.{clean_stamp}{target.suffix}"
+        if snap.exists():
+            print(f"REFUSED: snapshot {snap.name} already exists; refusing to overwrite",
+                  file=sys.stderr)
+            return 1
+
+        try:
+            commit_state_and_history(target, target_state, HISTORY, events, snap)
+        except FileExistsError as exc:
+            print(f"REFUSED: {exc}", file=sys.stderr)
+            return 1
+
+        print(f"recorded {len(events)} event(s)")
         return 0
-
-    snapshot(targets, args.timestamp)
-    if args.mode in {"blind", "adjudicate"}:
-        BLIND.write_text(json.dumps(blind, indent=2, ensure_ascii=False) + "\n",
-                         encoding="utf-8")
-    else:
-        QC.write_text(json.dumps(qc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    append_history(events)
-    print(f"recorded {len(events)} event(s)")
-    return 0
 
 
 if __name__ == "__main__":
