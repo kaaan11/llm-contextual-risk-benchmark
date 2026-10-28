@@ -44,10 +44,18 @@ class AdapterRequestError(BenchmarkError):
     hatalarını ayırmasını sağlar.
     """
 
-    def __init__(self, message: str, *, status_code: int | None = None, retryable: bool | None = None) -> None:
+    def __init__(
+        self,
+        message: str,
+        *,
+        status_code: int | None = None,
+        retryable: bool | None = None,
+        detail: str | None = None,
+    ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.retryable = retryable
+        self.detail = detail
 
 
 class RetryExhaustedError(BenchmarkError):
@@ -57,3 +65,7 @@ class RetryExhaustedError(BenchmarkError):
         super().__init__(message)
         self.attempts = attempts
         self.last_error = last_error
+
+    @property
+    def detail(self) -> str | None:
+        return getattr(self.last_error, "detail", None)

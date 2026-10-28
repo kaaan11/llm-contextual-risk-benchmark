@@ -56,6 +56,7 @@ class JsonlResponseLogger:
         payload = result.to_log_dict()
         if not self.include_response_text:
             payload["response_text"] = None
+            payload["error_detail"] = None
         self._handle.write(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n")
         self._handle.flush()
 

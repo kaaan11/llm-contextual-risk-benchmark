@@ -71,6 +71,7 @@ class EvaluationResult:
     retry_overhead_ms: float | None = None
     usage: Mapping[str, Any] = field(default_factory=dict)
     error: str | None = None
+    error_detail: str | None = None
     input_turn_count: int = 0
     request_digest: str | None = None
     dataset_membership: tuple[str, ...] = ()
@@ -99,6 +100,7 @@ class EvaluationResult:
             "retry_overhead_ms": self.retry_overhead_ms,
             "usage": dict(self.usage),
             "error": self.error,
+            "error_detail": self.error_detail,
             "input_turn_count": self.input_turn_count,
             "request_digest": self.request_digest,
             "dataset_membership": list(self.dataset_membership),

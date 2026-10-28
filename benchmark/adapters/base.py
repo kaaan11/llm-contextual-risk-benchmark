@@ -9,7 +9,7 @@ from typing import Any, Callable, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from ..errors import AdapterRequestError
+from ..errors import AdapterRequestError, sanitize_error_message
 from ..types import AdapterResponse, GenerationRequest
 
 
@@ -40,12 +40,13 @@ def default_json_transport(
         with urlopen(request, timeout=timeout_s) as response:  # nosec B310: endpoint config ile belirlenir
             data = response.read().decode("utf-8")
     except HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")
+        raw_detail = exc.read().decode("utf-8", errors="replace")
         retryable = exc.code in {408, 425, 429} or 500 <= exc.code <= 599
         raise AdapterRequestError(
-            f"HTTP {exc.code} sağlayıcı hatası: {detail[:500]}",
+            f"HTTP {exc.code} sağlayıcı hatası",
             status_code=exc.code,
             retryable=retryable,
+            detail=sanitize_error_message(raw_detail),
         ) from exc
     except URLError as exc:
         raise AdapterRequestError(f"Sağlayıcı bağlantı hatası: {exc.reason}", retryable=True) from exc
