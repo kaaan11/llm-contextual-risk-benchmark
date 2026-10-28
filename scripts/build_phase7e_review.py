@@ -21,8 +21,13 @@ This script performs no network access and calls no model API.
 
 from __future__ import annotations
 
+import argparse
+from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
+import shutil
+import sys
 
 DESIGN_VERSION = "1.0.0"
 PHASE = "7E"
@@ -442,18 +447,105 @@ def render_design_table(items: list[dict]) -> str:
     return "\n".join(lines)
 
 
-def main() -> None:
-    root = Path(__file__).resolve().parents[1]
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--out-dir", type=Path, default=None, help="write all outputs under DIR")
+    parser.add_argument("--reinit", action="store_true", help="overwrite existing canonical outputs")
+    parser.add_argument("--backup-dir", type=Path, default=None, help="backup directory for reinit")
+    args = parser.parse_args(argv)
+
+    if args.reinit and not args.backup_dir:
+        parser.error("--reinit requires --backup-dir")
+    if args.backup_dir and not args.reinit:
+        parser.error("--backup-dir requires --reinit")
+
+    root = args.out_dir if args.out_dir is not None else Path(__file__).resolve().parents[1]
     out = root / "results" / "dataset_audit" / "phase7e_review.json"
+    table = root / "docs" / "PHASE_7D_DESIGN_TABLE.md"
+    history = root / "results" / "dataset_audit" / "phase7e_review_history.jsonl"
+    canonical_files = [out, table]
+
+    existing = [p for p in canonical_files if p.exists()]
+    if existing and not args.reinit:
+        print("Refusing to overwrite existing canonical output files:", file=sys.stderr)
+        for p in existing:
+            print(f"  {p}", file=sys.stderr)
+        return 2
+
+    if args.reinit:
+        ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        backup_target = args.backup_dir / ts
+        if backup_target.exists():
+            ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            backup_target = args.backup_dir / ts
+        backup_target.mkdir(parents=True, exist_ok=True)
+
+        to_backup = [p for p in canonical_files + [history] if p.exists()]
+        backed_up: list[tuple[Path, str]] = []
+        for src in to_backup:
+            orig_hash = hashlib.sha256(src.read_bytes()).hexdigest()
+            dest = backup_target / src.name
+            shutil.copy2(src, dest)
+            dest_hash = hashlib.sha256(dest.read_bytes()).hexdigest()
+            if orig_hash != dest_hash:
+                raise RuntimeError(f"Backup verification failed for {src}: {orig_hash} != {dest_hash}")
+            backed_up.append((src, orig_hash))
+
+        manifest_data = {
+            "phase": PHASE,
+            "timestamp": ts,
+            "backup_dir": str(backup_target),
+            "files": [
+                {
+                    "path": str(src),
+                    "original_path": str(src),
+                    "sha256": orig_hash,
+                    "backup_name": src.name,
+                }
+                for src, orig_hash in backed_up
+            ],
+            "file_hashes": {
+                str(src): orig_hash
+                for src, orig_hash in backed_up
+            },
+        }
+        manifest_file = backup_target / "MANIFEST.json"
+        manifest_bytes = (json.dumps(manifest_data, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+        manifest_file.write_bytes(manifest_bytes)
+        manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+
+        out.parent.mkdir(parents=True, exist_ok=True)
+        record = build_review_record()
+        out.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {out} ({record['counts']['total']} items, all PENDING)")
+
+        table.parent.mkdir(parents=True, exist_ok=True)
+        table.write_text(render_design_table(build_items()), encoding="utf-8")
+        print(f"wrote {table}")
+
+        history.parent.mkdir(parents=True, exist_ok=True)
+        reinit_event = {
+            "event": "review_reinitialised",
+            "phase": PHASE,
+            "timestamp": ts,
+            "backup_dir": str(backup_target),
+            "manifest_sha256": manifest_sha256,
+        }
+        with history.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(reinit_event, ensure_ascii=False) + "\n")
+        print(f"appended review_reinitialised event to {history}")
+        return 0
+
     out.parent.mkdir(parents=True, exist_ok=True)
     record = build_review_record()
     out.write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"wrote {out} ({record['counts']['total']} items, all PENDING)")
 
-    table = root / "docs" / "PHASE_7D_DESIGN_TABLE.md"
+    table.parent.mkdir(parents=True, exist_ok=True)
     table.write_text(render_design_table(build_items()), encoding="utf-8")
     print(f"wrote {table}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
