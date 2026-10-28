@@ -21,6 +21,7 @@ from .loader import DatasetLoader
 from .logging import JsonlResponseLogger
 from .metadata import ExperimentMetadata, utc_now
 from .metrics import calculate_metrics
+from .preflight import PreflightError
 from .retry import RetryPolicy
 from .runner import EvaluationRunner
 from .types import EvaluationResult, ModelSpec
@@ -383,14 +384,16 @@ def run_smoke(
                 "artifacts": {key: str(value.relative_to(output_root)) for key, value in artifacts.items()},
                 "metrics": calculate_metrics(results),
             })
-        except (AdapterConfigurationError, DatasetLoadError, OSError, ValueError) as exc:
+        except (PreflightError, AdapterConfigurationError, DatasetLoadError, OSError, ValueError) as exc:
+            err_msg = sanitize_error_message(str(exc), limit=300)
             provider_results.append({
                 **preflight,
                 "status": "error",
+                "reason": err_msg,
                 "sample_count": 0,
                 "wall_clock_ms": (perf_counter() - started) * 1000.0,
                 "error_type": type(exc).__name__,
-                "error": sanitize_error_message(str(exc), limit=300),
+                "error": err_msg,
             })
         finally:
             logger.close()

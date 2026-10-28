@@ -12,6 +12,7 @@
   "system_instruction_ref": "phase6a-smoke-v1",
   "seed": 20260814,
   "temperature": 0.0,
+  "top_p": 1.0,
   "max_output_tokens": 256,
   "timeout_s": 30.0,
   "retry": {

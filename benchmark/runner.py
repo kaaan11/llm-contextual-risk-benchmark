@@ -204,6 +204,15 @@ class EvaluationRunner:
         directory.mkdir(parents=True, exist_ok=True)
         metadata_path = directory / "experiment_metadata.json"
         metrics_path = directory / "metrics.json"
-        write_metadata(self.metadata, metadata_path)
+        write_metadata(
+            self.metadata,
+            metadata_path,
+            extra={
+                "run_config_digest": self.run_config_digest,
+                "run_config_digest_status": (
+                    "strict_preflight" if self.run_config_digest is not None else "not_computed_non_strict"
+                ),
+            },
+        )
         metrics_path.write_text(json.dumps(calculate_metrics(results), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         return {"metadata": metadata_path, "metrics": metrics_path}
