@@ -7,7 +7,8 @@ import socket
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Mapping
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.parse import urlsplit
+from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from ..errors import AdapterRequestError, sanitize_error_message
 from ..types import AdapterResponse, GenerationRequest
@@ -26,6 +27,31 @@ class ModelAdapter(ABC):
         raise NotImplementedError
 
 
+class DisallowRedirectHandler(HTTPRedirectHandler):
+    """Yönlendirmeleri engelleyerek kimlik bilgisi ve gövde sızıntısını önler."""
+
+    def redirect_request(
+        self,
+        req: Any,
+        fp: Any,
+        code: int,
+        msg: str,
+        headers: Any,
+        newurl: str,
+    ) -> None:
+        target = urlsplit(newurl)
+        scheme = (target.scheme or "").lower()
+        host = target.netloc.split("@")[-1]
+        raise AdapterRequestError(f"redirect not followed: HTTP {code} -> {scheme}://{host}")
+
+
+_default_opener = build_opener(DisallowRedirectHandler)
+
+
+def urlopen(request: Request, timeout: float = 60.0):
+    return _default_opener.open(request, timeout=timeout)
+
+
 def default_json_transport(
     url: str,
     headers: Mapping[str, str],
@@ -39,6 +65,8 @@ def default_json_transport(
     try:
         with urlopen(request, timeout=timeout_s) as response:  # nosec B310: endpoint config ile belirlenir
             data = response.read().decode("utf-8")
+    except AdapterRequestError:
+        raise
     except HTTPError as exc:
         raw_detail = exc.read().decode("utf-8", errors="replace")
         retryable = exc.code in {408, 425, 429} or 500 <= exc.code <= 599

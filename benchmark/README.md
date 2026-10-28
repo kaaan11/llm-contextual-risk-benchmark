@@ -31,6 +31,7 @@ EvaluationRunner ----> ModelAdapter
 - Anthropic: `ANTHROPIC_API_KEY`
 - Open-weight hosted endpoint: isteğe bağlı `OPENWEIGHT_API_KEY` ve zorunlu `OPENWEIGHT_BASE_URL`
 - Anahtar değerleri metadata veya response loglarına yazılmaz.
+- Endpoint güvenliği gereği varsayılan olarak yalnızca `https://` şeması kabul edilir; düz metin `http://` yalnızca loopback adresleri (`localhost`, `127.0.0.0/8`, `::1`) ve `allow_plaintext_loopback: true` seçeneğiyle desteklenir. Varsayılan transport HTTP yönlendirmelerini (redirects) takip etmez ve credential sızıntısını engeller.
 - Gerçek evaluation öncesinde endpoint, model sürümü, veri sürümü ve retention politikasının ayrıca onaylanması gerekir.
 
 ## Client timing support boundary

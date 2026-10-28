@@ -73,7 +73,7 @@ class BenchmarkFrameworkTests(unittest.TestCase):
         self.assertEqual(response.text, "anthropic")
 
         open_weight = OpenWeightAdapter(
-            endpoint="http://localhost:8000/mock",
+            endpoint="https://localhost:8000/mock",
             transport=lambda *args: {"choices": [{"message": {"content": "open-weight"}}]},
         )
         self.assertEqual(open_weight.generate(self._request("sample-4", provider="open_weight")).text, "open-weight")
