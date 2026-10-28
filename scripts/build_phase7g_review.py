@@ -33,6 +33,11 @@ import random
 import shutil
 import sys
 
+try:
+    from check_research_integrity import check_integrity_flags
+except ImportError:
+    from scripts.check_research_integrity import check_integrity_flags
+
 ROOT = Path(__file__).resolve().parents[1]
 STIMULI = ROOT / "dataset" / "pilot" / "multiturn" / "stimulus_dataset_v1.json"
 AUDIT = ROOT / "results" / "dataset_audit"
@@ -353,7 +358,7 @@ def build_human_qc(records: list[dict], recheck: dict) -> dict:
     }
 
 
-def build_quality_summary(qc: dict, blind: dict, recheck: dict) -> dict:
+def build_quality_summary(qc: dict, blind: dict, recheck: dict, root: Path = ROOT) -> dict:
     return {
         "record_version": "0.1.0",
         "phase": PHASE,
@@ -404,15 +409,7 @@ def build_quality_summary(qc: dict, blind: dict, recheck: dict) -> dict:
         "versioning": {"revisions_created": 0, "items_at_version_2": 0,
                        "re_reviews_required": 0},
         "quality_flags_raised": {},
-        "integrity": {
-            "phase7d_design_unchanged": True,
-            "phase7e_preregistration_unchanged": True,
-            "phase7f_stimulus_v1_preserved": True,
-            "public_benchmark_unchanged": True,
-            "turkish_dataset_unchanged": True,
-            "pre_review_snapshot": (
-                "results/dataset_audit/snapshots/phase7f_stimulus.v1.pre_qc.json"),
-        },
+        "integrity": check_integrity_flags(root=root),
     }
 
 
@@ -451,7 +448,8 @@ def main(argv: list[str] | None = None) -> int:
     recheck = structural_recheck(records)
     blind, key = build_blind_review(records)
     qc = build_human_qc(records, recheck)
-    summary = build_quality_summary(qc, blind, recheck)
+    integrity_root = root if (root / "docs").exists() else ROOT
+    summary = build_quality_summary(qc, blind, recheck, root=integrity_root)
 
     if args.reinit:
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
