@@ -56,7 +56,10 @@ def _build_test_config(tmp_path: Path, *, extra_config: dict | None = None) -> P
     }
     if extra_config:
         config_dict.update(extra_config)
-    cfg_path = tmp_path / "smoke_test_config.json"
+    # Config lives at <tmp>/src/configs/, so the config's source root is <tmp>/src
+    # and other tmp_path directories are outside it.
+    cfg_path = tmp_path / "src" / "configs" / "smoke_test_config.json"
+    cfg_path.parent.mkdir(parents=True, exist_ok=True)
     cfg_path.write_text(json.dumps(config_dict, indent=2), encoding="utf-8")
     return cfg_path
 
@@ -193,22 +196,15 @@ def test_raw_response_dir_inside_results_raises_smoke_config_error(tmp_path):
 
 def test_raw_responses_are_local_only_derivation_inside_source_root(tmp_path, mock_env):
     cfg_path = _build_test_config(tmp_path)
-    # Target directory inside source_root (not results/)
-    local_raw_dir = ROOT / "tests" / "fixtures" / "temp_local_raw_test"
-    try:
-        with patch("benchmark.smoke_test._make_adapter", return_value=StubAdapter()):
-            summary = run_smoke(cfg_path, live=True, raw_response_dir=local_raw_dir)
+    local_raw_dir = tmp_path / "src" / "scratch_raw"  # inside the config's source root
+    with patch("benchmark.smoke_test._make_adapter", return_value=StubAdapter()):
+        summary = run_smoke(cfg_path, live=True, raw_response_dir=local_raw_dir)
 
-        safety = summary["safety"]
-        assert safety["raw_response_text_retained"] is True
-        assert safety["raw_response_dir"] == str(local_raw_dir.resolve())
-        # Since it is inside source_root, it should be derived as False!
-        assert safety["raw_responses_are_local_only"] is False
-    finally:
-        # Clean up the test output
-        import shutil
-        if local_raw_dir.exists():
-            shutil.rmtree(local_raw_dir)
+    safety = summary["safety"]
+    assert safety["raw_response_text_retained"] is True
+    assert safety["raw_response_dir"] == str(local_raw_dir.resolve())
+    # Inside the source tree, so it is not "local only".
+    assert safety["raw_responses_are_local_only"] is False
 
 
 def test_main_cli_parses_raw_response_dir(tmp_path, mock_env):

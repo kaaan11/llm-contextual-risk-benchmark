@@ -289,7 +289,7 @@ def run_smoke(
     manifest_sha256 = _sha256(manifest_path)
     if len(records_by_id) > config["max_samples"]:
         raise SmokeConfigError("Smoke manifesti config.max_samples sınırını aşıyor")
-    output_root = _resolve_path(str(config["output_root"]), base_dir=source_root) / str(config["experiment_id"])
+    output_root = _resolve_path(str(config["output_root"]), base_dir=cfg_source_root) / str(config["experiment_id"])
     output_root.mkdir(parents=True, exist_ok=True)
     cases_bundle = DatasetLoader().load(dataset_path, sample_ids=manifest["sample_ids"])
     cases_by_id = {case.sample_id: case for case in DatasetLoader.to_cases(cases_bundle)}
@@ -303,9 +303,10 @@ def run_smoke(
     retry_policy = RetryPolicy(**dict(config["retry"]))
     generation_parameters = {
         "temperature": config.get("temperature", 0.0),
-        "top_p": config.get("top_p", 1.0),
         "max_output_tokens": config.get("max_output_tokens", 256),
     }
+    if "top_p" in config:
+        generation_parameters["top_p"] = config["top_p"]
     for preflight in preflights:
         name = preflight["provider"]
         if not preflight["enabled"]:
@@ -402,7 +403,10 @@ def run_smoke(
     if not raw_response_text_retained:
         raw_responses_are_local_only = True
     else:
-        raw_responses_are_local_only = not resolved_raw_dir.is_relative_to(source_root)
+        raw_responses_are_local_only = not (
+            resolved_raw_dir.is_relative_to(source_root)
+            or resolved_raw_dir.is_relative_to(cfg_source_root.resolve())
+        )
 
     summary = {
         "phase": "6A",
