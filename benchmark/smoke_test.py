@@ -240,23 +240,27 @@ def _make_adapter(name: str, provider_config: Mapping[str, Any], timeout_s: floa
     credential_env = str(provider_config["credential_env"])
     base_url_env = str(provider_config.get("base_url_env", ""))
     endpoint_env = str(provider_config.get("endpoint_env", base_url_env))
+    allow_plaintext_loopback = bool(provider_config.get("allow_plaintext_loopback", False))
     if name == "openai":
         return OpenAIAdapter(
             api_key_env=credential_env,
             endpoint=os.environ.get(base_url_env) if base_url_env else None,
             timeout_s=timeout_s,
+            allow_plaintext_loopback=allow_plaintext_loopback,
         )
     if name == "anthropic":
         return AnthropicAdapter(
             api_key_env=credential_env,
             endpoint=os.environ.get(base_url_env) if base_url_env else None,
             timeout_s=timeout_s,
+            allow_plaintext_loopback=allow_plaintext_loopback,
         )
     if name == "open_weight":
         return OpenWeightAdapter(
             api_key_env=credential_env,
             endpoint=os.environ.get(endpoint_env),
             timeout_s=timeout_s,
+            allow_plaintext_loopback=allow_plaintext_loopback,
         )
     raise SmokeConfigError(f"Desteklenmeyen provider: {name}")
 

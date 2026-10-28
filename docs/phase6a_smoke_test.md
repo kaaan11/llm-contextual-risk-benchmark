@@ -20,6 +20,7 @@ Seçim manifesti `tests/fixtures/phase6a_smoke_manifest.json` içindedir. Manife
 - Ham yanıtlar `results/` altında yerel tutulur ve Git'ten hariçtir.
 - Prompt metinleri response log'a yazılmaz; request kimliği, turn sayısı ve SHA-256 digest yazılır.
 - Hata mesajlarında bilinen bearer/API-key biçimleri maskelenir.
+- Endpoint güvenliği için yalnızca `https://` şeması varsayılan olarak kabul edilir; düz metin `http://` yalnızca loopback adresleri (`localhost`, `127.0.0.0/8`, `::1`) ve `allow_plaintext_loopback: true` açıkça yapılandırıldığında izinlidir. Bilinmeyen şemalar, kullanıcı bilgisi içeren URL'ler ve HTTP yönlendirmeleri istek veya kimlik bilgisi gönderilmeden önce reddedilir.
 - Adversarial içerik pilot dataset'teki güvenli/redakte edilmiş biçimle sınırlıdır; yeni saldırı materyali üretilmez.
 
 ## Çalıştırma kapısı

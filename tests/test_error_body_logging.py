@@ -52,7 +52,7 @@ def test_default_json_transport_moves_body_to_detail():
     marker = "BODY-MARKER-21-TRANSPORT"
     body_bytes = f'{{"error": "{marker}", "token": "sk-1234567890abcdef1234"}}'.encode("utf-8")
     http_error = HTTPError(
-        url="http://test.local/v1/chat",
+        url="https://test.local/v1/chat",
         code=500,
         msg="Internal Server Error",
         hdrs={},
@@ -62,7 +62,7 @@ def test_default_json_transport_moves_body_to_detail():
     with patch("benchmark.adapters.base.urlopen", side_effect=http_error):
         with pytest.raises(AdapterRequestError) as exc_info:
             default_json_transport(
-                url="http://test.local/v1/chat",
+                url="https://test.local/v1/chat",
                 headers={"Authorization": "Bearer token"},
                 payload={"input": "test"},
                 timeout_s=5.0,
@@ -86,7 +86,7 @@ def test_default_json_transport_non_retryable_code():
     marker = "BODY-MARKER-21-400"
     body_bytes = f'{{"error": "{marker}"}}'.encode("utf-8")
     http_error = HTTPError(
-        url="http://test.local/v1/chat",
+        url="https://test.local/v1/chat",
         code=400,
         msg="Bad Request",
         hdrs={},
@@ -96,7 +96,7 @@ def test_default_json_transport_non_retryable_code():
     with patch("benchmark.adapters.base.urlopen", side_effect=http_error):
         with pytest.raises(AdapterRequestError) as exc_info:
             default_json_transport(
-                url="http://test.local/v1/chat",
+                url="https://test.local/v1/chat",
                 headers={},
                 payload={},
                 timeout_s=5.0,
@@ -223,7 +223,7 @@ def test_smoke_level_error_body_isolated(tmp_path: Path, monkeypatch: pytest.Mon
     monkeypatch.setenv("OPENAI_API_KEY", "mock-test-key")
     monkeypatch.setenv("PHASE6A_OPENAI_MODEL", "mock-model")
     monkeypatch.setenv("PHASE6A_OPENAI_MODEL_VERSION", "2026-01-01")
-    monkeypatch.setenv("OPENAI_BASE_URL", "http://mock-api.local")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://mock-api.local")
 
     failing_adapter = FailingAdapter(marker=marker, status_code=502)
 

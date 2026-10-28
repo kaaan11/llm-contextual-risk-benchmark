@@ -10,6 +10,7 @@ import os
 from typing import Any, Mapping
 
 from .base import ModelAdapter, JsonTransport, default_json_transport, extract_text
+from .endpoint_policy import check_endpoint
 from ..errors import AdapterConfigurationError
 from ..types import AdapterResponse, GenerationRequest
 
@@ -78,13 +79,16 @@ class OpenAIAdapter(ModelAdapter):
         endpoint: str | None = None,
         api_key_env: str = "OPENAI_API_KEY",
         timeout_s: float = 60.0,
+        allow_plaintext_loopback: bool = False,
     ) -> None:
         self.transport = transport or default_json_transport
         self.endpoint = endpoint or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1/responses")
         self.api_key_env = api_key_env
         self.timeout_s = timeout_s
+        self.allow_plaintext_loopback = allow_plaintext_loopback
 
     def generate(self, request: GenerationRequest) -> AdapterResponse:
+        check_endpoint(self.endpoint, allow_plaintext_loopback=self.allow_plaintext_loopback)
         api_key = os.environ.get(self.api_key_env)
         if not api_key:
             raise AdapterConfigurationError(f"{self.api_key_env} ortam değişkeni tanımlı değil")
@@ -115,18 +119,21 @@ class AnthropicAdapter(ModelAdapter):
         api_key_env: str = "ANTHROPIC_API_KEY",
         api_version_env: str = "ANTHROPIC_API_VERSION",
         timeout_s: float = 60.0,
+        allow_plaintext_loopback: bool = False,
     ) -> None:
         self.transport = transport or default_json_transport
         self.endpoint = endpoint or os.environ.get("ANTHROPIC_BASE_URL", "https://api.anthropic.com/v1/messages")
         self.api_key_env = api_key_env
         self.api_version_env = api_version_env
         self.timeout_s = timeout_s
+        self.allow_plaintext_loopback = allow_plaintext_loopback
         # F-10: when the runner enforces the frozen configuration, a missing
         # max_output_tokens must fail loudly instead of silently using this
         # adapter's historical 1024 default.
         self.require_explicit_max_tokens = False
 
     def generate(self, request: GenerationRequest) -> AdapterResponse:
+        check_endpoint(self.endpoint, allow_plaintext_loopback=self.allow_plaintext_loopback)
         api_key = os.environ.get(self.api_key_env)
         if not api_key:
             raise AdapterConfigurationError(f"{self.api_key_env} ortam değişkeni tanımlı değil")
@@ -163,15 +170,18 @@ class OpenWeightAdapter(ModelAdapter):
         endpoint: str | None = None,
         api_key_env: str = "OPENWEIGHT_API_KEY",
         timeout_s: float = 120.0,
+        allow_plaintext_loopback: bool = False,
     ) -> None:
         self.transport = transport or default_json_transport
         self.endpoint = endpoint or os.environ.get("OPENWEIGHT_BASE_URL")
         self.api_key_env = api_key_env
         self.timeout_s = timeout_s
+        self.allow_plaintext_loopback = allow_plaintext_loopback
 
     def generate(self, request: GenerationRequest) -> AdapterResponse:
         if not self.endpoint:
             raise AdapterConfigurationError("OPENWEIGHT_BASE_URL ortam değişkeni tanımlı değil")
+        check_endpoint(self.endpoint, allow_plaintext_loopback=self.allow_plaintext_loopback)
         payload: dict[str, Any] = {
             "model": request.model.name,
             "messages": _messages(request),
