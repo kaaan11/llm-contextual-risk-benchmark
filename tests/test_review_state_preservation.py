@@ -517,3 +517,44 @@ def test_phase7g_validator_missing_history_file_fails(tmp_path: Path, monkeypatc
 
     captured = capsys.readouterr()
     assert "phase7g_review_history.jsonl" in captured.out or "INVALID" in captured.out
+
+
+def test_phase7e_validator_accepts_state_after_logged_reinit(tmp_path: Path):
+    """A legitimate --reinit resets the record to PENDING; replay must accept it."""
+    import build_phase7e_review
+    import validate_phase7e_review
+
+    assert build_phase7e_review.main(["--out-dir", str(tmp_path)]) == 0
+    audit = tmp_path / "results" / "dataset_audit"
+    record = json.loads((audit / "phase7e_review.json").read_text(encoding="utf-8"))
+    rid = record["items"][0]["research_item_id"]
+    history = audit / "phase7e_review_history.jsonl"
+    history.write_text(
+        json.dumps({"event": "review_log_initialised"}) + "\n"
+        + json.dumps({"event": "review_decision", "research_item_id": rid,
+                      "previous_decision": "PENDING", "new_decision": "KEEP",
+                      "timestamp": "2026-01-01T00:00:00Z", "version": "1.0.0",
+                      "reviewer_role": "owner"}) + "\n",
+        encoding="utf-8")
+
+    assert build_phase7e_review.main(
+        ["--out-dir", str(tmp_path), "--reinit", "--backup-dir", str(tmp_path / "bk")]) == 0
+    record = json.loads((audit / "phase7e_review.json").read_text(encoding="utf-8"))
+    lines = history.read_text(encoding="utf-8").splitlines()
+    assert validate_phase7e_review.validate_history(lines, record) == []
+
+
+def test_phase7g_validator_accepts_state_after_logged_reinit():
+    import validate_phase7g_review
+
+    qc = {"items": [{"research_item_id": "X-1", "review_decision": "PENDING"}]}
+    lines = [
+        json.dumps({"event": "qc_log_initialised"}),
+        json.dumps({"event": "review_decision", "research_item_id": "X-1",
+                    "previous_decision": "PENDING", "new_decision": "KEEP",
+                    "timestamp": "2026-01-01T00:00:00Z"}),
+        json.dumps({"event": "review_reinitialised", "phase": "7G"}),
+    ]
+    assert validate_phase7g_review.validate_history(lines, qc) == []
+    # Without the reinit event the same state is drift.
+    assert validate_phase7g_review.validate_history(lines[:2], qc) != []

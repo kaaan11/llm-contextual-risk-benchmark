@@ -216,7 +216,11 @@ def validate_history(history_lines: list[str], record: dict) -> list[str]:
     seen_events_for_item: set[str] = set()
 
     for n, e in events:
-        if e.get("event") == "review_decision":
+        if e.get("event") == "review_reinitialised":
+            # A logged reinit resets every item; earlier decisions stay in the backup.
+            replayed_state = {rid: "PENDING" for rid in replayed_state}
+            seen_events_for_item.clear()
+        elif e.get("event") == "review_decision":
             rid = e.get("research_item_id")
             for field in ("research_item_id", "previous_decision", "new_decision",
                           "timestamp", "version"):

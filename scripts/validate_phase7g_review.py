@@ -379,7 +379,11 @@ def validate_history(history_lines: list[str], qc: dict) -> list[str]:
 
     for n, e in events:
         event_type = e.get("event")
-        if event_type == "review_decision":
+        if event_type == "review_reinitialised":
+            # A logged reinit resets every item; earlier decisions stay in the backup.
+            replayed_state = {rid: "PENDING" for rid in replayed_state}
+            seen_events_for_item.clear()
+        elif event_type == "review_decision":
             rid = e.get("research_item_id")
             for field in ("research_item_id", "previous_decision", "new_decision", "timestamp"):
                 if field not in e:
