@@ -12,6 +12,7 @@ results/*
 # Sanitized smoke summaries document provider preflight provenance; raw responses
 # (none exist today) stay excluded.
 !results/smoke_test/
+results/smoke_test/**/responses*.jsonl
 benchmark/runs/*
 !benchmark/runs/README.md
 !benchmark/runs/.gitignore

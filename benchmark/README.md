@@ -84,7 +84,7 @@ Phase 6A için `benchmark.smoke_test` 20 kayıtlık deterministik manifesti doğ
 <bundled-python> -m benchmark.smoke_test --config configs/phase6a_smoke.json --live
 ```
 
-Çıktılar `results/smoke_test/phase6a-real-model-smoke/` altında yerel tutulur ve Git'e alınmaz. Mevcut ortamda gerekli credential/model sürümü yoksa her provider açıkça `not_evaluated` durumuyla raporlanır.
+Çıktılar `results/smoke_test/phase6a-real-model-smoke/` altında yerel tutulur ve Git'e alınmaz. Varsayılan olarak sonuç dizinindeki yanıtlarda ham metin yer almaz (`response_text: null`). Ham model yanıtlarını ayrık olarak kaydetmek için `--raw-response-dir <DIR>` seçeneğiyle `results/` dışında bir hedef dizin belirtilmelidir. Mevcut ortamda gerekli credential/model sürümü yoksa her provider açıkça `not_evaluated` durumuyla raporlanır.
 
 ## Output-token translation (legacy tooling)
 

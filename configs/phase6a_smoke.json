@@ -20,8 +20,8 @@
     "max_backoff_s": 4.0
   },
   "response_logging": {
-    "include_response_text": true,
-    "retention": "local_only; do not commit raw responses"
+    "include_response_text": false,
+    "retention": "Raw response text is only retained with --raw-response-dir, outside results/."
   },
   "providers": {
     "openai": {
