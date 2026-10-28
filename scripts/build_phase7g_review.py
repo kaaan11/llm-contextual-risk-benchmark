@@ -432,7 +432,7 @@ def main(argv: list[str] | None = None) -> int:
     qc_path = audit / "phase7g_human_qc.json"
     summary_path = audit / "phase7g_quality_summary.json"
     history_path = audit / "phase7g_review_history.jsonl"
-    canonical_files = [blind_path, key_path, qc_path, summary_path]
+    canonical_files = [blind_path, key_path, qc_path, summary_path, history_path]
 
     existing = [p for p in canonical_files if p.exists()]
     if existing and not args.reinit:
@@ -448,8 +448,7 @@ def main(argv: list[str] | None = None) -> int:
     recheck = structural_recheck(records)
     blind, key = build_blind_review(records)
     qc = build_human_qc(records, recheck)
-    integrity_root = root if (root / "docs").exists() else ROOT
-    summary = build_quality_summary(qc, blind, recheck, root=integrity_root)
+    summary = build_quality_summary(qc, blind, recheck, root=ROOT)
 
     if args.reinit:
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -459,7 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             backup_target = args.backup_dir / ts
         backup_target.mkdir(parents=True, exist_ok=True)
 
-        to_backup = [p for p in canonical_files + [history_path] if p.exists()]
+        to_backup = [p for p in canonical_files if p.exists()]
         backed_up: list[tuple[Path, str]] = []
         for src in to_backup:
             orig_hash = hashlib.sha256(src.read_bytes()).hexdigest()

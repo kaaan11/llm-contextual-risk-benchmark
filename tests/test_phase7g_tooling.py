@@ -16,6 +16,21 @@ from scripts.decide_phase7g import get_pending_decision_items, run_decide_wizard
 
 
 class Phase7GToolingTests(unittest.TestCase):
+    def setUp(self):
+        import tempfile
+        self.tmp_dir = tempfile.TemporaryDirectory()
+        self.tmp_path = Path(self.tmp_dir.name)
+        p1 = patch("scripts.adjudicate_blind.BLIND", self.tmp_path / "phase7g_blind_review.json")
+        p2 = patch("scripts.review_context.QC", self.tmp_path / "phase7g_human_qc.json")
+        p3 = patch("scripts.decide_phase7g.QC", self.tmp_path / "phase7g_human_qc.json")
+        p1.start()
+        p2.start()
+        p3.start()
+        self.addCleanup(p1.stop)
+        self.addCleanup(p2.stop)
+        self.addCleanup(p3.stop)
+        self.addCleanup(self.tmp_dir.cleanup)
+
     def test_status_report_structure(self):
         rep = get_status_report()
         self.assertEqual(rep["total"], 50)

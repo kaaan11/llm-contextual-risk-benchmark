@@ -85,14 +85,51 @@ def check_integrity_flags(root: Path = ROOT) -> dict[str, Any]:
     manifest = _load_pinned_manifest(root)
     protocol = {p: r["sha256"] for p, r in (manifest or {}).get("protocol_files", {}).items()}
     protected = {p: r["sha256"] for p, r in (manifest or {}).get("protected_files", {}).items()}
-    composite_ok = manifest is not None and manifest.get("composite_protocol_hash") == COMPOSITE
+
+    composite_ok = False
+    if manifest is not None and manifest.get("composite_protocol_hash") == COMPOSITE:
+        protocol_files = manifest.get("protocol_files", {})
+        try:
+            actual_protocol_hashes = {
+                p: sha256((root / p).read_bytes()) for p in protocol_files
+            }
+            computed_composite = sha256(
+                "\n".join(f"{p}:{h}" for p, h in sorted(actual_protocol_hashes.items())).encode()
+            )
+            composite_ok = (computed_composite == COMPOSITE)
+        except OSError:
+            composite_ok = False
 
     design = ["docs/PHASE_7D_EXPERIMENTAL_DESIGN.md", "docs/PHASE_7D_DESIGN_TABLE.md"]
-    prereg = ["docs/phase7e_preregistration.md", "docs/phase7e_annotation_protocol.md",
-              "docs/phase7e_pre_evaluation_clarification.md"]
+    prereg = [
+        "docs/phase7e_preregistration.md",
+        "docs/phase7e_annotation_protocol.md",
+        "docs/phase7e_pre_evaluation_clarification.md",
+        "results/dataset_audit/phase7e_design_snapshot.json",
+    ]
     stimulus = ["dataset/pilot/multiturn/stimulus_dataset_v1.json"]
-    # docs/PHASE_7D_EXPERIMENTAL_DESIGN.md:154 names the Turkish set EXPLORATORY_DRAFT_V0.1_TR.
-    turkish = ["dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"]
+
+    turkish_pointer = "dataset/pilot/multiturn/EXPLORATORY_DRAFT_V0.1_TR.json"
+    turkish = [turkish_pointer]
+    turkish_expected: dict[str, str] = {}
+    pointer_parsed = False
+    try:
+        pointer_data = json.loads((root / turkish_pointer).read_bytes())
+        for art in pointer_data.get("artifacts", []):
+            art_path = art.get("path")
+            if art_path:
+                turkish.append(art_path)
+                if art_path in protected:
+                    turkish_expected[art_path] = protected[art_path]
+                elif "sha256" in art:
+                    turkish_expected[art_path] = art["sha256"]
+        pointer_parsed = True
+    except (OSError, json.JSONDecodeError, KeyError, TypeError):
+        pointer_parsed = False
+
+    if turkish_pointer in protected:
+        turkish_expected[turkish_pointer] = protected[turkish_pointer]
+
     basis = f"manifest sha256 {MANIFEST}"
     return {
         "phase7d_design_unchanged": _flag(
@@ -108,7 +145,8 @@ def check_integrity_flags(root: Path = ROOT) -> dict[str, Any]:
             "status": "unknown", "checked_files": [],
             "basis": "No public benchmark corpus is vendored or pinned in this repository."},
         "turkish_dataset_unchanged": _flag(
-            manifest is not None and _files_match(root, turkish, protected), turkish,
+            manifest is not None and pointer_parsed and _files_match(root, turkish, turkish_expected),
+            turkish,
             f"protected_files, {basis}"),
         "pre_review_snapshot": "results/dataset_audit/snapshots/phase7f_stimulus.v1.pre_qc.json",
     }

@@ -217,11 +217,17 @@ def validate_history(history_lines: list[str], record: dict) -> list[str]:
 
     for n, e in events:
         if e.get("event") == "review_reinitialised":
+            if not e.get("backup_dir"):
+                errors.append(f"history line {n}: review_reinitialised event lacks backup_dir")
+            if not e.get("manifest_sha256"):
+                errors.append(f"history line {n}: review_reinitialised event lacks manifest_sha256")
             # A logged reinit resets every item; earlier decisions stay in the backup.
             replayed_state = {rid: "PENDING" for rid in replayed_state}
             seen_events_for_item.clear()
         elif e.get("event") == "review_decision":
             rid = e.get("research_item_id")
+            if rid not in replayed_state:
+                errors.append(f"history line {n}: review_decision for unknown research_item_id {rid!r}")
             for field in ("research_item_id", "previous_decision", "new_decision",
                           "timestamp", "version"):
                 if field not in e:
@@ -232,14 +238,13 @@ def validate_history(history_lines: list[str], record: dict) -> list[str]:
                     e.get("reviewer_id") or e.get("reviewer_role")):
                 errors.append(f"history line {n}: history event for {rid} lacks a reviewer")
 
-            current = replayed_state.get(rid, "PENDING")
-            prev = e.get("previous_decision")
-            if prev != current:
-                errors.append(
-                    f"history line {n}: {rid} previous_decision {prev!r} does not match replayed state {current!r}"
-                )
-
-            if rid:
+            if rid in replayed_state:
+                current = replayed_state.get(rid, "PENDING")
+                prev = e.get("previous_decision")
+                if prev != current:
+                    errors.append(
+                        f"history line {n}: {rid} previous_decision {prev!r} does not match replayed state {current!r}"
+                    )
                 replayed_state[rid] = e.get("new_decision")
                 seen_events_for_item.add(rid)
 

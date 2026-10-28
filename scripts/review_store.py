@@ -120,34 +120,45 @@ def commit_state_and_history(
             f"snapshot {snapshot_path.name} already exists; refusing to overwrite"
         )
     snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-    if state_path.exists():
+    state_pre_exists = state_path.exists()
+    snapshot_created = False
+    if state_pre_exists:
         shutil.copy(state_path, snapshot_path)
+        snapshot_created = True
 
     # 2. Atomic state write
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    state_content = json.dumps(new_state, indent=2, ensure_ascii=False) + "\n"
-    state_bytes = state_content.encode("utf-8")
-
-    tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(
-            dir=state_path.parent,
-            prefix=f".{state_path.name}.",
-            suffix=".tmp",
-            delete=False,
-        ) as tmp:
-            tmp_path = Path(tmp.name)
-            tmp.write(state_bytes)
-            tmp.flush()
-            os.fsync(tmp.fileno())
-        os.replace(tmp_path, state_path)
+        state_path.parent.mkdir(parents=True, exist_ok=True)
+        state_content = json.dumps(new_state, indent=2, ensure_ascii=False) + "\n"
+        state_bytes = state_content.encode("utf-8")
+
         tmp_path = None
-    finally:
-        if tmp_path is not None and tmp_path.exists():
+        try:
+            with tempfile.NamedTemporaryFile(
+                dir=state_path.parent,
+                prefix=f".{state_path.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as tmp:
+                tmp_path = Path(tmp.name)
+                tmp.write(state_bytes)
+                tmp.flush()
+                os.fsync(tmp.fileno())
+            os.replace(tmp_path, state_path)
+            tmp_path = None
+        finally:
+            if tmp_path is not None and tmp_path.exists():
+                try:
+                    tmp_path.unlink()
+                except OSError:
+                    pass
+    except Exception:
+        if snapshot_created and snapshot_path.exists():
             try:
-                tmp_path.unlink()
+                snapshot_path.unlink()
             except OSError:
                 pass
+        raise
 
     # 3. History append with recovery
     history_path.parent.mkdir(parents=True, exist_ok=True)
@@ -178,12 +189,16 @@ def commit_state_and_history(
         except Exception as exc:
             rollback_problems.append(f"history truncate failed: {exc}")
 
-        # Rollback state write by restoring from snapshot
+        # Rollback state write
         try:
-            if snapshot_path.exists():
-                _atomic_copy_replace(snapshot_path, state_path)
+            if state_pre_exists:
+                if snapshot_path.exists():
+                    _atomic_copy_replace(snapshot_path, state_path)
+                else:
+                    rollback_problems.append("no snapshot to restore state from")
             else:
-                rollback_problems.append("no snapshot to restore state from")
+                if state_path.exists():
+                    state_path.unlink()
         except Exception as exc:
             rollback_problems.append(f"state restore failed: {exc}")
 
@@ -193,7 +208,22 @@ def commit_state_and_history(
                 f"{'; '.join(rollback_problems)}. Check {state_path.name} and "
                 f"{history_path.name} against {snapshot_path.name} before any further write."
             ) from append_exc
-        raise HistoryAppendError(
-            f"History append failed: {append_exc}; rolled back state from "
-            f"{snapshot_path.name} and truncated history to {history_pre_size} bytes"
-        ) from append_exc
+
+        # If the rollback fully succeeds, remove the snapshot this call created.
+        if snapshot_created and snapshot_path.exists():
+            try:
+                snapshot_path.unlink()
+            except OSError:
+                pass
+
+        if state_pre_exists:
+            msg = (
+                f"History append failed: {append_exc}; rolled back state from "
+                f"{snapshot_path.name} and truncated history to {history_pre_size} bytes"
+            )
+        else:
+            msg = (
+                f"History append failed: {append_exc}; removed newly created state "
+                f"and truncated history to {history_pre_size} bytes"
+            )
+        raise HistoryAppendError(msg) from append_exc

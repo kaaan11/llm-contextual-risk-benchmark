@@ -632,3 +632,224 @@ def test_failed_rollback_is_reported_not_claimed(tmp_path: Path, monkeypatch):
     with pytest.raises(rs.HistoryAppendError, match="ROLLBACK INCOMPLETE"):
         commit_state_and_history(state_path, {"v": 2}, history_path,
                                  [{"event": "x"}], tmp_path / "snap.json")
+
+
+def test_rollback_unlinks_newly_created_history(tmp_path: Path, monkeypatch):
+    """When history append fails on a non-pre-existing history, history is unlinked."""
+    import builtins
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.jsonl"
+    snap_path = tmp_path / "snap.json"
+    state_path.write_text('{"initial": 1}\n', encoding="utf-8")
+
+    real_open = builtins.open
+
+    def failing_open(file, mode="r", *a, **k):
+        if Path(file) == history_path and "a" in mode:
+            fh = real_open(file, mode, *a, **k)
+            fh.write(b"corrupt")
+            fh.flush()
+            raise OSError("disk write failed")
+        return real_open(file, mode, *a, **k)
+
+    monkeypatch.setattr(builtins, "open", failing_open)
+    with pytest.raises(HistoryAppendError):
+        commit_state_and_history(state_path, {"initial": 2}, history_path, [{"event": "ev1"}], snap_path)
+
+    assert not history_path.exists(), "history file was not unlinked on rollback"
+
+
+def test_snapshot_removed_on_clean_rollback_enabling_retry(tmp_path: Path, monkeypatch):
+    """After a clean rollback, snapshot is removed, allowing immediate retry with same snapshot path."""
+    import builtins
+    state_path = tmp_path / "state.json"
+    history_path = tmp_path / "history.jsonl"
+    snap_path = tmp_path / "snap.json"
+    state_path.write_text('{"v": 1}\n', encoding="utf-8")
+    history_path.write_text('{"event": "init"}\n', encoding="utf-8")
+
+    real_open = builtins.open
+    should_fail = True
+
+    def toggle_open(file, mode="r", *a, **k):
+        if should_fail and Path(file) == history_path and "a" in mode:
+            raise OSError("transient disk error")
+        return real_open(file, mode, *a, **k)
+
+    monkeypatch.setattr(builtins, "open", toggle_open)
+
+    with pytest.raises(HistoryAppendError):
+        commit_state_and_history(state_path, {"v": 2}, history_path, [{"event": "retry_me"}], snap_path)
+
+    assert not snap_path.exists(), "snapshot remained after clean rollback"
+
+    # Retry with same snapshot path must succeed (would raise SnapshotExistsError if not cleaned up)
+    should_fail = False
+    commit_state_and_history(state_path, {"v": 2}, history_path, [{"event": "retry_me"}], snap_path)
+    assert snap_path.exists()
+    assert json.loads(state_path.read_text(encoding="utf-8")) == {"v": 2}
+
+
+def test_phase7g_decide_writer_reads_state_inside_lock(tmp_path: Path, monkeypatch):
+    """Lost-update guard for 7G decide mode: state loaded inside lock preserves concurrent updates."""
+    import contextlib
+
+    audit_dir = tmp_path / "audit"
+    snap_dir = audit_dir / "snapshots"
+    audit_dir.mkdir(parents=True)
+    snap_dir.mkdir(parents=True)
+
+    blind_file = audit_dir / "phase7g_blind_review.json"
+    key_file = audit_dir / "phase7g_blind_key.json"
+    qc_file = audit_dir / "phase7g_human_qc.json"
+    history_file = audit_dir / "phase7g_review_history.jsonl"
+
+    blind_file.write_text(json.dumps({"items": []}), encoding="utf-8")
+    real_qc_path = Path(__file__).resolve().parent.parent / "results" / "dataset_audit" / "phase7g_human_qc.json"
+    real_qc = json.loads(real_qc_path.read_text(encoding="utf-8"))
+    import copy
+    item1 = copy.deepcopy(real_qc["items"][0])
+    item2 = copy.deepcopy(real_qc["items"][1])
+    item1["review_decision"] = "PENDING"
+    item2["review_decision"] = "PENDING"
+    rid1 = item1["research_item_id"]
+    rid2 = item2["research_item_id"]
+
+    key_file.write_text(json.dumps({
+        "mapping": [
+            {"blind_id": "B-001", "research_item_id": rid1, "category": "ambiguous_benign"},
+            {"blind_id": "B-002", "research_item_id": rid2, "category": "ambiguous_benign"},
+        ]
+    }), encoding="utf-8")
+
+    qc_file.write_text(json.dumps({
+        "status": "IN_PROGRESS",
+        "counts": {"total": 2, "pending": 2, "keep": 0, "revise": 0, "reject": 0},
+        "items": [item1, item2],
+    }, indent=2) + "\n", encoding="utf-8")
+    history_file.write_text(json.dumps({"event": "qc_log_initialised"}) + "\n", encoding="utf-8")
+
+    monkeypatch.setattr(p7g, "AUDIT", audit_dir)
+    monkeypatch.setattr(p7g, "BLIND", blind_file)
+    monkeypatch.setattr(p7g, "KEY", key_file)
+    monkeypatch.setattr(p7g, "QC", qc_file)
+    monkeypatch.setattr(p7g, "HISTORY", history_file)
+    monkeypatch.setattr(p7g, "SNAPS", snap_dir)
+
+    real_lock = p7g.review_lock
+
+    @contextlib.contextmanager
+    def lock_after_concurrent_decide(audit):
+        # Concurrent process decides rid2 before lock is acquired
+        other = json.loads(qc_file.read_text(encoding="utf-8"))
+        other["items"][1]["review_decision"] = "REJECT"
+        other["items"][1]["notes"] = "concurrent reject"
+        qc_file.write_text(json.dumps(other, indent=2) + "\n", encoding="utf-8")
+        with real_lock(audit) as held:
+            yield held
+
+    monkeypatch.setattr(p7g, "review_lock", lock_after_concurrent_decide)
+
+    input_payload = tmp_path / "decide_input.json"
+    input_payload.write_text(json.dumps([
+        {"research_item_id": rid1, "decision": "REJECT", "notes": "local reject"}
+    ]), encoding="utf-8")
+
+    ret = p7g.main(["decide", "--input", str(input_payload), "--reviewer-id", "lead1",
+                    "--timestamp", "2026-08-14T16:00:00Z"])
+    assert ret == 0
+
+    final = json.loads(qc_file.read_text(encoding="utf-8"))
+    assert final["items"][0]["review_decision"] == "REJECT"
+    assert final["items"][1]["review_decision"] == "REJECT", "concurrent decide update was lost"
+
+
+def test_all_four_wizards_raise_review_lock_error_before_prompt(tmp_path: Path, monkeypatch):
+    """All 4 wizards take the review lock inside run_* and raise ReviewLockError before prompt."""
+    import scripts.annotate_blind as ab
+    import scripts.adjudicate_blind as adj
+    import scripts.review_context as rc
+    import scripts.decide_phase7g as dp
+
+    audit_dir = tmp_path / "audit"
+    audit_dir.mkdir(parents=True)
+    lock_file = audit_dir / ".review.lock"
+    lock_file.write_text("88888\n", encoding="utf-8")
+
+    dummy_blind = audit_dir / "phase7g_blind_review.json"
+    dummy_key = audit_dir / "phase7g_blind_key.json"
+    dummy_qc = audit_dir / "phase7g_human_qc.json"
+
+    dummy_blind.write_text(json.dumps({"items": []}), encoding="utf-8")
+    dummy_key.write_text(json.dumps({"mapping": []}), encoding="utf-8")
+    dummy_qc.write_text(json.dumps({"items": []}), encoding="utf-8")
+
+    monkeypatch.setattr(ab, "BLIND", dummy_blind)
+    monkeypatch.setattr(ab, "KEY", dummy_key)
+    monkeypatch.setattr(adj, "BLIND", dummy_blind)
+    monkeypatch.setattr(adj, "KEY", dummy_key)
+    monkeypatch.setattr(rc, "QC", dummy_qc)
+    monkeypatch.setattr(rc, "BLIND", dummy_blind)
+    monkeypatch.setattr(rc, "KEY", dummy_key)
+    monkeypatch.setattr(dp, "QC", dummy_qc)
+    monkeypatch.setattr(dp, "BLIND", dummy_blind)
+    monkeypatch.setattr(dp, "KEY", dummy_key)
+
+    def forbidden_input(prompt=""):
+        raise AssertionError(f"Prompt was displayed before lock acquisition: {prompt}")
+
+    # 1. annotate_blind.run_wizard
+    with pytest.raises(ReviewLockError):
+        ab.run_wizard("rater_a", "rev1", input_func=forbidden_input)
+
+    # 2. adjudicate_blind.run_adjudication_wizard
+    with pytest.raises(ReviewLockError):
+        adj.run_adjudication_wizard("rev1", input_func=forbidden_input)
+
+    # 3. review_context.run_context_wizard
+    with pytest.raises(ReviewLockError):
+        rc.run_context_wizard("rev1", input_func=forbidden_input)
+
+    # 4. decide_phase7g.run_decide_wizard
+    with pytest.raises(ReviewLockError):
+        dp.run_decide_wizard("rev1", input_func=forbidden_input)
+
+
+def test_qc_workbench_choices_hit_lock(tmp_path: Path, monkeypatch):
+    """qc_workbench menu choices 2-6 hit the review lock."""
+    import builtins
+    import scripts.qc_workbench as qcw
+    import scripts.annotate_blind as ab
+    import scripts.adjudicate_blind as adj
+    import scripts.review_context as rc
+    import scripts.decide_phase7g as dp
+
+    audit_dir = tmp_path / "audit"
+    audit_dir.mkdir(parents=True)
+    lock_file = audit_dir / ".review.lock"
+    lock_file.write_text("88888\n", encoding="utf-8")
+
+    dummy_blind = audit_dir / "phase7g_blind_review.json"
+    dummy_key = audit_dir / "phase7g_blind_key.json"
+    dummy_qc = audit_dir / "phase7g_human_qc.json"
+
+    dummy_blind.write_text(json.dumps({"items": []}), encoding="utf-8")
+    dummy_key.write_text(json.dumps({"mapping": []}), encoding="utf-8")
+    dummy_qc.write_text(json.dumps({"items": []}), encoding="utf-8")
+
+    monkeypatch.setattr(ab, "BLIND", dummy_blind)
+    monkeypatch.setattr(ab, "KEY", dummy_key)
+    monkeypatch.setattr(adj, "BLIND", dummy_blind)
+    monkeypatch.setattr(adj, "KEY", dummy_key)
+    monkeypatch.setattr(rc, "QC", dummy_qc)
+    monkeypatch.setattr(rc, "BLIND", dummy_blind)
+    monkeypatch.setattr(rc, "KEY", dummy_key)
+    monkeypatch.setattr(dp, "QC", dummy_qc)
+    monkeypatch.setattr(dp, "BLIND", dummy_blind)
+    monkeypatch.setattr(dp, "KEY", dummy_key)
+
+    for choice in ("2", "3", "4", "5", "6"):
+        inputs = iter([choice, "test_reviewer_id"])
+        monkeypatch.setattr(builtins, "input", lambda _="": next(inputs))
+        with pytest.raises(ReviewLockError):
+            qcw.main_menu()

@@ -998,3 +998,90 @@ class ProtocolAmendmentTests(unittest.TestCase):
     def test_design_snapshot_is_frozen_in_place_of_the_review_file(self):
         self.assertIn("results/dataset_audit/phase7e_design_snapshot.json",
                       self.record["protocol_files"])
+
+
+class Phase7EPostAuditRegressions(unittest.TestCase):
+    def test_fresh_bootstrap_then_reinit_history_validates(self):
+        """Fresh bootstrap writes history; later reinit appends reinit event; validate_history gives []."""
+        import tempfile
+        import build_phase7e_review
+        from validate_phase7e_review import validate_history
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out_dir = Path(tmp_dir) / "out"
+            backup_dir = Path(tmp_dir) / "backup"
+
+            # 1. Fresh bootstrap
+            ret = build_phase7e_review.main(["--out-dir", str(out_dir)])
+            self.assertEqual(ret, 0)
+
+            history_file = out_dir / "results" / "dataset_audit" / "phase7e_review_history.jsonl"
+            self.assertTrue(history_file.exists(), "fresh bootstrap did not write history file")
+
+            review_file = out_dir / "results" / "dataset_audit" / "phase7e_review.json"
+            record = json.loads(review_file.read_text(encoding="utf-8"))
+            lines = history_file.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(lines), 1)
+            init_event = json.loads(lines[0])
+            self.assertEqual(init_event["event"], "review_log_initialised")
+            self.assertEqual(init_event["timestamp"], build_phase7e_review.FROZEN_AT)
+            self.assertEqual(validate_history(lines, record), [])
+
+            # 2. Pre-existence check: if only history exists, refuse with code 2
+            out_dir2 = Path(tmp_dir) / "out2"
+            hist2 = out_dir2 / "results" / "dataset_audit" / "phase7e_review_history.jsonl"
+            hist2.parent.mkdir(parents=True)
+            hist2.write_text(lines[0] + "\n", encoding="utf-8")
+            ret_refuse = build_phase7e_review.main(["--out-dir", str(out_dir2)])
+            self.assertEqual(ret_refuse, 2)
+
+            # 3. Reinit
+            ret_reinit = build_phase7e_review.main(
+                ["--out-dir", str(out_dir), "--reinit", "--backup-dir", str(backup_dir)]
+            )
+            self.assertEqual(ret_reinit, 0)
+            lines_reinit = history_file.read_text(encoding="utf-8").splitlines()
+            self.assertEqual(len(lines_reinit), 2)
+            self.assertEqual(json.loads(lines_reinit[0])["event"], "review_log_initialised")
+            self.assertEqual(json.loads(lines_reinit[1])["event"], "review_reinitialised")
+            record_reinit = json.loads(review_file.read_text(encoding="utf-8"))
+            self.assertEqual(validate_history(lines_reinit, record_reinit), [])
+
+    def test_validate_history_rejects_unknown_research_item_id_and_missing_reinit_fields(self):
+        """B7: validate_history rejects unknown research_item_id and reinit missing backup fields."""
+        from validate_phase7e_review import validate_history
+
+        record = {
+            "items": [
+                {"research_item_id": "RI-DU-001", "review_decision": "PENDING"}
+            ]
+        }
+        init_line = json.dumps({"event": "review_log_initialised"})
+
+        # Unknown ID
+        bad_decision = json.dumps({
+            "event": "review_decision",
+            "research_item_id": "RI-UNKNOWN-999",
+            "previous_decision": "PENDING",
+            "new_decision": "KEEP",
+            "timestamp": "2026-08-14T12:00:00Z",
+            "version": 1,
+            "reviewer_id": "r1",
+        })
+        errors = validate_history([init_line, bad_decision], record)
+        self.assertTrue(any("unknown research_item_id" in e for e in errors), errors)
+
+        # Reinit missing backup_dir or manifest_sha256
+        reinit_no_backup = json.dumps({
+            "event": "review_reinitialised",
+            "manifest_sha256": "abcdef",
+        })
+        reinit_no_sha = json.dumps({
+            "event": "review_reinitialised",
+            "backup_dir": "/path/to/backup",
+        })
+        errors_b = validate_history([init_line, reinit_no_backup], record)
+        self.assertTrue(any("lacks backup_dir" in e for e in errors_b), errors_b)
+
+        errors_s = validate_history([init_line, reinit_no_sha], record)
+        self.assertTrue(any("lacks manifest_sha256" in e for e in errors_s), errors_s)

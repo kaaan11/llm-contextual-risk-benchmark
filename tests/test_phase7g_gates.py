@@ -588,5 +588,44 @@ class PhaseCompletionEvidenceTests(unittest.TestCase):
         self.assertTrue(any("two-rater" in e for e in completion), completion)
 
 
+class Phase7GPostAuditRegressions(unittest.TestCase):
+    def test_validate_history_rejects_unknown_research_item_id_and_missing_reinit_fields(self):
+        """B7: validate_history in 7G rejects unknown research_item_id and reinit missing backup fields."""
+        from validate_phase7g_review import validate_history
+
+        qc = {
+            "items": [
+                {"research_item_id": "RI-AM-001", "review_decision": "PENDING"}
+            ]
+        }
+        init_line = json.dumps({"event": "qc_log_initialised"})
+
+        # Unknown ID
+        bad_decision = json.dumps({
+            "event": "review_decision",
+            "research_item_id": "RI-UNKNOWN-999",
+            "previous_decision": "PENDING",
+            "new_decision": "KEEP",
+            "timestamp": "2026-08-14T12:00:00Z",
+        })
+        errors = validate_history([init_line, bad_decision], qc)
+        self.assertTrue(any("unknown research_item_id" in e for e in errors), errors)
+
+        # Reinit missing backup_dir or manifest_sha256
+        reinit_no_backup = json.dumps({
+            "event": "review_reinitialised",
+            "manifest_sha256": "abcdef",
+        })
+        reinit_no_sha = json.dumps({
+            "event": "review_reinitialised",
+            "backup_dir": "/path/to/backup",
+        })
+        errors_b = validate_history([init_line, reinit_no_backup], qc)
+        self.assertTrue(any("lacks backup_dir" in e for e in errors_b), errors_b)
+
+        errors_s = validate_history([init_line, reinit_no_sha], qc)
+        self.assertTrue(any("lacks manifest_sha256" in e for e in errors_s), errors_s)
+
+
 if __name__ == "__main__":
     unittest.main()
